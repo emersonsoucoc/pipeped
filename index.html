@@ -1515,6 +1515,11 @@ function buildSidebar(){
   });
   html += `
     <div class="sb-section">Sistema</div>
+    <a class="nav-item" data-page="notif_center" onclick="navigate('notif_center')">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="nav-text">Notificações</span>
+      <span class="nav-badge" id="badge-notif_center" style="background:var(--err);color:#fff"></span>
+    </a>
     <a class="nav-item" data-page="settings" onclick="navigate('settings')">
       <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
       <span class="nav-text">Configurações</span>
@@ -1554,19 +1559,20 @@ function navigate(page){
     // Esconde botão "Novo" se Clicksign (form inline) ou sem permissão
     newBtn.style.display = (mod.isClicksign || !canCreateInModule(page)) ? 'none' : '';
   }
-  else { newBtn.style.display = page==='settings' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
+  else { newBtn.style.display = (page==='settings'||page==='notif_center') ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
   // Clicksign polling
   if(page==='contratos') csStartPolling(); else csStopPolling();
   renderPage();
   updateBadges();
 }
-const pageTitles = { dashboard:'Dashboard', settings:'Configurações' };
+const pageTitles = { dashboard:'Dashboard', settings:'Configurações', notif_center:'Central de Notificações' };
 
 function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
   else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
+  else if(currentPage==='notif_center') el.innerHTML = buildNotifCenter();
   else if(currentPage==='settings') el.innerHTML = buildSettings();
 }
 
@@ -1828,6 +1834,8 @@ function onDrop(e, mod, fase){
   save();
   addNotif(`Card movido para "${MODULES[mod].fases[fase]?.label}"`, card.titulo, 'move');
   try{logAudit('card_move',mod,card.titulo+' → '+MODULES[mod].fases[fase]?.label);}catch(e){}
+  // Automation trigger — phase change
+  try{ NotifEngine.execute('card_enter_phase', card, { fase }); }catch(e){ console.warn('NotifEngine error:', e); }
   renderPage();
   updateBadges();
 }
@@ -2016,6 +2024,8 @@ function addComment(){
   renderComments(card);
   renderHistory(card);
   addNotif('Novo comentário em card', card.titulo, 'comment');
+  // Automation trigger — comment
+  try{ card._lastComment = txt; NotifEngine.execute('comment_added', card, {}); delete card._lastComment; }catch(e){ console.warn('NotifEngine error:', e); }
 }
 
 function saveCard(){
@@ -2034,7 +2044,11 @@ function saveCard(){
     if(!card){ editCardId=null; return; }
     const oldFase = card.fase;
     card.historico = card.historico||[];
-    if(oldFase!==fase) card.historico.push({ texto:`Fase alterada para "${MODULES[modulo]?.fases[fase]?.label}"`, data:now(), usuario:currentUser?.name });
+    if(oldFase!==fase){
+      card.historico.push({ texto:`Fase alterada para "${MODULES[modulo]?.fases[fase]?.label}"`, data:now(), usuario:currentUser?.name });
+      card.fase = fase; // set before trigger
+      try{ NotifEngine.execute('card_enter_phase', card, { fase }); }catch(e){ console.warn('NotifEngine error:', e); }
+    }
   } else {
     card = { id:uid(), criadoEm:today(), criadoPor:currentUser?.id||'u1', comentarios:[], historico:[], anexos:[] };
     card.historico.push({ texto:`Card criado por ${currentUser?.name}`, data:now(), usuario:currentUser?.name });
@@ -2069,6 +2083,15 @@ function saveCard(){
   showToast(isNew?'Card criado com sucesso!':'Card salvo!');
   addNotif(isNew?'Novo card criado':'Card atualizado', titulo, isNew?'create':'update');
   try{logAudit(isNew?'card_create':'card_update',modulo,titulo);}catch(e){}
+  // Automation triggers
+  try{
+    if(isNew){
+      NotifEngine.execute('card_created', card, {});
+      if(modulo==='comercial') NotifEngine.execute('new_lead', card, {});
+    } else {
+      NotifEngine.execute('field_updated', card, { campo:'general' });
+    }
+  }catch(e){ console.warn('NotifEngine error:', e); }
   if(MODULES[currentPage]) renderPage();
 }
 
@@ -2432,8 +2455,8 @@ function buildSettingsNotificacoes(){
           <label class="notif-channel" style="${enabled?'':'opacity:.5'}">
             <input type="checkbox" ${enabled?'checked':''} onchange="updateNotifPref('${e.id}','sistema',this.checked)" style="width:auto"> Sistema
           </label>
-          <label class="notif-channel" style="opacity:.45;cursor:not-allowed">
-            <input type="checkbox" disabled style="width:auto"> E-mail (em breve)
+          <label class="notif-channel" style="${enabled?'':'opacity:.5'}">
+            <input type="checkbox" ${up[e.id]?.email?'checked':''} onchange="updateNotifPref('${e.id}','email',this.checked)" style="width:auto"${enabled?'':' disabled'}> E-mail (Mock)
           </label>
           <label class="notif-channel" style="opacity:.45;cursor:not-allowed">
             <input type="checkbox" disabled style="width:auto"> WhatsApp (em breve)
@@ -3115,6 +3138,607 @@ function csSetFilter(unitId){
   if(currentPage==='contratos') renderPage();
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// NOTIFICATION CENTER + EMAIL ENGINE + AUTOMATIONS
+// ═══════════════════════════════════════════════════════════════════════
+
+let ncTab = 'all'; // all | unread | emails | templates | automations
+let editingTplId = null;
+let editingAutoId = null;
+
+// ─── DATA LAYER ──────────────────────────────────────────────────────
+function getEmailLogs(){ return JSON.parse(localStorage.getItem('pipeped_email_logs')||'[]') }
+function saveEmailLogs(logs){ localStorage.setItem('pipeped_email_logs',JSON.stringify(logs)) }
+function getEmailTemplates(){ return JSON.parse(localStorage.getItem('pipeped_email_templates')||'[]') }
+function saveEmailTemplates(tpls){ localStorage.setItem('pipeped_email_templates',JSON.stringify(tpls)) }
+function getAutoRules(){ return JSON.parse(localStorage.getItem('pipeped_auto_rules')||'[]') }
+function saveAutoRules(rules){ localStorage.setItem('pipeped_auto_rules',JSON.stringify(rules)) }
+
+// ─── SEED DEFAULT TEMPLATES ──────────────────────────────────────────
+function initEmailSystem(){
+  if(!localStorage.getItem('pipeped_email_templates')){
+    const defaultTpls = [
+      { id:uid(), name:'Nova Tarefa Criada', type:'new_card', school:'',
+        subject:'[PIPEPED] Nova tarefa: {{task_title}}',
+        body:'Olá {{user_name}},\n\nUma nova tarefa foi criada no módulo {{module}}:\n\n• Título: {{task_title}}\n• Prioridade: {{priority}}\n• Escola: {{school_name}}\n• Prazo: {{due_date}}\n• Criado por: {{created_by}}\n\nAcesse o PIPEPED para mais detalhes.\n\nAtenciosamente,\nSistema PIPEPED — Grupo PED',
+        active:true, createdAt:now() },
+      { id:uid(), name:'Tarefa Atualizada', type:'status_change', school:'',
+        subject:'[PIPEPED] Tarefa atualizada: {{task_title}}',
+        body:'Olá {{user_name}},\n\nA tarefa "{{task_title}}" foi movida para o status: {{status}}\n\n• Módulo: {{module}}\n• Escola: {{school_name}}\n• Responsável: {{assigned_to}}\n\nAcesse o PIPEPED para mais detalhes.\n\nAtenciosamente,\nSistema PIPEPED — Grupo PED',
+        active:true, createdAt:now() },
+      { id:uid(), name:'Tarefa Atrasada', type:'overdue', school:'',
+        subject:'[PIPEPED] ⚠️ Tarefa atrasada: {{task_title}}',
+        body:'Olá {{user_name}},\n\nA tarefa "{{task_title}}" está ATRASADA!\n\n• Prazo original: {{due_date}}\n• Status atual: {{status}}\n• Escola: {{school_name}}\n• Responsável: {{assigned_to}}\n\nPor favor, tome as providências necessárias.\n\nAtenciosamente,\nSistema PIPEPED — Grupo PED',
+        active:true, createdAt:now() },
+      { id:uid(), name:'Novo Lead Comercial', type:'new_lead', school:'',
+        subject:'[PIPEPED] 🎯 Novo lead: {{task_title}}',
+        body:'Olá {{user_name}},\n\nUm novo lead foi registrado no Comercial:\n\n• Lead: {{task_title}}\n• Escola: {{school_name}}\n• Responsável: {{assigned_to}}\n\nEntre em contato o mais rápido possível!\n\nAtenciosamente,\nSistema PIPEPED — Grupo PED',
+        active:true, createdAt:now() },
+      { id:uid(), name:'Aprovação Pendente', type:'approval', school:'',
+        subject:'[PIPEPED] ✅ Aprovação necessária: {{task_title}}',
+        body:'Olá {{user_name}},\n\nHá uma solicitação aguardando sua aprovação:\n\n• Título: {{task_title}}\n• Módulo: {{module}}\n• Escola: {{school_name}}\n• Solicitado por: {{created_by}}\n\nAcesse o PIPEPED para analisar e aprovar.\n\nAtenciosamente,\nSistema PIPEPED — Grupo PED',
+        active:true, createdAt:now() },
+    ];
+    saveEmailTemplates(defaultTpls);
+  }
+  if(!localStorage.getItem('pipeped_auto_rules')){
+    const defaultRules = [
+      { id:uid(), name:'Notificar ao criar tarefa', trigger:'card_created', phase:'', module:'', school:'',
+        actions:{notif:true, email:true, whatsapp:false}, recipient:'responsavel', templateId:'',
+        active:true, createdAt:now(), executionCount:0 },
+      { id:uid(), name:'Notificar ao mudar status', trigger:'card_enter_phase', phase:'', module:'', school:'',
+        actions:{notif:true, email:true, whatsapp:false}, recipient:'responsavel', templateId:'',
+        active:true, createdAt:now(), executionCount:0 },
+      { id:uid(), name:'Alertar gestor sobre atraso', trigger:'card_overdue', phase:'', module:'', school:'',
+        actions:{notif:true, email:true, whatsapp:false}, recipient:'gestor', templateId:'',
+        active:true, createdAt:now(), executionCount:0 },
+      { id:uid(), name:'Notificar equipe - novo lead', trigger:'new_lead', phase:'', module:'comercial', school:'',
+        actions:{notif:true, email:true, whatsapp:false}, recipient:'todos_modulo', templateId:'',
+        active:true, createdAt:now(), executionCount:0 },
+      { id:uid(), name:'Notificar sobre comentário', trigger:'comment_added', phase:'', module:'', school:'',
+        actions:{notif:true, email:false, whatsapp:false}, recipient:'responsavel', templateId:'',
+        active:true, createdAt:now(), executionCount:0 },
+    ];
+    saveAutoRules(defaultRules);
+  }
+  if(!localStorage.getItem('pipeped_email_logs')){
+    saveEmailLogs([]);
+  }
+}
+
+// ─── TEMPLATE ENGINE ─────────────────────────────────────────────────
+function renderTemplate(templateBody, card, recipientUser){
+  const mod = MODULES[card.modulo];
+  const fase = mod?.fases[card.fase];
+  const vars = {
+    '{{user_name}}': recipientUser?.name || 'Usuário',
+    '{{task_title}}': card.titulo || '—',
+    '{{status}}': fase?.label || card.fase || '—',
+    '{{school_name}}': schoolName(card.escola) || '—',
+    '{{due_date}}': card.prazo ? fmtDate(card.prazo) : 'Sem prazo',
+    '{{module}}': mod?.label || card.modulo || '—',
+    '{{priority}}': ({baixa:'Baixa',media:'Média',alta:'Alta',urgente:'Urgente'})[card.prioridade] || '—',
+    '{{assigned_to}}': userName(card.responsavel) || '—',
+    '{{created_by}}': userName(card.criadoPor) || currentUser?.name || '—',
+    '{{comment_text}}': card._lastComment || '',
+  };
+  let result = templateBody || '';
+  Object.entries(vars).forEach(([k,v])=>{ result = result.split(k).join(v); });
+  return result;
+}
+
+// ─── MOCK EMAIL SENDER ───────────────────────────────────────────────
+function sendMockEmail(to, subject, body, card, triggerType){
+  const logs = getEmailLogs();
+  const log = {
+    id: uid(),
+    to: to,
+    toName: typeof to === 'string' ? to : (to?.name||to?.email||'—'),
+    toEmail: typeof to === 'string' ? to : (to?.email||'—'),
+    subject: subject,
+    body: body,
+    status: 'mock',
+    cardId: card?.id || '',
+    cardTitle: card?.titulo || '',
+    module: card?.modulo || '',
+    school: card?.escola || '',
+    triggerType: triggerType || '',
+    sentAt: now(),
+    sentDate: today(),
+  };
+  logs.unshift(log);
+  if(logs.length > 200) logs.splice(200);
+  saveEmailLogs(logs);
+  console.log('[PIPEPED EMAIL MOCK]', {to:log.toEmail, subject, triggerType});
+  return log;
+}
+
+// ─── GET RECIPIENTS BY RULE ──────────────────────────────────────────
+function getRecipientsByRule(rule, card){
+  const recipients = [];
+  switch(rule.recipient){
+    case 'responsavel':
+      if(card.responsavel){ const u=userById(card.responsavel); if(u) recipients.push(u); }
+      break;
+    case 'criador':
+      if(card.criadoPor){ const u=userById(card.criadoPor); if(u) recipients.push(u); }
+      break;
+    case 'gestor':
+      USERS.filter(u=>u.role==='gestor'||u.role==='admin').forEach(u=>{
+        if(!rule.module || getUserModules(u).includes(rule.module||card.modulo)) recipients.push(u);
+      });
+      break;
+    case 'admin':
+      USERS.filter(u=>u.role==='admin').forEach(u=>recipients.push(u));
+      break;
+    case 'todos_modulo':
+      USERS.forEach(u=>{
+        if(getUserModules(u).includes(card.modulo)) recipients.push(u);
+      });
+      break;
+  }
+  // Deduplicate
+  const seen = new Set();
+  return recipients.filter(u=>{
+    if(seen.has(u.id)) return false;
+    seen.add(u.id);
+    return true;
+  });
+}
+
+// ─── AUTOMATION ENGINE (ENHANCED) ────────────────────────────────────
+const NotifEngine = {
+  execute(triggerType, card, extra){
+    if(!card) return;
+    const rules = getAutoRules().filter(r=>r.active);
+    rules.forEach(rule=>{
+      if(rule.trigger !== triggerType) return;
+      // Module filter
+      if(rule.module && rule.module !== card.modulo) return;
+      // School filter
+      if(rule.school && rule.school !== card.escola) return;
+      // Phase filter
+      if(rule.phase && extra?.fase !== rule.phase) return;
+
+      const recipients = getRecipientsByRule(rule, card);
+      if(!recipients.length) return;
+
+      // Find matching template
+      const tpls = getEmailTemplates();
+      let tpl = rule.templateId ? tpls.find(t=>t.id===rule.templateId) : null;
+      if(!tpl){
+        // Auto-match by trigger type
+        const typeMap = { card_created:'new_card', card_enter_phase:'status_change', card_overdue:'overdue', new_lead:'new_lead', comment_added:'new_card', field_updated:'status_change' };
+        tpl = tpls.find(t=>t.type===typeMap[triggerType] && t.active && (!t.school || t.school===card.escola));
+      }
+
+      const triggerLabels = {
+        card_created:'Novo card', card_enter_phase:'Mudança de fase', card_overdue:'Atraso',
+        new_lead:'Novo lead', comment_added:'Comentário', field_updated:'Campo atualizado'
+      };
+
+      recipients.forEach(user=>{
+        // Internal notification
+        if(rule.actions.notif){
+          addNotif(
+            triggerLabels[triggerType]||'Automação',
+            `${card.titulo} — ${MODULES[card.modulo]?.label||card.modulo}`,
+            triggerType === 'card_created' ? 'create' :
+            triggerType === 'card_enter_phase' ? 'move' :
+            triggerType === 'comment_added' ? 'comment' : 'update'
+          );
+        }
+
+        // Mock email
+        if(rule.actions.email && tpl){
+          const subject = renderTemplate(tpl.subject, card, user);
+          const body = renderTemplate(tpl.body, card, user);
+          sendMockEmail(user, subject, body, card, triggerType);
+        }
+      });
+
+      // Update execution count
+      const allRules = getAutoRules();
+      const rr = allRules.find(r=>r.id===rule.id);
+      if(rr){ rr.executionCount = (rr.executionCount||0)+1; rr.lastRun = now(); }
+      saveAutoRules(allRules);
+    });
+  },
+
+  // Check overdue cards (called periodically)
+  checkOverdue(){
+    const t = today();
+    allCards.forEach(card=>{
+      const mod = MODULES[card.modulo];
+      if(!mod) return;
+      if(card.fase === mod.lastPhase) return;
+      if(card.prazo && card.prazo < t){
+        // Only fire once per day — use a flag
+        const flag = 'overdue_notif_'+card.id+'_'+t;
+        if(localStorage.getItem(flag)) return;
+        localStorage.setItem(flag, '1');
+        NotifEngine.execute('card_overdue', card, {});
+      }
+    });
+  }
+};
+
+// ─── BUILD NOTIFICATION CENTER PAGE ──────────────────────────────────
+function buildNotifCenter(){
+  initEmailSystem();
+  const logs = getEmailLogs();
+  const tpls = getEmailTemplates();
+  const rules = getAutoRules();
+  const unreadCount = notifications.filter(n=>!n.read).length;
+
+  let content = '';
+  if(ncTab==='all' || ncTab==='unread') content = buildNCNotifList(ncTab==='unread');
+  else if(ncTab==='emails') content = buildNCEmailLogs(logs);
+  else if(ncTab==='templates') content = buildNCTemplates(tpls);
+  else if(ncTab==='automations') content = buildNCAutomations(rules);
+
+  return `<div class="nc-wrap">
+    <div class="nc-header">
+      <div>
+        <h2>Central de Notificações</h2>
+        <p style="color:var(--muted);font-size:13px;margin-top:4px">Gerencie notificações, e-mails, templates e automações do sistema.</p>
+      </div>
+      <div class="nc-header-actions">
+        <button class="btn-ghost" style="padding:8px 14px;font-size:12px" onclick="checkOverdueManual()">⚡ Verificar Atrasos</button>
+      </div>
+    </div>
+    <div class="nc-stats">
+      <div class="nc-stat"><div class="nc-stat-value" style="color:var(--accent)">${notifications.length}</div><div class="nc-stat-label">Notificações</div></div>
+      <div class="nc-stat"><div class="nc-stat-value" style="color:var(--warn)">${unreadCount}</div><div class="nc-stat-label">Não Lidas</div></div>
+      <div class="nc-stat"><div class="nc-stat-value" style="color:var(--info)">${logs.length}</div><div class="nc-stat-label">E-mails Enviados</div></div>
+      <div class="nc-stat"><div class="nc-stat-value" style="color:var(--ok)">${rules.filter(r=>r.active).length}/${rules.length}</div><div class="nc-stat-label">Automações Ativas</div></div>
+      <div class="nc-stat"><div class="nc-stat-value" style="color:var(--contratos)">${tpls.length}</div><div class="nc-stat-label">Templates</div></div>
+    </div>
+    <div class="nc-tabs">
+      <div class="nc-tab ${ncTab==='all'?'active':''}" onclick="ncTab='all';renderPage()">📋 Todas</div>
+      <div class="nc-tab ${ncTab==='unread'?'active':''}" onclick="ncTab='unread';renderPage()">🔔 Não Lidas (${unreadCount})</div>
+      <div class="nc-tab ${ncTab==='emails'?'active':''}" onclick="ncTab='emails';renderPage()">📩 Log de E-mails (${logs.length})</div>
+      <div class="nc-tab ${ncTab==='templates'?'active':''}" onclick="ncTab='templates';renderPage()">🧩 Templates (${tpls.length})</div>
+      <div class="nc-tab ${ncTab==='automations'?'active':''}" onclick="ncTab='automations';renderPage()">⚙️ Automações (${rules.length})</div>
+    </div>
+    ${content}
+  </div>`;
+}
+
+// ─── NOTIFICATION LIST VIEW ──────────────────────────────────────────
+function buildNCNotifList(onlyUnread){
+  const items = onlyUnread ? notifications.filter(n=>!n.read) : notifications;
+  if(!items.length) return '<div class="nc-empty">Nenhuma notificação' + (onlyUnread?' não lida':'') + '.</div>';
+  const icons = { create:{icon:'🆕',bg:'#ECFDF5',color:'#059669'}, update:{icon:'✏️',bg:'#EFF6FF',color:'#3B82F6'}, move:{icon:'↗️',bg:'#F5F3FF',color:'#8B5CF6'}, comment:{icon:'💬',bg:'#FEF3C7',color:'#F59E0B'} };
+  return `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;gap:8px">
+      <button class="btn-ghost" style="padding:6px 12px;font-size:12px" onclick="markAllNotifRead()">Marcar todas como lidas</button>
+      <button class="btn-ghost" style="padding:6px 12px;font-size:12px;color:var(--err)" onclick="clearAllNotifs()">Limpar todas</button>
+    </div>
+    <div class="nc-list">
+      ${items.slice(0,50).map(n=>{
+        const ic = icons[n.type]||{icon:'🔔',bg:'var(--accent-l)',color:'var(--accent)'};
+        return `<div class="nc-item ${n.read?'':'unread'}" onclick="markNotifRead('${n.id}')">
+          <div class="nc-item-icon" style="background:${ic.bg};color:${ic.color}">${ic.icon}</div>
+          <div class="nc-item-body">
+            <div class="nc-item-title">${esc(n.title)}</div>
+            <div class="nc-item-desc">${esc(n.body)}</div>
+            <div class="nc-item-meta">
+              <span>${esc(n.time)}</span>
+              ${!n.read ? '<span class="nc-item-badge" style="background:var(--accent-l);color:var(--accent)">Nova</span>' : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function markNotifRead(id){ const n=notifications.find(x=>x.id===id); if(n) n.read=true; save(); renderNotifBell(); renderPage(); }
+function markAllNotifRead(){ notifications.forEach(n=>n.read=true); save(); renderNotifBell(); renderPage(); showToast('Todas marcadas como lidas'); }
+function clearAllNotifs(){ notifications=[]; save(); renderNotifBell(); renderPage(); showToast('Notificações limpas','warn'); }
+function checkOverdueManual(){ NotifEngine.checkOverdue(); showToast('Verificação de atrasos concluída'); renderPage(); }
+
+// ─── EMAIL LOGS VIEW ─────────────────────────────────────────────────
+function buildNCEmailLogs(logs){
+  if(!logs.length) return '<div class="nc-empty">Nenhum e-mail enviado ainda.<br>Os e-mails serão registrados aqui quando as automações forem acionadas.</div>';
+  return `
+    <div style="overflow-x:auto">
+    <table class="email-log-table">
+      <thead><tr><th>Data/Hora</th><th>Destinatário</th><th>Assunto</th><th>Módulo</th><th>Escola</th><th>Gatilho</th><th>Status</th></tr></thead>
+      <tbody>
+        ${logs.slice(0,100).map(l=>{
+          const triggerLabels = { card_created:'Novo card', card_enter_phase:'Mudança fase', card_overdue:'Atraso', new_lead:'Novo lead', comment_added:'Comentário', field_updated:'Campo atualizado' };
+          return `<tr>
+            <td style="white-space:nowrap;font-size:11px;color:var(--muted)">${esc(l.sentAt)}</td>
+            <td><div style="font-weight:500">${esc(l.toName)}</div><div style="font-size:10px;color:var(--faint)">${esc(l.toEmail)}</div></td>
+            <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(l.subject)}">${esc(l.subject)}</td>
+            <td>${esc(MODULES[l.module]?.shortLabel||l.module||'—')}</td>
+            <td style="font-size:11px">${esc(schoolName(l.school)||'—')}</td>
+            <td style="font-size:11px">${esc(triggerLabels[l.triggerType]||l.triggerType||'—')}</td>
+            <td><span class="email-status ${l.status}">${l.status==='mock'?'Mock':'Enviado'}</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+    <p style="font-size:11px;color:var(--faint);margin-top:12px;text-align:center">E-mails em modo MOCK — nenhum envio real é feito. Ative um provedor SMTP ou SendGrid para envio real.</p>`;
+}
+
+// ─── TEMPLATES VIEW ──────────────────────────────────────────────────
+function buildNCTemplates(tpls){
+  const typeLabels = { new_card:'Nova Tarefa', status_change:'Mudança Status', overdue:'Atraso', new_lead:'Novo Lead', approval:'Aprovação', assignment:'Atribuição', comment:'Comentário', custom:'Personalizado' };
+  const typeColors = { new_card:'#ECFDF5;color:#059669', status_change:'#EFF6FF;color:#3B82F6', overdue:'#FEF2F2;color:#DC2626', new_lead:'#ECFDF5;color:#065F46', approval:'#F5F3FF;color:#8B5CF6', assignment:'#FEF3C7;color:#92400E', comment:'#FEF3C7;color:#B45309', custom:'var(--surface);color:var(--muted)' };
+  return `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openTplEditor()">+ Novo Template</button>
+    </div>
+    <div class="tpl-grid">
+      ${tpls.map(t=>{
+        const vars = (t.body||'').match(/\{\{[^}]+\}\}/g)||[];
+        return `<div class="tpl-card">
+          <div class="tpl-card-header">
+            <div class="tpl-card-title">${esc(t.name)}</div>
+            <span class="tpl-card-type" style="background:${typeColors[t.type]||typeColors.custom}">${esc(typeLabels[t.type]||t.type)}</span>
+          </div>
+          <div class="tpl-card-body">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px"><strong>Assunto:</strong> ${esc(t.subject)}</div>
+            ${t.school ? '<div style="font-size:11px;margin-bottom:6px"><strong>Escola:</strong> '+esc(schoolName(t.school))+'</div>' : ''}
+            <div style="margin-bottom:6px">
+              ${vars.map(v=>'<span class="tpl-var">'+esc(v)+'</span>').join('')}
+            </div>
+            <div class="tpl-card-preview">${esc(t.body||'').substring(0,200)}${(t.body||'').length>200?'...':''}</div>
+          </div>
+          <div class="tpl-card-footer">
+            <button class="btn-action btn-action-edit" onclick="openTplEditor('${t.id}')">Editar</button>
+            <button class="btn-action btn-action-delete" onclick="deleteTpl('${t.id}')">Excluir</button>
+            <div style="flex:1"></div>
+            <span style="font-size:10px;color:var(--faint);align-self:center">${t.active?'✅ Ativo':'⏸ Inativo'}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ─── AUTOMATIONS VIEW ────────────────────────────────────────────────
+function buildNCAutomations(rules){
+  const triggerLabels = { card_created:'Card criado', card_enter_phase:'Card muda de fase', card_overdue:'Card atrasado', field_updated:'Campo atualizado', new_lead:'Novo lead', comment_added:'Comentário adicionado' };
+  const recipientLabels = { responsavel:'Responsável', criador:'Criador', gestor:'Gestores', admin:'Admins', todos_modulo:'Todos do módulo' };
+  return `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openAutoEditor()">+ Nova Automação</button>
+    </div>
+    <div class="auto-rules-list">
+      ${rules.map(r=>{
+        const actions = [];
+        if(r.actions.notif) actions.push('🔔 Notificação');
+        if(r.actions.email) actions.push('📩 E-mail');
+        if(r.actions.whatsapp) actions.push('📱 WhatsApp');
+        return `<div class="auto-rule">
+          <div class="auto-rule-header">
+            <div class="auto-rule-name">${esc(r.name)}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="auto-rule-status ${r.active?'active':'inactive'}">${r.active?'Ativo':'Inativo'}</span>
+              <label class="toggle-switch" style="margin:0">
+                <input type="checkbox" ${r.active?'checked':''} onchange="toggleAutoRule('${r.id}',this.checked)">
+                <span class="toggle-switch-bg"></span>
+                <span class="toggle-switch-dot"></span>
+              </label>
+            </div>
+          </div>
+          <div class="auto-rule-flow">
+            <span class="auto-rule-step trigger">⚡ ${esc(triggerLabels[r.trigger]||r.trigger)}</span>
+            <span class="auto-rule-arrow">→</span>
+            ${r.module ? '<span class="auto-rule-step condition">📦 '+esc(MODULES[r.module]?.shortLabel||r.module)+'</span><span class="auto-rule-arrow">→</span>' : ''}
+            ${r.school ? '<span class="auto-rule-step condition">🏫 '+esc(schoolName(r.school))+'</span><span class="auto-rule-arrow">→</span>' : ''}
+            <span class="auto-rule-step action">📬 ${esc(recipientLabels[r.recipient]||r.recipient)}</span>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+            ${actions.map(a=>'<span style="font-size:11px;padding:3px 8px;background:var(--surface);border-radius:9999px;color:var(--muted);border:1px solid var(--border)">'+a+'</span>').join('')}
+          </div>
+          <div class="auto-rule-meta">
+            <span>Execuções: <strong>${r.executionCount||0}</strong></span>
+            ${r.lastRun ? '<span>Última: '+esc(r.lastRun)+'</span>' : ''}
+            <span>Criado: ${esc(r.createdAt||'—')}</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <button class="btn-action btn-action-edit" onclick="openAutoEditor('${r.id}')">Editar</button>
+            <button class="btn-action btn-action-delete" onclick="deleteAutoRule('${r.id}')">Excluir</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ─── TEMPLATE EDITOR ─────────────────────────────────────────────────
+function openTplEditor(id){
+  editingTplId = id || null;
+  const overlay = document.getElementById('tplEditorOverlay');
+  // Populate school select
+  const schoolSel = document.getElementById('tplSchool');
+  schoolSel.innerHTML = '<option value="">Global (todas as escolas)</option>' + SCHOOLS.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('');
+
+  if(id){
+    const tpl = getEmailTemplates().find(t=>t.id===id);
+    if(!tpl){ showToast('Template não encontrado','error'); return; }
+    document.getElementById('tplEditorTitle').textContent = 'Editar Template';
+    document.getElementById('tplName').value = tpl.name||'';
+    document.getElementById('tplType').value = tpl.type||'custom';
+    document.getElementById('tplSubject').value = tpl.subject||'';
+    document.getElementById('tplSchool').value = tpl.school||'';
+    document.getElementById('tplBody').value = tpl.body||'';
+  } else {
+    document.getElementById('tplEditorTitle').textContent = 'Novo Template';
+    document.getElementById('tplName').value = '';
+    document.getElementById('tplType').value = 'custom';
+    document.getElementById('tplSubject').value = '';
+    document.getElementById('tplSchool').value = '';
+    document.getElementById('tplBody').value = '';
+  }
+  overlay.classList.add('active');
+}
+function closeTplEditor(){
+  document.getElementById('tplEditorOverlay').classList.remove('active');
+  editingTplId = null;
+}
+function insertTplVar(v){
+  const ta = document.getElementById('tplBody');
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  ta.value = ta.value.substring(0,start) + v + ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = start + v.length;
+}
+function saveTplEditor(){
+  const name = document.getElementById('tplName').value.trim();
+  if(!name){ showToast('Informe o nome do template','error'); return; }
+  const tpls = getEmailTemplates();
+  const data = {
+    name,
+    type: document.getElementById('tplType').value,
+    subject: document.getElementById('tplSubject').value.trim(),
+    school: document.getElementById('tplSchool').value,
+    body: document.getElementById('tplBody').value,
+    active: true,
+  };
+  if(editingTplId){
+    const idx = tpls.findIndex(t=>t.id===editingTplId);
+    if(idx>=0) Object.assign(tpls[idx], data);
+  } else {
+    tpls.push({ id:uid(), ...data, createdAt:now() });
+  }
+  saveEmailTemplates(tpls);
+  closeTplEditor();
+  showToast(editingTplId?'Template atualizado!':'Template criado!');
+  logAudit('template_save','settings',name);
+  renderPage();
+}
+function deleteTpl(id){
+  if(!confirm('Excluir este template?')) return;
+  const tpls = getEmailTemplates().filter(t=>t.id!==id);
+  saveEmailTemplates(tpls);
+  showToast('Template excluído','warn');
+  renderPage();
+}
+
+// ─── AUTOMATION EDITOR ───────────────────────────────────────────────
+function openAutoEditor(id){
+  editingAutoId = id || null;
+  const overlay = document.getElementById('autoEditorOverlay');
+  // Populate module select
+  const modSel = document.getElementById('autoRuleModule');
+  modSel.innerHTML = '<option value="">Todos os módulos</option>' + Object.keys(MODULES).map(k=>'<option value="'+k+'">'+esc(MODULES[k].label)+'</option>').join('');
+  // Populate school select
+  const schoolSel = document.getElementById('autoRuleSchool');
+  schoolSel.innerHTML = '<option value="">Todas as escolas</option>' + SCHOOLS.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('');
+  // Populate template select
+  const tplSel = document.getElementById('autoRuleTemplate');
+  const tpls = getEmailTemplates();
+  tplSel.innerHTML = '<option value="">Nenhum (usar padrão)</option>' + tpls.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');
+
+  if(id){
+    const rule = getAutoRules().find(r=>r.id===id);
+    if(!rule){ showToast('Automação não encontrada','error'); return; }
+    document.getElementById('autoEditorTitle').textContent = 'Editar Automação';
+    document.getElementById('autoRuleName').value = rule.name||'';
+    document.getElementById('autoRuleTrigger').value = rule.trigger||'card_created';
+    document.getElementById('autoRuleModule').value = rule.module||'';
+    document.getElementById('autoRuleSchool').value = rule.school||'';
+    document.getElementById('autoRuleRecipient').value = rule.recipient||'responsavel';
+    document.getElementById('autoRuleTemplate').value = rule.templateId||'';
+    document.getElementById('autoActNotif').checked = rule.actions?.notif !== false;
+    document.getElementById('autoActEmail').checked = rule.actions?.email === true;
+    onAutoTriggerChange();
+    if(rule.phase) document.getElementById('autoRulePhase').value = rule.phase;
+  } else {
+    document.getElementById('autoEditorTitle').textContent = 'Nova Automação';
+    document.getElementById('autoRuleName').value = '';
+    document.getElementById('autoRuleTrigger').value = 'card_created';
+    document.getElementById('autoRuleModule').value = '';
+    document.getElementById('autoRuleSchool').value = '';
+    document.getElementById('autoRuleRecipient').value = 'responsavel';
+    document.getElementById('autoRuleTemplate').value = '';
+    document.getElementById('autoActNotif').checked = true;
+    document.getElementById('autoActEmail').checked = false;
+    onAutoTriggerChange();
+  }
+  overlay.classList.add('active');
+}
+function closeAutoEditor(){
+  document.getElementById('autoEditorOverlay').classList.remove('active');
+  editingAutoId = null;
+}
+function onAutoTriggerChange(){
+  const trigger = document.getElementById('autoRuleTrigger').value;
+  const phaseGroup = document.getElementById('autoPhaseGroup');
+  if(trigger === 'card_enter_phase'){
+    phaseGroup.style.display = 'block';
+    const mod = document.getElementById('autoRuleModule').value;
+    const phaseSel = document.getElementById('autoRulePhase');
+    let html = '<option value="">Qualquer fase</option>';
+    if(mod && MODULES[mod]){
+      Object.entries(MODULES[mod].fases).forEach(([k,v])=>{
+        html += '<option value="'+k+'">'+esc(v.label)+'</option>';
+      });
+    } else {
+      // All phases from all modules
+      const seen = new Set();
+      Object.values(MODULES).forEach(m=>{
+        Object.entries(m.fases).forEach(([k,v])=>{
+          if(!seen.has(k)){ seen.add(k); html += '<option value="'+k+'">'+esc(v.label)+'</option>'; }
+        });
+      });
+    }
+    phaseSel.innerHTML = html;
+  } else {
+    phaseGroup.style.display = 'none';
+  }
+}
+function saveAutoEditor(){
+  const name = document.getElementById('autoRuleName').value.trim();
+  if(!name){ showToast('Informe o nome da automação','error'); return; }
+  const rules = getAutoRules();
+  const data = {
+    name,
+    trigger: document.getElementById('autoRuleTrigger').value,
+    phase: document.getElementById('autoRulePhase')?.value || '',
+    module: document.getElementById('autoRuleModule').value,
+    school: document.getElementById('autoRuleSchool').value,
+    actions: {
+      notif: document.getElementById('autoActNotif').checked,
+      email: document.getElementById('autoActEmail').checked,
+      whatsapp: false,
+    },
+    recipient: document.getElementById('autoRuleRecipient').value,
+    templateId: document.getElementById('autoRuleTemplate').value,
+    active: true,
+  };
+  if(editingAutoId){
+    const idx = rules.findIndex(r=>r.id===editingAutoId);
+    if(idx>=0) Object.assign(rules[idx], data);
+  } else {
+    rules.push({ id:uid(), ...data, createdAt:now(), executionCount:0 });
+  }
+  saveAutoRules(rules);
+  closeAutoEditor();
+  showToast(editingAutoId?'Automação atualizada!':'Automação criada!');
+  logAudit('automation_save','settings',name);
+  renderPage();
+}
+function deleteAutoRule(id){
+  if(!confirm('Excluir esta automação?')) return;
+  const rules = getAutoRules().filter(r=>r.id!==id);
+  saveAutoRules(rules);
+  showToast('Automação excluída','warn');
+  renderPage();
+}
+function toggleAutoRule(id, active){
+  const rules = getAutoRules();
+  const r = rules.find(x=>x.id===id);
+  if(r) r.active = active;
+  saveAutoRules(rules);
+  showToast(active?'Automação ativada':'Automação desativada','warn');
+}
+
 // ─── BADGES ───────────────────────────────────────────────────────────
 function updateBadges(){
   Object.keys(MODULES).forEach(mod=>{
@@ -3129,6 +3753,13 @@ function updateBadges(){
     }
   });
   renderNotifBell();
+  // Notification center badge
+  const ncBadge = document.getElementById('badge-notif_center');
+  if(ncBadge){
+    const unread = notifications.filter(n=>!n.read).length;
+    ncBadge.textContent = unread||'';
+    ncBadge.dataset.count = unread;
+  }
 }
 
 // ─── SEARCH / FILTER ──────────────────────────────────────────────────
@@ -3176,6 +3807,11 @@ document.addEventListener('keydown',e=>{
   load();
   if(!allCards.length) seedData();
   initSettingsData();
+  initEmailSystem();
   document.getElementById('notifPanel').style.display='none';
+  // Check overdue cards once on load (with delay so UI loads first)
+  setTimeout(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 3000);
+  // Periodic overdue check every 5 minutes
+  setInterval(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 300000);
 })();
 </script></body></html>
