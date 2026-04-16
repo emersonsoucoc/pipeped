@@ -3992,22 +3992,35 @@ function buildNfeDatabaseTab(){
 function buildNfeImportTab(){
   return `
   <div class="nf-section">
-    <h4>📥 Importar Base de Dados</h4>
+    <h4>📥 Importar Arquivo XML (NF-e / NFS-e)</h4>
     <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
-      Importe registros a partir de um arquivo CSV com as colunas:<br>
-      <code style="font-size:11px;background:var(--surface);padding:2px 6px;border-radius:4px">matricula, aluno, contratante, rg, cpf, contratada, documento, vencimento, valor, data_pagamento, turma, escola</code>
+      Importe arquivos <strong>XML de notas fiscais</strong> (NF-e, NFS-e, CT-e) ou <strong>múltiplos XMLs</strong> de uma vez.<br>
+      O sistema extrai automaticamente: destinatário, CPF/CNPJ, valor, produtos/serviços.
     </p>
-    <div style="border:2px dashed var(--border);border-radius:var(--r);padding:32px;text-align:center;background:var(--surface);cursor:pointer" onclick="document.getElementById('nfeCsvInput').click()">
+    <div style="border:2px dashed #0EA5E9;border-radius:var(--r);padding:32px;text-align:center;background:#F0F9FF;cursor:pointer" onclick="document.getElementById('nfeXmlInput').click()">
+      <input type="file" id="nfeXmlInput" accept=".xml" multiple style="display:none" onchange="importNfeXml(this)">
+      <div style="font-size:32px;margin-bottom:8px">📋</div>
+      <div style="font-size:14px;font-weight:700;color:#0369A1">Clique para selecionar arquivos XML</div>
+      <div style="font-size:12px;color:#0EA5E9;margin-top:4px">Aceita múltiplos arquivos · NF-e, NFS-e, CT-e</div>
+    </div>
+    <div id="nfeXmlPreview" style="margin-top:12px"></div>
+  </div>
+
+  <div class="nf-section">
+    <h4>📄 Importar CSV</h4>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">
+      Formato: <code style="font-size:11px;background:var(--surface);padding:2px 6px;border-radius:4px">matricula, aluno, contratante, rg, cpf, contratada, documento, vencimento, valor, data_pagamento, turma, escola</code>
+    </p>
+    <div style="border:2px dashed var(--border);border-radius:var(--r);padding:24px;text-align:center;background:var(--surface);cursor:pointer" onclick="document.getElementById('nfeCsvInput').click()">
       <input type="file" id="nfeCsvInput" accept=".csv,.txt" style="display:none" onchange="importNfeCsv(this)">
-      <div style="font-size:24px;margin-bottom:8px">📄</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text)">Clique para selecionar arquivo CSV</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">ou arraste e solte aqui</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text)">📄 Selecionar arquivo CSV</div>
     </div>
   </div>
+
   <div class="nf-section">
     <h4>✏️ Adicionar em Lote (colar dados)</h4>
     <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Cole os dados do relatório no formato: uma linha por registro, colunas separadas por TAB ou ponto-e-vírgula.</p>
-    <textarea id="nfeBulkText" rows="8" style="width:100%;font-size:12px;font-family:monospace;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm)" placeholder="3218&#9;LAVINIA DE MOURA OLIVEIRA&#9;ALINE REGINA TURCO DE MOURA&#9;11025796-1&#9;080.309.139-74&#9;20.963.324/0001-32&#9;95090/2026&#9;10/04/2026&#9;436,36&#9;08/04/2026"></textarea>
+    <textarea id="nfeBulkText" rows="6" style="width:100%;font-size:12px;font-family:monospace;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm)" placeholder="3218&#9;LAVINIA DE MOURA OLIVEIRA&#9;ALINE REGINA TURCO DE MOURA&#9;11025796-1&#9;080.309.139-74&#9;20.963.324/0001-32&#9;95090/2026&#9;10/04/2026&#9;436,36&#9;08/04/2026"></textarea>
     <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
       <select id="nfeBulkSchool" style="font-size:12px;padding:7px 12px">
         <option value="">Selecione a escola</option>
@@ -4047,6 +4060,187 @@ function importNfeCsv(input){
     renderPage();
   };
   reader.readAsText(file, 'UTF-8');
+}
+
+// ─── XML IMPORT (NF-e / NFS-e) ────────────────────────────────────────
+function importNfeXml(input){
+  const files = input.files;
+  if(!files || files.length===0) return;
+  let totalImported = 0;
+  let totalFiles = files.length;
+  let processed = 0;
+
+  Array.from(files).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(e.target.result, 'text/xml');
+        const parseError = xml.querySelector('parsererror');
+        if(parseError){ showToast('Erro no XML: '+file.name,'error'); processed++; return; }
+
+        const entries = parseNfeXml(xml, file.name);
+        entries.forEach(entry=>{ nfeDatabase.push(entry); totalImported++; });
+      } catch(err){
+        showToast('Erro ao processar: '+file.name,'error');
+      }
+      processed++;
+      if(processed===totalFiles){
+        saveNfeData();
+        showToast(`${totalImported} registro(s) importados de ${totalFiles} arquivo(s)!`);
+        renderPage();
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
+}
+
+function parseNfeXml(xml, fileName){
+  const entries = [];
+  // Helper: get text from XML tag (handles namespaces)
+  const getTag = (parent, tag) => {
+    // Try direct, then with namespace prefix
+    let el = parent.getElementsByTagName(tag)[0];
+    if(!el) el = parent.getElementsByTagName('nfe:'+tag)[0];
+    if(!el) el = parent.getElementsByTagName('ns2:'+tag)[0];
+    if(!el){
+      // Try case-insensitive search in all elements
+      const all = parent.getElementsByTagName('*');
+      for(let i=0;i<all.length;i++){
+        if(all[i].localName===tag || all[i].localName.toLowerCase()===tag.toLowerCase()){
+          el = all[i]; break;
+        }
+      }
+    }
+    return el?.textContent?.trim()||'';
+  };
+
+  // ─── NF-e (Nota Fiscal Eletrônica de Produto) ───────────
+  const nfeProcs = xml.getElementsByTagName('nfeProc');
+  const infNFes = xml.getElementsByTagName('infNFe');
+  const NFes = nfeProcs.length > 0 ? nfeProcs : (infNFes.length > 0 ? [xml] : []);
+
+  if(NFes.length > 0){
+    // Find dest (destinatário) and products
+    const dest = xml.getElementsByTagName('dest')[0];
+    const emit = xml.getElementsByTagName('emit')[0];
+    const dets = xml.getElementsByTagName('det');
+    const ICMSTot = xml.getElementsByTagName('ICMSTot')[0];
+    const ide = xml.getElementsByTagName('ide')[0];
+
+    if(dest){
+      const cpfDest = getTag(dest,'CPF') || getTag(dest,'CNPJ');
+      const nomeDest = getTag(dest,'xNome');
+      const nNF = ide ? getTag(ide,'nNF') : '';
+      const dhEmi = ide ? getTag(ide,'dhEmi') : '';
+      const vNF = ICMSTot ? getTag(ICMSTot,'vNF') : '';
+
+      // Import each product as separate entry OR group by dest
+      if(dets.length > 0){
+        Array.from(dets).forEach(det=>{
+          const prod = det.getElementsByTagName('prod')[0];
+          if(!prod) return;
+          entries.push({
+            id: uid(),
+            aluno: nomeDest,
+            contratante: nomeDest,
+            cpf: formatCpfCnpj(cpfDest),
+            rg: '',
+            matricula: '',
+            contratada: emit ? formatCpfCnpj(getTag(emit,'CNPJ')) : '',
+            documento: nNF,
+            vencimento: dhEmi ? dhEmi.split('T')[0].split('-').reverse().join('/') : '',
+            valor: getTag(prod,'vProd') || '0',
+            dataPagamento: '',
+            turma: '',
+            escola: '',
+            descricao: getTag(prod,'xProd'),
+            ncm: getTag(prod,'NCM'),
+            cfop: getTag(prod,'CFOP'),
+            quantidade: getTag(prod,'qCom'),
+            unidade: getTag(prod,'uCom'),
+            _xmlFile: fileName,
+            _nfNumero: nNF,
+            _nfChave: getTag(xml.getElementsByTagName('infProt')[0]||xml,'chNFe'),
+          });
+        });
+      } else {
+        // No products detail — import as single entry
+        entries.push({
+          id: uid(), aluno: nomeDest, contratante: nomeDest,
+          cpf: formatCpfCnpj(cpfDest), rg:'', matricula:'',
+          contratada: emit ? formatCpfCnpj(getTag(emit,'CNPJ')) : '',
+          documento: nNF, vencimento: dhEmi ? dhEmi.split('T')[0].split('-').reverse().join('/') : '',
+          valor: vNF||'0', dataPagamento:'', turma:'', escola:'',
+          _xmlFile: fileName, _nfNumero: nNF,
+        });
+      }
+    }
+  }
+
+  // ─── NFS-e (Nota Fiscal de Serviço) ───────────────────────
+  const compNfse = xml.getElementsByTagName('CompNfse');
+  const infNfse = xml.getElementsByTagName('InfNfse');
+  const nfseList = compNfse.length > 0 ? compNfse : (infNfse.length > 0 ? infNfse : []);
+
+  Array.from(nfseList).forEach(nfse=>{
+    const tomador = nfse.getElementsByTagName('Tomador')[0] || nfse.getElementsByTagName('TomadorServico')[0];
+    const servico = nfse.getElementsByTagName('Servico')[0];
+    const valores = nfse.getElementsByTagName('Valores')[0];
+    const identNfse = nfse.getElementsByTagName('IdentificacaoNfse')[0];
+
+    const cpfTom = tomador ? (getTag(tomador,'Cpf') || getTag(tomador,'Cnpj') || getTag(tomador,'CPF') || getTag(tomador,'CNPJ')) : '';
+    const nomeTom = tomador ? (getTag(tomador,'RazaoSocial') || getTag(tomador,'Nome')) : '';
+    const numero = identNfse ? getTag(identNfse,'Numero') : getTag(nfse,'Numero');
+    const dtEmissao = getTag(nfse,'DataEmissao') || getTag(nfse,'dhEmi');
+    const valorServ = valores ? (getTag(valores,'ValorServicos') || getTag(valores,'ValorLiquidoNfse')) : '';
+    const descServ = servico ? (getTag(servico,'Discriminacao') || getTag(servico,'xServ')) : '';
+
+    entries.push({
+      id: uid(), aluno: nomeTom, contratante: nomeTom,
+      cpf: formatCpfCnpj(cpfTom), rg:'', matricula:'',
+      contratada: '', documento: numero,
+      vencimento: dtEmissao ? dtEmissao.split('T')[0].split('-').reverse().join('/') : '',
+      valor: valorServ||'0', dataPagamento:'', turma:'', escola:'',
+      descricao: descServ, _xmlFile: fileName, _nfNumero: numero,
+    });
+  });
+
+  // ─── Fallback: generic XML with recognizable tags ───────────
+  if(entries.length===0){
+    // Try to find any recognizable data
+    const items = xml.getElementsByTagName('item').length > 0 ? xml.getElementsByTagName('item') :
+                  xml.getElementsByTagName('registro').length > 0 ? xml.getElementsByTagName('registro') :
+                  xml.getElementsByTagName('row').length > 0 ? xml.getElementsByTagName('row') : [];
+    Array.from(items).forEach(item=>{
+      const nome = getTag(item,'nome') || getTag(item,'aluno') || getTag(item,'razaoSocial') || getTag(item,'xNome');
+      const cpf = getTag(item,'cpf') || getTag(item,'CPF') || getTag(item,'cnpj') || getTag(item,'CNPJ');
+      const valor = getTag(item,'valor') || getTag(item,'vNF') || getTag(item,'total');
+      if(nome || cpf){
+        entries.push({
+          id: uid(), aluno: nome, contratante: nome, cpf: formatCpfCnpj(cpf),
+          rg:'', matricula: getTag(item,'matricula')||'',
+          contratada:'', documento: getTag(item,'documento')||getTag(item,'numero')||'',
+          vencimento: getTag(item,'vencimento')||'', valor: valor||'0',
+          dataPagamento: getTag(item,'dataPagamento')||'', turma: getTag(item,'turma')||'',
+          escola: getTag(item,'escola')||'', _xmlFile: fileName,
+        });
+      }
+    });
+  }
+
+  if(entries.length===0){
+    showToast('Nenhum dado reconhecido em: '+fileName,'warn');
+  }
+  return entries;
+}
+
+function formatCpfCnpj(val){
+  if(!val) return '';
+  const d = val.replace(/\D/g,'');
+  if(d.length===11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+  if(d.length===14) return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5');
+  return val;
 }
 
 function importNfeBulk(){
