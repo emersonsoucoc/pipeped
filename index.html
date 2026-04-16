@@ -4626,20 +4626,17 @@ function nfStatusLabel(s){
   return map[s]||s||'Rascunho';
 }
 
-// ─── FOCUS NFE API INTEGRATION ────────────────────────────────────────
-function getFocusBaseUrl(){
-  return nfeConfig.ambiente==='producao' ? 'https://api.focusnfe.com.br' : 'https://homologacao.focusnfe.com.br';
-}
-
+// ─── FOCUS NFE API INTEGRATION (via backend proxy) ────────────────────
 async function focusApi(method, path, body){
-  const base = getFocusBaseUrl();
+  const proxyBase = '/api/focusnfe';
   const headers = {
-    'Authorization': 'Basic ' + btoa(nfeConfig.token + ':'),
     'Content-Type': 'application/json',
+    'X-Focus-Token': nfeConfig.token || '',
+    'X-Focus-Ambiente': nfeConfig.ambiente || 'homologacao',
   };
   const opts = { method, headers };
   if(body) opts.body = JSON.stringify(body);
-  const res = await fetch(base + path, opts);
+  const res = await fetch(proxyBase + path, opts);
   const data = await res.json().catch(()=>({}));
   return { ok: res.ok, status: res.status, data };
 }

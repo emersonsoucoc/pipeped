@@ -123,6 +123,41 @@ app.post('/api/webhook/clicksign',express.raw({type:'*/*',limit:'2mb'}),async(re
 
 app.get('/health',(_,res)=>res.json({status:'ok',ts:new Date().toISOString(),clicksign:!!process.env.CLICKSIGN_TOKEN,drive:DRIVE_ENABLED}));
 
+/* ── Focus NFe Proxy (NF-e / NFS-e) ─────────────────────────────────────── */
+app.all('/api/focusnfe/*', async (req, res) => {
+  try {
+    const token = req.headers['x-focus-token'];
+    const ambiente = req.headers['x-focus-ambiente'] || 'homologacao';
+    if (!token) return res.status(400).json({ error: 'Token Focus NFe não informado' });
+
+    const baseUrl = ambiente === 'producao'
+      ? 'https://api.focusnfe.com.br'
+      : 'https://homologacao.focusnfe.com.br';
+
+    // Strip /api/focusnfe prefix to get the real Focus path
+    const focusPath = req.originalUrl.replace('/api/focusnfe', '');
+
+    const config = {
+      method: req.method.toLowerCase(),
+      url: baseUrl + focusPath,
+      headers: {
+        'Authorization': 'Basic ' + Buffer.from(token + ':').toString('base64'),
+        'Content-Type': 'application/json',
+      },
+      validateStatus: () => true, // Don't throw on 4xx/5xx
+    };
+    if (['post', 'put', 'patch', 'delete'].includes(config.method) && req.body) {
+      config.data = req.body;
+    }
+
+    const response = await axios(config);
+    res.status(response.status).json(response.data);
+  } catch (e) {
+    console.error('Focus NFe proxy error:', e.message);
+    res.status(502).json({ error: 'Erro ao conectar com Focus NFe: ' + e.message });
+  }
+});
+
 /* ── Static frontend ──────────────────────────────────────────────────────── */
 app.use(express.static(path.join(__dirname)));
 app.get(/^(?!\/api).*/,(_,res)=>res.sendFile(path.join(__dirname,'index.html')));
