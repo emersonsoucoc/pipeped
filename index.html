@@ -2827,7 +2827,7 @@ function renderAttachments(card){
   const el = document.getElementById('attachmentsList');
   const zone = document.getElementById('attachUploadArea');
   if(!el) return;
-  zone.style.display = editCardId ? '' : 'none';
+  zone.style.display = editCardId ? 'block' : 'none';
   const items = card?.anexos||[];
   if(!items.length){ el.innerHTML='<div style="font-size:12px;color:var(--muted);font-style:italic">Nenhum anexo.</div>'; return; }
   el.innerHTML = items.map(a=>{
