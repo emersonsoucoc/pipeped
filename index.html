@@ -425,8 +425,19 @@ svg{display:block;flex-shrink:0}
 .attach-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
 .attach-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;color:var(--text)}
 .attach-size{font-size:10px;color:var(--muted);white-space:nowrap}
+.attach-btn{width:28px;height:28px;border:none;background:none;cursor:pointer;color:var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.attach-btn:hover{background:rgba(99,102,241,.1)}
 .attach-del{width:24px;height:24px;border:none;background:none;cursor:pointer;color:var(--muted);border-radius:4px;display:flex;align-items:center;justify-content:center}
 .attach-del:hover{background:rgba(239,68,68,.1);color:#EF4444}
+#previewOverlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:700;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#previewOverlay.active{display:flex}
+#previewBox{background:var(--white);border-radius:12px;max-width:90vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeScale .2s ease}
+#previewHeader{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+#previewHeader .preview-title{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#previewContent{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;min-height:200px;background:#f8f9fa}
+#previewContent img{max-width:100%;max-height:80vh;object-fit:contain}
+#previewContent iframe{width:100%;height:80vh;border:none}
+#previewContent .no-preview{padding:40px;text-align:center;color:var(--muted);font-size:14px}
 .attach-progress{height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden}
 .attach-progress-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
 
@@ -1205,6 +1216,21 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
       <div style="flex:1"></div>
       <span class="text-sm text-muted" id="mSavedMsg" style="transition:opacity .3s;opacity:0">✓ Salvo</span>
     </div>
+  </div>
+</div>
+
+<!-- ─── FILE PREVIEW ───────────────────────────────────────────────── -->
+<div id="previewOverlay" onclick="if(event.target===this)closePreview()">
+  <div id="previewBox">
+    <div id="previewHeader">
+      <span class="preview-title" id="previewTitle">Arquivo</span>
+      <a id="previewDownload" href="#" download style="color:var(--accent);font-size:12px;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px" title="Baixar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Baixar
+      </a>
+      <button class="btn-icon" onclick="closePreview()"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+    <div id="previewContent"></div>
   </div>
 </div>
 
@@ -2726,6 +2752,43 @@ async function addComment(){
   }
 }
 
+// ─── FILE PREVIEW ─────────────────────────────────────────────────
+function previewAttachment(url, name, mimeType){
+  const overlay = document.getElementById('previewOverlay');
+  const content = document.getElementById('previewContent');
+  const title = document.getElementById('previewTitle');
+  const dl = document.getElementById('previewDownload');
+
+  title.textContent = name;
+  dl.href = url;
+  dl.download = name;
+
+  const ext = (name||'').split('.').pop().toLowerCase();
+  const isImage = ['png','jpg','jpeg','gif','webp','svg','bmp'].includes(ext) || (mimeType||'').startsWith('image/');
+  const isPdf = ext==='pdf' || mimeType==='application/pdf';
+
+  if(isImage){
+    content.innerHTML = `<img src="${esc(url)}" alt="${esc(name)}" style="padding:10px">`;
+  } else if(isPdf){
+    content.innerHTML = `<iframe src="${esc(url)}#toolbar=1" style="width:800px;max-width:88vw;height:80vh"></iframe>`;
+  } else {
+    content.innerHTML = `<div class="no-preview">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" style="margin-bottom:12px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div style="font-weight:600;margin-bottom:4px">${esc(name)}</div>
+      <div style="font-size:12px;color:var(--faint);margin-bottom:12px">Pré-visualização não disponível para este tipo de arquivo.</div>
+      <a href="${esc(url)}" download="${esc(name)}" style="color:var(--accent);font-size:13px;text-decoration:none;font-weight:500">⬇ Baixar arquivo</a>
+    </div>`;
+  }
+
+  overlay.classList.add('active');
+}
+
+function closePreview(){
+  const overlay = document.getElementById('previewOverlay');
+  overlay.classList.remove('active');
+  document.getElementById('previewContent').innerHTML = '';
+}
+
 // ─── PHASE CONFIG ─────────────────────────────────────────────────
 let phaseConfigMod = '', phaseConfigSlug = '', phaseConfigId = '';
 
@@ -2838,8 +2901,10 @@ function renderAttachments(card){
       <div class="attach-icon" style="background:${fi.bg};color:${fi.color}">${fi.icon}</div>
       <div class="attach-name" title="${esc(name)}">${esc(name)}</div>
       <div class="attach-size">${fmtFileSize(size)}</div>
-      ${a.url?`<a href="${esc(a.url)}" target="_blank" rel="noopener" style="color:var(--accent);font-size:11px;text-decoration:none;white-space:nowrap" title="Baixar">⬇</a>`:''}
-      <button class="attach-del" onclick="deleteAttachment('${a.id}')" title="Remover">
+      ${a.url?`<button class="attach-btn" onclick="event.stopPropagation();previewAttachment('${esc(a.url)}','${esc(name)}','${esc(a.mimeType||'')}')" title="Visualizar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>`:''}
+      <button class="attach-del" onclick="event.stopPropagation();deleteAttachment('${a.id}')" title="Remover">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>`;
