@@ -3748,8 +3748,16 @@ let nfeUnits = {
 };
 
 // Active config (points to selected unit)
-let nfeConfig = {};
-function nfeActiveUnit(){ return nfeUnits.units[nfeUnits.selected] || {}; }
+let nfeConfig = { ...NFE_EMPTY_UNIT };
+function nfeActiveUnit(){
+  if(!nfeUnits || !nfeUnits.units) return { ...NFE_EMPTY_UNIT };
+  // Ensure selected key exists
+  if(!nfeUnits.selected || !nfeUnits.units[nfeUnits.selected]){
+    const keys = Object.keys(nfeUnits.units||{});
+    nfeUnits.selected = keys[0] || '';
+  }
+  return nfeUnits.units[nfeUnits.selected] || { ...NFE_EMPTY_UNIT };
+}
 function nfeSyncConfig(){ nfeConfig = nfeActiveUnit(); }
 
 let nfeDatabase = []; // Base de contratantes/alunos
@@ -3763,21 +3771,36 @@ function saveNfeData(){
   localStorage.setItem('pipeped_nfe_emitted', JSON.stringify(nfeEmitted));
 }
 function loadNfeData(){
-  const u = localStorage.getItem('pipeped_nfe_units');
-  const d = localStorage.getItem('pipeped_nfe_db');
-  const e = localStorage.getItem('pipeped_nfe_emitted');
-  // Migration: old single-config → multi-unit
-  const oldCfg = localStorage.getItem('pipeped_nfe_config');
-  if(oldCfg && !u){
-    const parsed = JSON.parse(oldCfg);
-    if(parsed.token || parsed.tokenHomologacao){
-      nfeUnits.units['coc_lauro'] = { ...nfeUnits.units['coc_lauro'], ...parsed, label:'COC Lauro de Freitas' };
-      localStorage.removeItem('pipeped_nfe_config');
+  try {
+    const u = localStorage.getItem('pipeped_nfe_units');
+    const d = localStorage.getItem('pipeped_nfe_db');
+    const e = localStorage.getItem('pipeped_nfe_emitted');
+    // Migration: old single-config → multi-unit
+    const oldCfg = localStorage.getItem('pipeped_nfe_config');
+    if(oldCfg && !u){
+      try {
+        const parsed = JSON.parse(oldCfg);
+        if(parsed && (parsed.token || parsed.tokenHomologacao)){
+          nfeUnits.units['coc_lauro'] = { ...NFE_EMPTY_UNIT, ...nfeUnits.units['coc_lauro'], ...parsed, label:'COC Lauro de Freitas' };
+          localStorage.removeItem('pipeped_nfe_config');
+        }
+      } catch(me){}
     }
+    if(u){
+      const parsed = JSON.parse(u);
+      if(parsed && parsed.units && typeof parsed.units==='object'){
+        nfeUnits = parsed;
+        // Ensure all units have required fields
+        Object.keys(nfeUnits.units).forEach(k=>{
+          nfeUnits.units[k] = { ...NFE_EMPTY_UNIT, ...nfeUnits.units[k] };
+        });
+      }
+    }
+    if(d) nfeDatabase = JSON.parse(d) || [];
+    if(e) nfeEmitted = JSON.parse(e) || [];
+  } catch(err){
+    console.warn('loadNfeData error:', err);
   }
-  if(u) nfeUnits = JSON.parse(u);
-  if(d) nfeDatabase = JSON.parse(d);
-  if(e) nfeEmitted = JSON.parse(e);
   nfeSyncConfig();
 }
 
