@@ -13,8 +13,16 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 const isProd = process.env.NODE_ENV === 'production';
 
-if (!isProd) app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+
+/* ── API PIPEPED (Prisma + PostgreSQL) ───────────────────────────────────── */
+try {
+  const registerApiRoutes = require('./api-routes');
+  registerApiRoutes(app);
+} catch (e) {
+  console.warn('⚠️  API routes nao carregadas:', e.message);
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),

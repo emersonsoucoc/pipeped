@@ -1,0 +1,364 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////
+// ENUMS
+//////////////////////
+
+enum RoleType {
+  ADMIN
+  MANAGER
+  USER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum LeadStatus {
+  LEAD
+  CONTACTED
+  QUALIFIED
+  VISIT
+  PROPOSAL
+  WON
+  LOST
+}
+
+enum Priority {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+//////////////////////
+// CORE
+//////////////////////
+
+model School {
+  id        String   @id @default(uuid())
+  name      String
+  shortName String?
+  cnpj      String?  @unique
+  address   String?
+  phone     String?
+  email     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users            User[]
+  tasks            Task[]
+  leads            Lead[]
+  whatsappAccounts WhatsappAccount[]
+
+  @@map("schools")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      RoleType @default(USER)
+  phone     String?
+  avatarUrl String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id])
+
+  tasksAssigned Task[]         @relation("AssignedTasks")
+  tasksCreated  Task[]         @relation("CreatedTasks")
+  leadsAssigned Lead[]         @relation("AssignedLeads")
+  comments      Comment[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+//////////////////////
+// MODULES & PHASES
+//////////////////////
+
+model Module {
+  id           String  @id @default(uuid())
+  slug         String  @unique
+  name         String
+  description  String?
+  color        String?
+  colorLight   String?
+  hasFinancial Boolean @default(false)
+  displayOrder Int     @default(0)
+  active       Boolean @default(true)
+
+  phases     Phase[]
+  categories Category[]
+  tasks      Task[]
+
+  @@map("modules")
+}
+
+model Phase {
+  id       String  @id @default(uuid())
+  slug     String
+  name     String
+  color    String?
+  bgColor  String?
+  slaDays  Int?
+  isFinal  Boolean @default(false)
+  position Int     @default(0)
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  tasks Task[]
+
+  @@unique([moduleId, slug])
+  @@map("phases")
+}
+
+model Category {
+  id       String @id @default(uuid())
+  name     String
+  position Int    @default(0)
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  tasks Task[]
+
+  @@unique([moduleId, name])
+  @@map("categories")
+}
+
+//////////////////////
+// TASKS (KANBAN)
+//////////////////////
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  priority    Priority   @default(MEDIA)
+  dueDate     DateTime?
+  position    Int        @default(0)
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Financeiro (modulo compras)
+  amount         Decimal?  @db.Decimal(12, 2)
+  supplier       String?
+  documentNumber String?
+  paymentDue     DateTime?
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+
+  phaseId String
+  phase   Phase  @relation(fields: [phaseId], references: [id])
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id])
+
+  createdById String
+  createdBy   User @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  assignedToId String?
+  assignedTo   User?  @relation("AssignedTasks", fields: [assignedToId], references: [id])
+
+  comments    Comment[]
+  attachments Attachment[]
+  history     TaskHistory[]
+
+  @@index([moduleId])
+  @@index([phaseId])
+  @@index([schoolId])
+  @@index([assignedToId])
+  @@index([createdAt(sort: Desc)])
+  @@map("tasks")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  taskId String
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  @@map("comments")
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  fileName  String
+  fileUrl   String
+  fileSize  Int?
+  mimeType  String?
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+model TaskHistory {
+  id        String   @id @default(uuid())
+  action    String
+  details   String?
+  userName  String
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("task_history")
+}
+
+//////////////////////
+// CRM (COMERCIAL)
+//////////////////////
+
+model Lead {
+  id            String     @id @default(uuid())
+  name          String?
+  phone         String
+  email         String?
+  studentName   String?
+  gradeInterest String?
+  origin        String?
+  status        LeadStatus @default(LEAD)
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?  @relation("AssignedLeads", fields: [assignedToId], references: [id])
+
+  conversations Conversation[]
+
+  @@index([schoolId])
+  @@index([status])
+  @@map("leads")
+}
+
+//////////////////////
+// WHATSAPP (BASE)
+//////////////////////
+
+model WhatsappAccount {
+  id          String   @id @default(uuid())
+  phoneNumber String
+  name        String?
+  createdAt   DateTime @default(now())
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id])
+
+  conversations Conversation[]
+
+  @@map("whatsapp_accounts")
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  leadId String
+  lead   Lead @relation(fields: [leadId], references: [id])
+
+  whatsappAccountId String?
+  whatsappAccount   WhatsappAccount? @relation(fields: [whatsappAccountId], references: [id])
+
+  messages Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id        String           @id @default(uuid())
+  content   String
+  direction MessageDirection
+  status    String?
+  createdAt DateTime         @default(now())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  @@map("messages")
+}
+
+//////////////////////
+// NOTIFICACOES
+//////////////////////
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model EmailLog {
+  id        String   @id @default(uuid())
+  to        String
+  subject   String
+  content   String
+  status    String
+  createdAt DateTime @default(now())
+
+  @@map("email_logs")
+}
+
+//////////////////////
+// AUTOMACOES
+//////////////////////
+
+model AutomationRule {
+  id        String   @id @default(uuid())
+  name      String
+  trigger   String
+  action    String
+  config    Json?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("automation_rules")
+}
