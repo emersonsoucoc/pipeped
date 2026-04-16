@@ -3720,7 +3720,9 @@ function clearAuditFilters(){
 // ─── NFe Data ────────────────────────────────────────────────────────
 let nfeConfig = {
   ambiente: 'homologacao', // homologacao | producao
-  token: '',
+  token: 'Fr90SAde52pUZ5yPmqs19TrTETlRLrAo',
+  tokenProducao: 'TEgQSefYreRGy9xv9AD0hjfp1UKcuAEi',
+  tokenHomologacao: 'Fr90SAde52pUZ5yPmqs19TrTETlRLrAo',
   // Dados do Emitente
   cnpj_emitente: '',
   nome_emitente: '',
@@ -3779,14 +3781,22 @@ function buildNfeConfigTab(){
     <div class="nf-grid">
       <div class="nf-field">
         <label>Ambiente</label>
-        <select id="nfeCfgAmbiente" value="${c.ambiente}">
+        <select id="nfeCfgAmbiente" onchange="nfeSwitchAmbiente(this.value)">
           <option value="homologacao" ${c.ambiente==='homologacao'?'selected':''}>Homologação (Testes)</option>
           <option value="producao" ${c.ambiente==='producao'?'selected':''}>Produção</option>
         </select>
       </div>
-      <div class="nf-field" style="grid-column:span 2">
-        <label>Token da API</label>
-        <input type="password" id="nfeCfgToken" value="${esc(c.token)}" placeholder="Cole aqui o token do Focus NFe">
+      <div class="nf-field">
+        <label>Token Homologação</label>
+        <input type="text" id="nfeCfgTokenH" value="${esc(c.tokenHomologacao||'')}" placeholder="Token de teste">
+      </div>
+      <div class="nf-field">
+        <label>Token Produção</label>
+        <input type="text" id="nfeCfgTokenP" value="${esc(c.tokenProducao||'')}" placeholder="Token de produção">
+      </div>
+      <div class="nf-field" style="grid-column:span 3">
+        <label>Token Ativo (${c.ambiente==='producao'?'🟢 Produção':'🟡 Homologação'})</label>
+        <input type="password" id="nfeCfgToken" value="${esc(c.token)}" readonly style="background:var(--surface);cursor:not-allowed">
       </div>
     </div>
   </div>
@@ -3825,9 +3835,23 @@ function buildNfeConfigTab(){
   </div>`;
 }
 
+function nfeSwitchAmbiente(val){
+  // Save current tokens before switching
+  const tokH = document.getElementById('nfeCfgTokenH')?.value||nfeConfig.tokenHomologacao||'';
+  const tokP = document.getElementById('nfeCfgTokenP')?.value||nfeConfig.tokenProducao||'';
+  nfeConfig.tokenHomologacao = tokH;
+  nfeConfig.tokenProducao = tokP;
+  nfeConfig.ambiente = val;
+  nfeConfig.token = val==='producao' ? tokP : tokH;
+  saveNfeData();
+  renderPage();
+}
+
 function saveNfeConfig(){
   nfeConfig.ambiente = document.getElementById('nfeCfgAmbiente')?.value||'homologacao';
-  nfeConfig.token = document.getElementById('nfeCfgToken')?.value||'';
+  nfeConfig.tokenHomologacao = document.getElementById('nfeCfgTokenH')?.value||'';
+  nfeConfig.tokenProducao = document.getElementById('nfeCfgTokenP')?.value||'';
+  nfeConfig.token = nfeConfig.ambiente==='producao' ? nfeConfig.tokenProducao : nfeConfig.tokenHomologacao;
   nfeConfig.cnpj_emitente = document.getElementById('nfeCfgCnpj')?.value||'';
   nfeConfig.nome_emitente = document.getElementById('nfeCfgNome')?.value||'';
   nfeConfig.nome_fantasia_emitente = document.getElementById('nfeCfgFantasia')?.value||'';
