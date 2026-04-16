@@ -562,6 +562,13 @@ svg{display:block;flex-shrink:0}
 .btn-action-view{background:var(--surface);color:var(--muted);border-color:var(--border)}
 .btn-action-view:hover{background:var(--text);color:#fff}
 
+/* ─── READ-ONLY CARD OVERLAY ──────────────────────────────────── */
+.card[draggable="false"]{opacity:.92}
+.card[draggable="false"]:hover{transform:none;box-shadow:var(--sh)}
+select:disabled,input:disabled,textarea:disabled{background:var(--surface);color:var(--muted);cursor:not-allowed;opacity:.7}
+.acl-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:600;background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.acl-badge.read-only{background:#FEF2F2;color:var(--err);border-color:#EF444433}
+
 /* ─── TOAST ───────────────────────────────────────────────────────── */
 #toastContainer{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
 .toast{
@@ -656,40 +663,8 @@ svg{display:block;flex-shrink:0}
       <div class="sb-brand">PIPEPED<small>Grupo PED</small></div>
     </div>
 
-    <nav style="flex:1;padding:8px 0">
-      <div class="sb-section">Visão Geral</div>
-      <a class="nav-item" data-page="dashboard" onclick="navigate('dashboard')">
-        <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
-        <span class="nav-text">Dashboard</span>
-      </a>
-
-      <div class="sb-section">Módulos</div>
-      <a class="nav-item" data-page="compras" onclick="navigate('compras')">
-        <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8"/><path d="M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span class="nav-text">Compras</span>
-        <span class="nav-badge" id="badge-compras">0</span>
-      </a>
-      <a class="nav-item" data-page="ti" onclick="navigate('ti')">
-        <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span class="nav-text">TI — Chamados</span>
-        <span class="nav-badge" id="badge-ti">0</span>
-      </a>
-      <a class="nav-item" data-page="comercial" onclick="navigate('comercial')">
-        <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span class="nav-text">Comercial</span>
-        <span class="nav-badge" id="badge-comercial">0</span>
-      </a>
-      <a class="nav-item" data-page="contratos" onclick="navigate('contratos')">
-        <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span class="nav-text">Contratos</span>
-        <span class="nav-badge" id="badge-contratos">0</span>
-      </a>
-
-      <div class="sb-section">Sistema</div>
-      <a class="nav-item" data-page="settings" onclick="navigate('settings')">
-        <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
-        <span class="nav-text">Configurações</span>
-      </a>
+    <nav id="sidebarNav" style="flex:1;padding:8px 0">
+      <!-- Rendered dynamically by buildSidebar() -->
     </nav>
 
     <div class="sb-footer">
@@ -715,10 +690,7 @@ svg{display:block;flex-shrink:0}
         <input type="text" id="searchInput" placeholder="Buscar cards…" oninput="onSearch(this.value)">
       </div>
       <select class="school-select" id="schoolFilter" onchange="onSchoolFilter(this.value)">
-        <option value="">Todas as escolas</option>
-        <option value="ped1">PED 1 — Centro</option>
-        <option value="ped2">PED 2 — Norte</option>
-        <option value="ped3">PED 3 — Sul</option>
+        <!-- Populated dynamically by populateSchoolFilter() -->
       </select>
       <button class="btn-notif" onclick="toggleNotif()" id="notifBtn">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -796,10 +768,7 @@ svg{display:block;flex-shrink:0}
         <div class="meta-field">
           <div class="meta-label">Módulo</div>
           <select id="mModulo" class="phase-select" onchange="onModuloChange()">
-            <option value="compras">Compras</option>
-            <option value="ti">TI — Chamados</option>
-            <option value="comercial">Comercial</option>
-            <option value="contratos">Contratos</option>
+            <!-- Populated dynamically by populateModuloSelect() -->
           </select>
         </div>
         <div class="meta-field">
@@ -824,10 +793,7 @@ svg{display:block;flex-shrink:0}
         <div class="meta-field">
           <div class="meta-label">Escola</div>
           <select id="mEscola">
-            <option value="">Todas</option>
-            <option value="ped1">PED 1 — Centro</option>
-            <option value="ped2">PED 2 — Norte</option>
-            <option value="ped3">PED 3 — Sul</option>
+            <!-- Populated dynamically by populateEscolaSelect() -->
           </select>
         </div>
         <div class="meta-field">
@@ -875,11 +841,11 @@ svg{display:block;flex-shrink:0}
 'use strict';
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
-  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1' },
-  { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981' },
-  { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B' },
-  { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444' },
-  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6' },
+  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos'] },
+  { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial'] },
+  { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B', schools:['ped1','ped2','ped3'], modulos:['ti'] },
+  { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444', schools:['ped1','ped2','ped3'], modulos:['comercial'] },
+  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos'] },
 ];
 
 const SCHOOLS = [
@@ -987,10 +953,90 @@ function userInitials(id){ const u=userById(id); return u?u.initials:'?' }
 function userName(id){ const u=userById(id); return u?u.name:'—' }
 function userColor(id){ const u=userById(id); return u?u.color:'#6366F1' }
 function schoolName(id){ const s=SCHOOLS.find(x=>x.id===id); return s?s.name:'' }
+
+// ─── ACL — ACCESS CONTROL LAYER ──────────────────────────────────────
+// Centraliza TODA a lógica de visibilidade de dados.
+// Regras:
+//   admin       → vê TUDO (todos os módulos, todas as escolas)
+//   gestor      → vê todos os cards do(s) módulo(s) que pertence, apenas das suas escolas
+//   colaborador → vê apenas cards que criou OU onde é responsável
+
+function getUserSchools(u){
+  if(!u) return [];
+  if(u.role==='admin') return SCHOOLS.map(s=>s.id);
+  const custom = JSON.parse(localStorage.getItem('user_schools_'+u.id)||'null');
+  return custom || u.schools || [];
+}
+function getUserModules(u){
+  if(!u) return [];
+  if(u.role==='admin') return Object.keys(MODULES);
+  const perms = JSON.parse(localStorage.getItem('user_perms_'+u.id)||'null');
+  if(perms){
+    return Object.keys(perms).filter(m => perms[m]?.ver!==false);
+  }
+  return u.modulos || [];
+}
+function canAccessModule(mod){
+  if(!currentUser) return false;
+  return getUserModules(currentUser).includes(mod);
+}
+function canSeeCard(c){
+  if(!currentUser||!c) return false;
+  if(currentUser.role==='admin') return true;
+  // Gestor: precisa ter acesso ao módulo E à escola do card
+  if(currentUser.role==='gestor'){
+    const mods = getUserModules(currentUser);
+    const schools = getUserSchools(currentUser);
+    if(!mods.includes(c.modulo)) return false;
+    if(c.escola && !schools.includes(c.escola)) return false;
+    return true;
+  }
+  // Colaborador: só vê cards que criou ou é responsável
+  return c.criadoPor===currentUser.id || c.responsavel===currentUser.id;
+}
+function canEditCard(c){
+  if(!currentUser||!c) return false;
+  if(currentUser.role==='admin') return true;
+  const perms = JSON.parse(localStorage.getItem('user_perms_'+currentUser.id)||'null');
+  if(perms && perms[c.modulo]?.editar===false) return false;
+  if(currentUser.role==='gestor') return canSeeCard(c);
+  // Colaborador: só edita seus próprios
+  return c.criadoPor===currentUser.id || c.responsavel===currentUser.id;
+}
+function canDeleteCard(c){
+  if(!currentUser||!c) return false;
+  if(currentUser.role==='admin') return true;
+  const perms = JSON.parse(localStorage.getItem('user_perms_'+currentUser.id)||'null');
+  if(perms && perms[c.modulo]?.excluir===false) return false;
+  if(currentUser.role==='gestor') return canSeeCard(c);
+  return c.criadoPor===currentUser.id;
+}
+function canCreateInModule(mod){
+  if(!currentUser) return false;
+  if(currentUser.role==='admin') return true;
+  const perms = JSON.parse(localStorage.getItem('user_perms_'+currentUser.id)||'null');
+  if(perms && perms[mod]?.criar===false) return false;
+  return getUserModules(currentUser).includes(mod);
+}
+function canApproveInModule(mod){
+  if(!currentUser) return false;
+  if(currentUser.role==='admin') return true;
+  const perms = JSON.parse(localStorage.getItem('user_perms_'+currentUser.id)||'null');
+  if(perms) return !!perms[mod]?.aprovar;
+  return currentUser.role==='gestor' && getUserModules(currentUser).includes(mod);
+}
+
+// ─── FILTERED DATA ACCESS ─────────────────────────────────────────────
+// getCards() agora aplica filtro de visibilidade automaticamente
 function getCards(mod){
   return allCards.filter(c => {
+    // 1) Filtro de visibilidade por perfil (ACL)
+    if(!canSeeCard(c)) return false;
+    // 2) Filtro por módulo (quando em tela kanban)
     if(mod && c.modulo !== mod) return false;
+    // 3) Filtro manual de escola (topbar)
     if(filterSchool && c.escola !== filterSchool) return false;
+    // 4) Filtro de busca textual
     if(filterSearch){
       const q=filterSearch.toLowerCase();
       return c.titulo.toLowerCase().includes(q)||c.descricao.toLowerCase().includes(q)||(c.responsavel&&userName(c.responsavel).toLowerCase().includes(q));
@@ -999,6 +1045,8 @@ function getCards(mod){
   });
 }
 function activeCards(mod){ return getCards(mod).filter(c=>c.fase!==MODULES[mod].lastPhase) }
+// Todos os cards visíveis (para dashboard)
+function allVisibleCards(){ return allCards.filter(c=>canSeeCard(c)); }
 
 // ─── TOAST ────────────────────────────────────────────────────────────
 function showToast(msg, type='success'){
@@ -1031,13 +1079,68 @@ function loginAs(u){
   document.getElementById('sbName').textContent = u.name;
   document.getElementById('sbRole').textContent = { admin:'Administrador', gestor:'Gestor', colaborador:'Colaborador' }[u.role];
   populateResponsavelSelect();
+  buildSidebar();
+  populateSchoolFilter();
   navigate('dashboard');
   showToast(`Bem-vindo(a), ${u.name.split(' ')[0]}!`);
   try{logAudit('login','sistema','Login: '+u.name);}catch(e){}
 }
 
+// ─── SIDEBAR BUILDER (ACL-aware) ──────────────────────────────────────
+const MODULE_ICONS = {
+  compras:'<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8"/><path d="M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  ti:'<rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  comercial:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  contratos:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+};
+
+function buildSidebar(){
+  const nav = document.getElementById('sidebarNav');
+  if(!nav) return;
+  const mods = getUserModules(currentUser);
+  let html = `
+    <div class="sb-section">Visão Geral</div>
+    <a class="nav-item" data-page="dashboard" onclick="navigate('dashboard')">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span class="nav-text">Dashboard</span>
+    </a>
+    <div class="sb-section">Módulos</div>`;
+  Object.keys(MODULES).forEach(k=>{
+    if(!mods.includes(k)) return;
+    html += `<a class="nav-item" data-page="${k}" onclick="navigate('${k}')">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24">${MODULE_ICONS[k]||''}</svg>
+      <span class="nav-text">${MODULES[k].label}</span>
+      <span class="nav-badge" id="badge-${k}">0</span>
+    </a>`;
+  });
+  html += `
+    <div class="sb-section">Sistema</div>
+    <a class="nav-item" data-page="settings" onclick="navigate('settings')">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span class="nav-text">Configurações</span>
+    </a>`;
+  nav.innerHTML = html;
+}
+
+// ─── SCHOOL FILTER (ACL-aware) ────────────────────────────────────────
+function populateSchoolFilter(){
+  const sel = document.getElementById('schoolFilter');
+  if(!sel) return;
+  const schools = getUserSchools(currentUser);
+  let html = '<option value="">Todas as escolas</option>';
+  SCHOOLS.forEach(s=>{
+    if(schools.includes(s.id)) html += `<option value="${s.id}">${esc(s.name)}</option>`;
+  });
+  sel.innerHTML = html;
+}
+
 // ─── ROUTER ───────────────────────────────────────────────────────────
 function navigate(page){
+  // ACL: bloqueia acesso a módulos não autorizados
+  if(MODULES[page] && !canAccessModule(page)){
+    showToast('Você não tem acesso a este módulo','error');
+    page = 'dashboard';
+  }
   currentPage = page;
   document.querySelectorAll('.nav-item').forEach(el=>{
     el.classList.toggle('active', el.dataset.page===page);
@@ -1046,7 +1149,11 @@ function navigate(page){
   document.getElementById('topbarTitle').textContent = mod ? mod.label : pageTitles[page]||'PIPEPED';
   const newBtn = document.getElementById('topbarNewBtn');
   const newLabel = document.getElementById('topbarNewLabel');
-  if(mod){ newLabel.textContent=mod.btnLabel; newBtn.style.display=''; }
+  if(mod){
+    newLabel.textContent=mod.btnLabel;
+    // Esconde botão "Novo" se não pode criar neste módulo
+    newBtn.style.display = canCreateInModule(page) ? '' : 'none';
+  }
   else { newBtn.style.display = page==='settings' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
   renderPage();
   updateBadges();
@@ -1062,16 +1169,18 @@ function renderPage(){
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────
 function buildDashboard(){
-  const total    = allCards.length;
-  const concl    = allCards.filter(c=>c.fase===MODULES[c.modulo]?.lastPhase).length;
-  const overdue  = allCards.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
-  const andamento= allCards.filter(c=>c.fase!==MODULES[c.modulo]?.lastPhase && c.fase!=='solicitado'&&c.fase!=='aberto'&&c.fase!=='lead'&&c.fase!=='rascunho').length;
+  const vis      = allVisibleCards();
+  const total    = vis.length;
+  const concl    = vis.filter(c=>c.fase===MODULES[c.modulo]?.lastPhase).length;
+  const overdue  = vis.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
+  const andamento= vis.filter(c=>c.fase!==MODULES[c.modulo]?.lastPhase && c.fase!=='solicitado'&&c.fase!=='aberto'&&c.fase!=='lead'&&c.fase!=='rascunho').length;
 
-  const modCounts = Object.keys(MODULES).map(k=>({ mod:k, count:allCards.filter(c=>c.modulo===k).length, active:activeCards(k).length }));
+  const visibleMods = getUserModules(currentUser);
+  const modCounts = Object.keys(MODULES).filter(k=>visibleMods.includes(k)).map(k=>({ mod:k, count:vis.filter(c=>c.modulo===k).length, active:activeCards(k).length }));
   const maxCount  = Math.max(...modCounts.map(x=>x.count),1);
 
   // Donut chart data
-  const donutData = Object.entries(MODULES).map(([k,m])=>({ label:m.shortLabel, color:m.color, val:allCards.filter(c=>c.modulo===k).length }));
+  const donutData = Object.entries(MODULES).filter(([k])=>visibleMods.includes(k)).map(([k,m])=>({ label:m.shortLabel, color:m.color, val:vis.filter(c=>c.modulo===k).length }));
   const donutTotal = donutData.reduce((a,x)=>a+x.val,0)||1;
   let dashOffset = 0;
   const donutSegs = donutData.map(d=>{
@@ -1085,10 +1194,10 @@ function buildDashboard(){
   }).join('');
 
   // Activity
-  const recent = allCards.slice().sort((a,b)=>b.criadoEm.localeCompare(a.criadoEm)).slice(0,6);
+  const recent = vis.slice().sort((a,b)=>b.criadoEm.localeCompare(a.criadoEm)).slice(0,6);
 
   // Overdue list
-  const overdueList = allCards.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).slice(0,5);
+  const overdueList = vis.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).slice(0,5);
 
   return `<div class="dash-wrap">
     <div class="dash-greeting">
@@ -1112,8 +1221,8 @@ function buildDashboard(){
           <div class="mod-bar-track"><div class="mod-bar-fill" style="width:${Math.round(x.count/maxCount*100)}%;background:${MODULES[x.mod].color}"></div></div>
           <div class="mod-bar-count">${x.count}</div>
         </div>`).join('')}
-        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-          ${Object.entries(MODULES).map(([k,m])=>`
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(${Math.min(modCounts.length,4)},1fr);gap:8px">
+          ${Object.entries(MODULES).filter(([k])=>visibleMods.includes(k)).map(([k,m])=>`
           <div onclick="navigate('${k}')" style="cursor:pointer;padding:12px;background:${m.colorLight};border-radius:8px;border:1px solid ${m.color}22">
             <div style="font-size:20px;font-weight:800;color:${m.color}">${activeCards(k).length}</div>
             <div style="font-size:10px;color:${m.color};font-weight:600;margin-top:2px">Ativos</div>
@@ -1179,7 +1288,7 @@ function buildDashboard(){
         <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
           <div class="panel-title" style="margin-bottom:12px"><span>Equipe</span></div>
           ${USERS.slice(0,4).map(u=>{
-            const mine = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
+            const mine = vis.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
             return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
               <div class="avatar sm" style="background:${u.color}">${u.initials}</div>
               <div style="flex:1;min-width:0">
@@ -1230,10 +1339,10 @@ function buildKanban(mod){
           <div class="col-cards" id="col-${mod}-${faseKey}">
             ${fCards.map(c=>buildCard(c)).join('')}
           </div>
-          <div class="col-add" onclick="openCard(null,'${mod}','${faseKey}')">
+          ${canCreateInModule(mod)?`<div class="col-add" onclick="openCard(null,'${mod}','${faseKey}')">
             <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
             Adicionar card
-          </div>
+          </div>`:''}
         </div>`;
       }).join('')}
     </div>
@@ -1245,9 +1354,10 @@ function buildCard(c){
   const overdue = isOverdue(c.prazo)&&c.fase!==M.lastPhase;
   const u = userById(c.responsavel);
   const cCount = (c.comentarios||[]).length;
+  const _canEdit = canEditCard(c);
   return `<div class="card" id="card-${c.id}" data-id="${c.id}" data-prio="${c.prioridade}"
-    draggable="true" ondragstart="onDragStart(event,'${c.id}')" ondragend="onDragEnd(event)"
-    onclick="openCard('${c.id}')">
+    ${_canEdit?'draggable="true" ondragstart="onDragStart(event,\''+c.id+'\')" ondragend="onDragEnd(event)"':'draggable="false"'}
+    onclick="openCard('${c.id}')" style="${_canEdit?'':'cursor:default'}">
     <div class="card-title">${esc(c.titulo||'Sem título')}</div>
     ${c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
     <div class="card-tags">
@@ -1295,6 +1405,7 @@ function onDrop(e, mod, fase){
   const id = e.dataTransfer.getData('text/plain');
   const card = allCards.find(c=>c.id===id);
   if(!card) return;
+  if(!canEditCard(card)){ showToast('Sem permissão para mover este card','error'); return; }
   const oldFase = card.fase;
   card.fase = fase;
   card.modulo = mod;
@@ -1313,19 +1424,46 @@ function openCard(id, defaultMod, defaultFase){
   const overlay = document.getElementById('cardModalOverlay');
   const modalTitle = document.getElementById('modalHeaderTitle');
   const delBtn = document.getElementById('modalDeleteBtn');
+  const saveBtn = document.querySelector('.modal-footer .btn-save');
 
   if(id){
     const c = allCards.find(x=>x.id===id);
     if(!c) return;
-    modalTitle.textContent = 'Editar Card';
-    delBtn.style.display = '';
+    // ACL: Verificar se o usuário pode ver este card
+    if(!canSeeCard(c)){ showToast('Sem permissão para visualizar este card','error'); return; }
+    const editable = canEditCard(c);
+    const deletable = canDeleteCard(c);
+    modalTitle.textContent = editable ? 'Editar Card' : 'Visualizar Card';
+    delBtn.style.display = deletable ? '' : 'none';
+    if(saveBtn) saveBtn.style.display = editable ? '' : 'none';
     fillModalWith(c);
+    // Disable inputs if read-only
+    setModalReadOnly(!editable);
   } else {
+    // ACL: Verificar se pode criar no módulo
+    const mod = defaultMod||currentPage||'compras';
+    if(!canCreateInModule(mod)){ showToast('Sem permissão para criar cards neste módulo','error'); return; }
     modalTitle.textContent = 'Novo Card';
     delBtn.style.display = 'none';
-    clearModal(defaultMod||currentPage||'compras', defaultFase);
+    if(saveBtn) saveBtn.style.display = '';
+    clearModal(mod, defaultFase);
+    setModalReadOnly(false);
   }
   overlay.classList.add('active');
+}
+
+// Torna o modal somente-leitura ou editável
+function setModalReadOnly(readOnly){
+  const fields = ['mTitle','mDesc','mValor','mFornecedor','mVencimento','mEscola','mPrazo','mModulo','mFase','mResponsavel','mCategoria'];
+  fields.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.disabled = readOnly;
+  });
+  document.querySelectorAll('.prio-opt').forEach(el=>{ el.style.pointerEvents = readOnly?'none':''; el.style.opacity = readOnly?'.6':''; });
+  const commentBtn = document.querySelector('.btn-comment');
+  const commentInput = document.getElementById('commentInput');
+  if(commentBtn) commentBtn.style.display = readOnly?'none':'';
+  if(commentInput) commentInput.disabled = readOnly;
 }
 
 function clearModal(mod, fase){
@@ -1342,10 +1480,12 @@ function clearModal(mod, fase){
   document.getElementById('historyList').innerHTML='';
   document.getElementById('commentInput').value='';
   const m = MODULES[mod]||MODULES['compras'];
-  document.getElementById('mModulo').value = mod in MODULES ? mod : 'compras';
+  populateModuloSelect();
+  document.getElementById('mModulo').value = mod in MODULES ? mod : getUserModules(currentUser)[0]||'compras';
   populateFaseSelect(mod);
   if(fase) document.getElementById('mFase').value=fase;
   populateCategoriaSelect(mod);
+  populateEscolaSelect();
   selPrioVal('media');
   toggleFinancial(m.hasFinancial);
 }
@@ -1356,10 +1496,12 @@ function fillModalWith(c){
   document.getElementById('mValor').value = c.valor||'';
   document.getElementById('mFornecedor').value = c.fornecedor||'';
   document.getElementById('mVencimento').value = c.vencimento||'';
+  populateEscolaSelect();
   document.getElementById('mEscola').value = c.escola||'';
   document.getElementById('mPrazo').value  = c.prazo||'';
   document.getElementById('mCriadoEm').textContent = fmtDate(c.criadoEm)||'—';
   document.getElementById('mCriadoPor').textContent = userName(c.criadoPor)||'—';
+  populateModuloSelect();
   document.getElementById('mModulo').value = c.modulo;
   populateFaseSelect(c.modulo);
   document.getElementById('mFase').value = c.fase;
@@ -1385,6 +1527,18 @@ function populateCategoriaSelect(mod){
 function populateResponsavelSelect(){
   const sel = document.getElementById('mResponsavel');
   sel.innerHTML = `<option value="">Não atribuído</option>` + USERS.map(u=>`<option value="${u.id}">${esc(u.name)} (${u.dept})</option>`).join('');
+}
+function populateEscolaSelect(){
+  const sel = document.getElementById('mEscola');
+  if(!sel) return;
+  const schools = getUserSchools(currentUser);
+  sel.innerHTML = `<option value="">— Selecionar escola —</option>` + SCHOOLS.filter(s=>schools.includes(s.id)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+function populateModuloSelect(){
+  const sel = document.getElementById('mModulo');
+  if(!sel) return;
+  const mods = getUserModules(currentUser);
+  sel.innerHTML = mods.map(m=>`<option value="${m}">${esc(MODULES[m].label)}</option>`).join('');
 }
 function onModuloChange(){
   const mod = document.getElementById('mModulo').value;
@@ -1456,6 +1610,9 @@ function saveCard(){
   const modulo = document.getElementById('mModulo').value;
   const fase   = document.getElementById('mFase').value;
   const isNew  = !editCardId;
+  // ACL: verificar permissão
+  if(isNew && !canCreateInModule(modulo)){ showToast('Sem permissão para criar neste módulo','error'); return; }
+  if(!isNew){ const _c=allCards.find(c=>c.id===editCardId); if(_c&&!canEditCard(_c)){showToast('Sem permissão para editar','error');return;} }
 
   let card;
   if(editCardId){
@@ -1512,8 +1669,9 @@ function handleModalOverlayClick(e){
 
 function deleteCurrentCard(){
   if(!editCardId) return;
-  if(!confirm('Excluir este card? Esta ação não pode ser desfeita.')) return;
   const delCard = allCards.find(c=>c.id===editCardId);
+  if(delCard && !canDeleteCard(delCard)){ showToast('Sem permissão para excluir este card','error'); return; }
+  if(!confirm('Excluir este card? Esta ação não pode ser desfeita.')) return;
   allCards = allCards.filter(c=>c.id!==editCardId);
   save(); updateBadges();
   closeCard();
@@ -1660,11 +1818,13 @@ function buildSettingsUsuarios(){
         const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[u.role];
         const active = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
         const st = localStorage.getItem('user_status_'+u.id)||'ativo';
-        const schools = JSON.parse(localStorage.getItem('user_schools_'+u.id)||'null')||SCHOOLS.map(s=>s.id);
+        const schools = getUserSchools(u);
+        const mods = getUserModules(u);
         return `<tr style="${st==='inativo'?'opacity:.55':''}">
           <td><div style="display:flex;align-items:center;gap:10px">
             <div class="avatar sm" style="background:${u.color}">${u.initials}</div>
-            <span style="font-weight:500">${esc(u.name)}</span>
+            <div><span style="font-weight:500">${esc(u.name)}</span>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${mods.map(m=>MODULES[m]?.shortLabel||m).join(', ')}</div></div>
           </div></td>
           <td style="color:var(--muted);font-size:12px">${esc(u.email)}</td>
           <td style="font-size:12px">${esc(u.dept)}</td>
