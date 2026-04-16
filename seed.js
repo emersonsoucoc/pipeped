@@ -45,7 +45,8 @@ async function main() {
   const compras = await prisma.module.upsert({ where: { slug: 'compras' }, update: {}, create: { slug: 'compras', name: 'Compras', description: 'Solicitacoes e aprovacoes de compras', color: '#F59E0B', colorLight: '#FFFBEB', hasFinancial: true, displayOrder: 1 } });
   const ti = await prisma.module.upsert({ where: { slug: 'ti' }, update: {}, create: { slug: 'ti', name: 'TI — Chamados', description: 'Chamados tecnicos e suporte', color: '#3B82F6', colorLight: '#EFF6FF', hasFinancial: false, displayOrder: 2 } });
   const comercial = await prisma.module.upsert({ where: { slug: 'comercial' }, update: {}, create: { slug: 'comercial', name: 'Comercial', description: 'Leads, matriculas e pipeline comercial', color: '#10B981', colorLight: '#ECFDF5', hasFinancial: false, displayOrder: 3 } });
-  const contratos = await prisma.module.upsert({ where: { slug: 'contratos' }, update: {}, create: { slug: 'contratos', name: 'Contratos', description: 'Gestao e controle de contratos', color: '#8B5CF6', colorLight: '#F5F3FF', hasFinancial: false, displayOrder: 4 } });
+  const financeiro = await prisma.module.upsert({ where: { slug: 'financeiro' }, update: {}, create: { slug: 'financeiro', name: 'Financeiro', description: 'Contas a pagar, receber e fluxo de caixa', color: '#EF4444', colorLight: '#FEF2F2', hasFinancial: true, displayOrder: 4 } });
+  const contratos = await prisma.module.upsert({ where: { slug: 'contratos' }, update: {}, create: { slug: 'contratos', name: 'Contratos', description: 'Gestao e controle de contratos', color: '#8B5CF6', colorLight: '#F5F3FF', hasFinancial: false, displayOrder: 5 } });
   console.log('✅ Modulos criados');
 
   // ─── FASES ────────────────────────────────────────────────
@@ -72,6 +73,14 @@ async function main() {
       { slug: 'matriculado', name: 'Matriculado', color: '#10B981', bgColor: '#ECFDF5', isFinal: true, position: 5 },
       { slug: 'perdido', name: 'Perdido', color: '#EF4444', bgColor: '#FEF2F2', isFinal: false, position: 6 },
     ]},
+    { moduleId: financeiro.id, fases: [
+      { slug: 'pendente', name: 'Pendente', color: '#94A3B8', bgColor: '#F1F5F9', isFinal: false, position: 1 },
+      { slug: 'a_vencer', name: 'A Vencer', color: '#F59E0B', bgColor: '#FFFBEB', isFinal: false, position: 2 },
+      { slug: 'em_analise', name: 'Em Analise', color: '#3B82F6', bgColor: '#EFF6FF', isFinal: false, position: 3 },
+      { slug: 'aprovado', name: 'Aprovado', color: '#8B5CF6', bgColor: '#F5F3FF', isFinal: false, position: 4 },
+      { slug: 'pago', name: 'Pago', color: '#10B981', bgColor: '#ECFDF5', isFinal: true, position: 5 },
+      { slug: 'vencido', name: 'Vencido', color: '#EF4444', bgColor: '#FEF2F2', isFinal: false, position: 6 },
+    ]},
     { moduleId: contratos.id, fases: [
       { slug: 'rascunho', name: 'Rascunho', color: '#94A3B8', bgColor: '#F1F5F9', isFinal: false, position: 1 },
       { slug: 'revisao', name: 'Em Revisao', color: '#F59E0B', bgColor: '#FFFBEB', isFinal: false, position: 2 },
@@ -97,6 +106,7 @@ async function main() {
     { moduleId: compras.id, cats: ['Material de Escritorio', 'Equipamentos', 'Servicos', 'Manutencao', 'Alimentacao', 'Uniforme', 'Outros'] },
     { moduleId: ti.id, cats: ['Hardware', 'Software', 'Rede', 'Impressora', 'Telefonia', 'Cameras', 'Outros'] },
     { moduleId: comercial.id, cats: ['Maternal I', 'Maternal II', 'Infantil I', 'Infantil II', 'Fund. I', 'Fund. II', 'Ensino Medio'] },
+    { moduleId: financeiro.id, cats: ['Mensalidade', 'Fornecedor', 'Folha de Pagamento', 'Imposto', 'Manutencao', 'Material', 'Servico', 'Outros'] },
     { moduleId: contratos.id, cats: ['Fornecedor', 'Prestador de Servico', 'Locacao', 'Parceria', 'Franquia', 'Outros'] },
   ];
 

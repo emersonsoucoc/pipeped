@@ -7,6 +7,20 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
+const multer = require('multer');
+const path   = require('path');
+const fs     = require('fs');
+
+// Upload config — store files in /tmp/uploads (Railway ephemeral storage)
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')),
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'pipeped-jwt-secret-2026';
@@ -269,6 +283,7 @@ module.exports = function registerApiRoutes(app) {
     school: { select: { id: true, name: true, shortName: true } },
     createdBy: { select: { id: true, name: true, email: true } },
     assignedTo: { select: { id: true, name: true, email: true } },
+    attachments: { select: { id: true, fileName: true, fileUrl: true, fileSize: true, mimeType: true, createdAt: true } },
     _count: { select: { comments: true, attachments: true } },
   };
 
@@ -447,6 +462,106 @@ module.exports = function registerApiRoutes(app) {
         orderBy: { createdAt: 'desc' },
       });
       res.json(comments);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ATTACHMENTS (FILE UPLOAD)
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Serve uploaded files
+  app.use('/uploads', require('express').static(UPLOAD_DIR));
+
+  app.post('/api/tasks/:id/attachments', authMiddleware, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+      const fileUrl = `/uploads/${req.file.filename}`;
+      const att = await prisma.attachment.create({
+        data: {
+          taskId: req.params.id,
+          fileName: req.file.originalname,
+          fileUrl,
+          fileSize: req.file.size,
+          mimeType: req.file.mimetype,
+        },
+      });
+      await prisma.taskHistory.create({
+        data: { taskId: req.params.id, action: 'attachment', details: `Arquivo "${req.file.originalname}" anexado`, userName: req.user.name },
+      });
+      res.status(201).json({ id: att.id, fileName: att.fileName, url: att.fileUrl, fileSize: att.fileSize, mimeType: att.mimeType, createdAt: att.createdAt });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get('/api/tasks/:id/attachments', authMiddleware, async (req, res) => {
+    try {
+      const atts = await prisma.attachment.findMany({ where: { taskId: req.params.id }, orderBy: { createdAt: 'desc' } });
+      res.json(atts.map(a => ({ id: a.id, fileName: a.fileName, url: a.fileUrl, fileSize: a.fileSize, mimeType: a.mimeType, createdAt: a.createdAt })));
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.delete('/api/tasks/:id/attachments/:attId', authMiddleware, async (req, res) => {
+    try {
+      const att = await prisma.attachment.findUnique({ where: { id: req.params.attId } });
+      if (!att) return res.status(404).json({ error: 'Anexo nao encontrado' });
+      // Delete file from disk
+      const filePath = path.join(UPLOAD_DIR, path.basename(att.fileUrl));
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      await prisma.attachment.delete({ where: { id: req.params.attId } });
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // PHASES (CRUD para configuração de fases)
+  // ═══════════════════════════════════════════════════════════════════
+
+  app.get('/api/modules/:moduleSlug/phases', authMiddleware, async (req, res) => {
+    try {
+      const mod = await prisma.module.findUnique({ where: { slug: req.params.moduleSlug } });
+      if (!mod) return res.status(404).json({ error: 'Modulo nao encontrado' });
+      const phases = await prisma.phase.findMany({ where: { moduleId: mod.id }, orderBy: { position: 'asc' } });
+      res.json(phases);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post('/api/modules/:moduleSlug/phases', authMiddleware, adminOnly, async (req, res) => {
+    try {
+      const mod = await prisma.module.findUnique({ where: { slug: req.params.moduleSlug } });
+      if (!mod) return res.status(404).json({ error: 'Modulo nao encontrado' });
+      const d = req.body;
+      const maxPos = await prisma.phase.aggregate({ where: { moduleId: mod.id }, _max: { position: true } });
+      const phase = await prisma.phase.create({
+        data: {
+          moduleId: mod.id, slug: d.slug, name: d.name,
+          color: d.color || '#94A3B8', bgColor: d.bgColor || '#F1F5F9',
+          isFinal: d.isFinal || false, slaDays: d.slaDays || null,
+          position: (maxPos._max.position || 0) + 1,
+        },
+      });
+      res.status(201).json(phase);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.put('/api/phases/:id', authMiddleware, adminOnly, async (req, res) => {
+    try {
+      const d = req.body;
+      const phase = await prisma.phase.update({
+        where: { id: req.params.id },
+        data: {
+          name: d.name, color: d.color, bgColor: d.bgColor,
+          isFinal: d.isFinal, slaDays: d.slaDays, position: d.position,
+        },
+      });
+      res.json(phase);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.delete('/api/phases/:id', authMiddleware, adminOnly, async (req, res) => {
+    try {
+      const taskCount = await prisma.task.count({ where: { phaseId: req.params.id } });
+      if (taskCount > 0) return res.status(400).json({ error: `Nao e possivel excluir: ${taskCount} card(s) nesta fase. Mova-os primeiro.` });
+      await prisma.phase.delete({ where: { id: req.params.id } });
+      res.json({ ok: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
   });
 
