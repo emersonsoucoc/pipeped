@@ -603,6 +603,53 @@ svg{display:block;flex-shrink:0}
 .audit-action.login{background:#FEF3C7;color:#B45309}
 .audit-action.settings{background:var(--accent-l);color:var(--accent)}
 
+/* ─── NOTA FISCAL ─────────────────────────────────────────────────── */
+.nf-wrap{display:flex;height:100%;overflow:hidden}
+.nf-sidebar{width:360px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.nf-sidebar-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.nf-sidebar-header h3{font:600 14px/1.3 inherit;flex:1}
+.nf-search{padding:8px 16px;border-bottom:1px solid var(--border)}
+.nf-search input{font-size:13px;padding:7px 12px;background:var(--surface);width:100%;border:1px solid var(--border);border-radius:var(--r-sm)}
+.nf-items{flex:1;overflow-y:auto;padding:4px 0}
+.nf-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background var(--t)}
+.nf-item:hover{background:var(--surface)}
+.nf-item.selected{background:#F0F9FF;border-left:3px solid #0EA5E9}
+.nf-item-icon{width:36px;height:36px;border-radius:8px;background:#F0F9FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.nf-item-info{flex:1;min-width:0}
+.nf-item-name{font-size:13px;font-weight:600;color:var(--text)}
+.nf-item-detail{font-size:11px;color:var(--muted);margin-top:2px}
+.nf-item-price{font-size:13px;font-weight:700;color:#0EA5E9;flex-shrink:0}
+.nf-main{flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:24px;gap:20px}
+.nf-section{background:var(--white);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.nf-section h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.nf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.nf-field{display:flex;flex-direction:column;gap:4px}
+.nf-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.nf-field input,.nf-field select,.nf-field textarea{font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--white);transition:border-color var(--t)}
+.nf-field input:focus,.nf-field select:focus{border-color:#0EA5E9;outline:none;box-shadow:0 0 0 3px rgba(14,165,233,.1)}
+.nf-cart{border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.nf-cart-header{display:grid;grid-template-columns:40px 1fr 80px 80px 100px 40px;padding:8px 12px;background:var(--surface);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.nf-cart-row{display:grid;grid-template-columns:40px 1fr 80px 80px 100px 40px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;align-items:center}
+.nf-cart-row:last-child{border-bottom:none}
+.nf-cart-total{display:flex;justify-content:flex-end;padding:12px 16px;background:var(--surface);font-size:14px;font-weight:700;color:var(--text);gap:16px}
+.nf-status{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.nf-status.rascunho{background:#F1F5F9;color:#64748B}
+.nf-status.enviada{background:#EFF6FF;color:#2563EB}
+.nf-status.autorizada{background:#ECFDF5;color:#059669}
+.nf-status.rejeitada{background:#FEF2F2;color:#DC2626}
+.nf-status.cancelada{background:#F8FAFC;color:#94A3B8}
+.nf-emit-btn{padding:12px 24px;background:#0EA5E9;color:#fff;border:none;border-radius:var(--r-sm);font-size:13px;font-weight:700;cursor:pointer;transition:background var(--t);display:flex;align-items:center;gap:8px}
+.nf-emit-btn:hover{background:#0284C7}
+.nf-emit-btn:disabled{opacity:.5;cursor:not-allowed}
+.nf-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:12px;text-align:center;padding:40px}
+.nf-tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px}
+.nf-tab{padding:10px 20px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--t)}
+.nf-tab:hover{color:var(--text)}
+.nf-tab.active{color:#0EA5E9;border-bottom-color:#0EA5E9}
+.nf-history-table{width:100%;border-collapse:collapse}
+.nf-history-table th{background:var(--surface);padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left}
+.nf-history-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px}
+
 /* ─── WHATSAPP ────────────────────────────────────────────────────── */
 .wa-wrap{display:flex;height:100%;overflow:hidden}
 .wa-sidebar{
@@ -2099,14 +2146,13 @@ function navigate(page){
     const g = document.getElementById('navgroup-'+mod.parentGroup);
     if(g) g.classList.add('open');
   }
-  const mod = MODULES[page];
   document.getElementById('topbarTitle').textContent = mod ? mod.label : pageTitles[page]||'PIPEPED';
   const newBtn = document.getElementById('topbarNewBtn');
   const newLabel = document.getElementById('topbarNewLabel');
   if(mod){
     newLabel.textContent=mod.btnLabel;
-    // Esconde botão "Novo" se Clicksign (form inline) ou sem permissão
-    newBtn.style.display = (mod.isClicksign || !canCreateInModule(page)) ? 'none' : '';
+    // Esconde botão "Novo" se Clicksign, Nota Fiscal (UI custom) ou sem permissão
+    newBtn.style.display = (mod.isClicksign || page==='nota_fiscal' || !canCreateInModule(page)) ? 'none' : '';
   }
   else { newBtn.style.display = page==='settings' || page==='whatsapp' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
   // Clicksign polling
@@ -2120,6 +2166,7 @@ function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
   else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
+  else if(currentPage==='nota_fiscal') { el.innerHTML = buildNotaFiscalPage(); }
   else if(currentPage==='whatsapp') el.innerHTML = buildWhatsApp();
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
   else if(currentPage==='settings') el.innerHTML = buildSettings();
@@ -3289,6 +3336,7 @@ function buildSettings(){
     {id:'automacoes',icon:'⚙️',label:'Automações'},
     {id:'emails_log',icon:'📩',label:'Log E-mails'},
     {id:'auditoria',icon:'📋',label:'Auditoria'},
+    {id:'nfe_config',icon:'🧾',label:'Nota Fiscal'},
   ];
   let content = '';
   if(settingsTab==='usuarios')    content = buildSettingsUsuarios();
@@ -3300,6 +3348,7 @@ function buildSettings(){
   if(settingsTab==='automacoes')  content = buildSettingsAutomacoes();
   if(settingsTab==='emails_log')  content = buildSettingsEmailLog();
   if(settingsTab==='auditoria')   content = buildSettingsAuditoria();
+  if(settingsTab==='nfe_config')  content = buildSettingsNFe();
 
   return `<div class="settings-wrap">
     <h2>Configurações do Sistema</h2>
@@ -3662,6 +3711,657 @@ function clearAuditFilters(){
   const u=document.getElementById('auditFilterUser'),m=document.getElementById('auditFilterModule'),f=document.getElementById('auditFilterFrom');
   if(u)u.value='';if(m)m.value='';if(f)f.value='';
   renderPage();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 10 — NOTA FISCAL (Focus NFe + Base de Dados)
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── NFe Data ────────────────────────────────────────────────────────
+let nfeConfig = {
+  ambiente: 'homologacao', // homologacao | producao
+  token: '',
+  // Dados do Emitente
+  cnpj_emitente: '',
+  nome_emitente: '',
+  nome_fantasia_emitente: '',
+  inscricao_estadual_emitente: '',
+  inscricao_municipal_emitente: '',
+  logradouro_emitente: '',
+  numero_emitente: '',
+  complemento_emitente: '',
+  bairro_emitente: '',
+  municipio_emitente: '',
+  uf_emitente: 'BA',
+  cep_emitente: '',
+  telefone_emitente: '',
+  regime_tributario: '1', // 1=Simples Nacional, 2=Simples Excesso, 3=Normal
+};
+
+let nfeDatabase = []; // Base de contratantes/alunos
+let nfeEmitted = [];  // Histórico de NFs emitidas
+let nfeCart = [];      // Itens selecionados para emissão
+let nfeSubTab = 'config'; // config | database | import
+
+function saveNfeData(){
+  localStorage.setItem('pipeped_nfe_config', JSON.stringify(nfeConfig));
+  localStorage.setItem('pipeped_nfe_db', JSON.stringify(nfeDatabase));
+  localStorage.setItem('pipeped_nfe_emitted', JSON.stringify(nfeEmitted));
+}
+function loadNfeData(){
+  const c = localStorage.getItem('pipeped_nfe_config');
+  const d = localStorage.getItem('pipeped_nfe_db');
+  const e = localStorage.getItem('pipeped_nfe_emitted');
+  if(c) nfeConfig = JSON.parse(c);
+  if(d) nfeDatabase = JSON.parse(d);
+  if(e) nfeEmitted = JSON.parse(e);
+}
+
+function buildSettingsNFe(){
+  loadNfeData();
+  const subTabs = [
+    {id:'config',label:'⚙️ Configuração API'},
+    {id:'database',label:'📋 Base de Dados'},
+    {id:'import',label:'📥 Importar'},
+  ];
+  return `
+  <div class="nf-tab-bar">
+    ${subTabs.map(t=>`<div class="nf-tab ${nfeSubTab===t.id?'active':''}" onclick="nfeSubTab='${t.id}';renderPage()">${t.label}</div>`).join('')}
+  </div>
+  ${nfeSubTab==='config' ? buildNfeConfigTab() : nfeSubTab==='database' ? buildNfeDatabaseTab() : buildNfeImportTab()}`;
+}
+
+function buildNfeConfigTab(){
+  const c = nfeConfig;
+  return `
+  <div class="nf-section">
+    <h4>🔑 Credenciais Focus NFe</h4>
+    <div class="nf-grid">
+      <div class="nf-field">
+        <label>Ambiente</label>
+        <select id="nfeCfgAmbiente" value="${c.ambiente}">
+          <option value="homologacao" ${c.ambiente==='homologacao'?'selected':''}>Homologação (Testes)</option>
+          <option value="producao" ${c.ambiente==='producao'?'selected':''}>Produção</option>
+        </select>
+      </div>
+      <div class="nf-field" style="grid-column:span 2">
+        <label>Token da API</label>
+        <input type="password" id="nfeCfgToken" value="${esc(c.token)}" placeholder="Cole aqui o token do Focus NFe">
+      </div>
+    </div>
+  </div>
+
+  <div class="nf-section">
+    <h4>🏢 Dados do Emitente</h4>
+    <div class="nf-grid">
+      <div class="nf-field"><label>CNPJ</label><input id="nfeCfgCnpj" value="${esc(c.cnpj_emitente)}" placeholder="00.000.000/0000-00"></div>
+      <div class="nf-field"><label>Razão Social</label><input id="nfeCfgNome" value="${esc(c.nome_emitente)}"></div>
+      <div class="nf-field"><label>Nome Fantasia</label><input id="nfeCfgFantasia" value="${esc(c.nome_fantasia_emitente)}"></div>
+      <div class="nf-field"><label>Inscrição Estadual</label><input id="nfeCfgIE" value="${esc(c.inscricao_estadual_emitente)}"></div>
+      <div class="nf-field"><label>Inscrição Municipal</label><input id="nfeCfgIM" value="${esc(c.inscricao_municipal_emitente)}"></div>
+      <div class="nf-field"><label>Regime Tributário</label>
+        <select id="nfeCfgRegime">
+          <option value="1" ${c.regime_tributario==='1'?'selected':''}>Simples Nacional</option>
+          <option value="2" ${c.regime_tributario==='2'?'selected':''}>Simples Nacional - Excesso</option>
+          <option value="3" ${c.regime_tributario==='3'?'selected':''}>Regime Normal</option>
+        </select>
+      </div>
+    </div>
+    <div class="nf-grid" style="margin-top:12px">
+      <div class="nf-field" style="grid-column:span 2"><label>Logradouro</label><input id="nfeCfgLogr" value="${esc(c.logradouro_emitente)}"></div>
+      <div class="nf-field"><label>Número</label><input id="nfeCfgNum" value="${esc(c.numero_emitente)}"></div>
+      <div class="nf-field"><label>Complemento</label><input id="nfeCfgCompl" value="${esc(c.complemento_emitente)}"></div>
+      <div class="nf-field"><label>Bairro</label><input id="nfeCfgBairro" value="${esc(c.bairro_emitente)}"></div>
+      <div class="nf-field"><label>Município</label><input id="nfeCfgMun" value="${esc(c.municipio_emitente)}"></div>
+      <div class="nf-field"><label>UF</label>
+        <select id="nfeCfgUF">${['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'].map(u=>`<option ${c.uf_emitente===u?'selected':''}>${u}</option>`).join('')}</select>
+      </div>
+      <div class="nf-field"><label>CEP</label><input id="nfeCfgCep" value="${esc(c.cep_emitente)}"></div>
+      <div class="nf-field"><label>Telefone</label><input id="nfeCfgTel" value="${esc(c.telefone_emitente)}"></div>
+    </div>
+    <div style="margin-top:16px;text-align:right">
+      <button class="nf-emit-btn" onclick="saveNfeConfig()">💾 Salvar Configurações</button>
+    </div>
+  </div>`;
+}
+
+function saveNfeConfig(){
+  nfeConfig.ambiente = document.getElementById('nfeCfgAmbiente')?.value||'homologacao';
+  nfeConfig.token = document.getElementById('nfeCfgToken')?.value||'';
+  nfeConfig.cnpj_emitente = document.getElementById('nfeCfgCnpj')?.value||'';
+  nfeConfig.nome_emitente = document.getElementById('nfeCfgNome')?.value||'';
+  nfeConfig.nome_fantasia_emitente = document.getElementById('nfeCfgFantasia')?.value||'';
+  nfeConfig.inscricao_estadual_emitente = document.getElementById('nfeCfgIE')?.value||'';
+  nfeConfig.inscricao_municipal_emitente = document.getElementById('nfeCfgIM')?.value||'';
+  nfeConfig.regime_tributario = document.getElementById('nfeCfgRegime')?.value||'1';
+  nfeConfig.logradouro_emitente = document.getElementById('nfeCfgLogr')?.value||'';
+  nfeConfig.numero_emitente = document.getElementById('nfeCfgNum')?.value||'';
+  nfeConfig.complemento_emitente = document.getElementById('nfeCfgCompl')?.value||'';
+  nfeConfig.bairro_emitente = document.getElementById('nfeCfgBairro')?.value||'';
+  nfeConfig.municipio_emitente = document.getElementById('nfeCfgMun')?.value||'';
+  nfeConfig.uf_emitente = document.getElementById('nfeCfgUF')?.value||'BA';
+  nfeConfig.cep_emitente = document.getElementById('nfeCfgCep')?.value||'';
+  nfeConfig.telefone_emitente = document.getElementById('nfeCfgTel')?.value||'';
+  saveNfeData();
+  showToast('Configurações NFe salvas!');
+}
+
+function buildNfeDatabaseTab(){
+  const searchVal = document.getElementById('nfeDbSearch')?.value||'';
+  let filtered = nfeDatabase;
+  if(searchVal){
+    const q = searchVal.toLowerCase();
+    filtered = nfeDatabase.filter(r=>
+      (r.aluno||'').toLowerCase().includes(q) ||
+      (r.contratante||'').toLowerCase().includes(q) ||
+      (r.cpf||'').includes(q) ||
+      (r.matricula||'').includes(q)
+    );
+  }
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <h3 style="font-size:14px;font-weight:600">Base de Contratantes</h3>
+      <span style="font-size:12px;color:var(--muted)">${nfeDatabase.length} registros</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="nfeDbSearch" placeholder="Buscar por nome, CPF, matrícula..." value="${esc(searchVal)}"
+        oninput="renderPage()" style="font-size:12px;padding:7px 12px;width:260px;border:1px solid var(--border);border-radius:var(--r-sm)">
+      <button class="nf-emit-btn" style="padding:7px 14px;font-size:12px" onclick="openNfeDbModal()">+ Adicionar</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="nf-history-table" style="background:var(--white);border-radius:var(--r);box-shadow:var(--sh)">
+      <thead><tr>
+        <th>Matrícula</th><th>Aluno</th><th>Contratante</th><th>CPF</th><th>Turma</th><th>Valor</th><th>Escola</th><th>Ações</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.length===0?`<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Nenhum registro encontrado. Adicione manualmente ou importe.</td></tr>`:''}
+        ${filtered.slice(0,100).map((r,i)=>`<tr>
+          <td style="font-weight:600">${esc(r.matricula||'—')}</td>
+          <td>${esc(r.aluno)}</td>
+          <td>${esc(r.contratante)}</td>
+          <td style="font-family:monospace;font-size:11px">${esc(r.cpf)}</td>
+          <td>${esc(r.turma||'—')}</td>
+          <td style="font-weight:600;color:#0EA5E9">R$ ${parseFloat(r.valor||0).toFixed(2).replace('.',',')}</td>
+          <td>${esc(schoolById(r.escola)?.name||r.escola||'—')}</td>
+          <td style="display:flex;gap:4px">
+            <button onclick="editNfeDbEntry(${nfeDatabase.indexOf(r)})" style="padding:4px 8px;font-size:11px;background:var(--accent-l);color:var(--accent);border:none;border-radius:4px;cursor:pointer">Editar</button>
+            <button onclick="deleteNfeDbEntry(${nfeDatabase.indexOf(r)})" style="padding:4px 8px;font-size:11px;background:#FEF2F2;color:#DC2626;border:none;border-radius:4px;cursor:pointer">Excluir</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+  ${filtered.length>100?`<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px">Mostrando 100 de ${filtered.length} registros. Use a busca para filtrar.</div>`:''}`;
+}
+
+function buildNfeImportTab(){
+  return `
+  <div class="nf-section">
+    <h4>📥 Importar Base de Dados</h4>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
+      Importe registros a partir de um arquivo CSV com as colunas:<br>
+      <code style="font-size:11px;background:var(--surface);padding:2px 6px;border-radius:4px">matricula, aluno, contratante, rg, cpf, contratada, documento, vencimento, valor, data_pagamento, turma, escola</code>
+    </p>
+    <div style="border:2px dashed var(--border);border-radius:var(--r);padding:32px;text-align:center;background:var(--surface);cursor:pointer" onclick="document.getElementById('nfeCsvInput').click()">
+      <input type="file" id="nfeCsvInput" accept=".csv,.txt" style="display:none" onchange="importNfeCsv(this)">
+      <div style="font-size:24px;margin-bottom:8px">📄</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text)">Clique para selecionar arquivo CSV</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">ou arraste e solte aqui</div>
+    </div>
+  </div>
+  <div class="nf-section">
+    <h4>✏️ Adicionar em Lote (colar dados)</h4>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Cole os dados do relatório no formato: uma linha por registro, colunas separadas por TAB ou ponto-e-vírgula.</p>
+    <textarea id="nfeBulkText" rows="8" style="width:100%;font-size:12px;font-family:monospace;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm)" placeholder="3218&#9;LAVINIA DE MOURA OLIVEIRA&#9;ALINE REGINA TURCO DE MOURA&#9;11025796-1&#9;080.309.139-74&#9;20.963.324/0001-32&#9;95090/2026&#9;10/04/2026&#9;436,36&#9;08/04/2026"></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <select id="nfeBulkSchool" style="font-size:12px;padding:7px 12px">
+        <option value="">Selecione a escola</option>
+        ${SCHOOLS.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}
+      </select>
+      <select id="nfeBulkTurma" style="font-size:12px;padding:7px 12px">
+        <option value="">Turma (opcional)</option>
+        ${['Infantil III','Infantil IV','Infantil V','1º Fund.','2º Fund.','3º Fund.','4º Fund.','5º Fund.','6º Fund.','7º Fund.','8º Fund.','9º Fund.','1º EM','2º EM','3º EM'].map(t=>`<option>${t}</option>`).join('')}
+      </select>
+      <button class="nf-emit-btn" style="padding:8px 16px;font-size:12px" onclick="importNfeBulk()">Importar Dados</button>
+    </div>
+  </div>`;
+}
+
+function importNfeCsv(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const lines = e.target.result.split('\n').filter(l=>l.trim());
+    if(lines.length<2){ showToast('Arquivo vazio ou sem dados','error'); return; }
+    // Skip header
+    let imported = 0;
+    for(let i=1; i<lines.length; i++){
+      const cols = lines[i].split(/[;\t,]/).map(c=>c.trim().replace(/^"|"$/g,''));
+      if(cols.length<5) continue;
+      nfeDatabase.push({
+        id: uid(), matricula:cols[0]||'', aluno:cols[1]||'', contratante:cols[2]||'',
+        rg:cols[3]||'', cpf:cols[4]||'', contratada:cols[5]||'', documento:cols[6]||'',
+        vencimento:cols[7]||'', valor:cols[8]?.replace(/\./g,'').replace(',','.')||'0',
+        dataPagamento:cols[9]||'', turma:cols[10]||'', escola:cols[11]||'',
+      });
+      imported++;
+    }
+    saveNfeData();
+    showToast(`${imported} registros importados!`);
+    renderPage();
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function importNfeBulk(){
+  const text = document.getElementById('nfeBulkText')?.value||'';
+  const school = document.getElementById('nfeBulkSchool')?.value||'';
+  const turma = document.getElementById('nfeBulkTurma')?.value||'';
+  if(!text.trim()){ showToast('Cole os dados primeiro','error'); return; }
+  const lines = text.split('\n').filter(l=>l.trim());
+  let imported = 0;
+  lines.forEach(line=>{
+    const cols = line.split(/\t|;/).map(c=>c.trim());
+    if(cols.length<3) return;
+    // Format: matricula | aluno | contratante | rg | cpf | contratada | documento | vencimento | valor | dataPagamento
+    nfeDatabase.push({
+      id: uid(), matricula:cols[0]||'', aluno:cols[1]||'', contratante:cols[2]||'',
+      rg:cols[3]||'', cpf:cols[4]||'', contratada:cols[5]||'', documento:cols[6]||'',
+      vencimento:cols[7]||'', valor:cols[8]?.replace(/\./g,'').replace(',','.')||'0',
+      dataPagamento:cols[9]||'', turma:turma, escola:school,
+    });
+    imported++;
+  });
+  saveNfeData();
+  showToast(`${imported} registros importados!`);
+  renderPage();
+}
+
+function openNfeDbModal(idx){
+  const entry = idx!==undefined ? nfeDatabase[idx] : null;
+  const isEdit = !!entry;
+  const body = `
+    <div class="nf-grid">
+      <div class="nf-field"><label>Matrícula</label><input id="nfeM_mat" value="${esc(entry?.matricula||'')}"></div>
+      <div class="nf-field"><label>Aluno</label><input id="nfeM_aluno" value="${esc(entry?.aluno||'')}"></div>
+      <div class="nf-field"><label>Contratante (Responsável)</label><input id="nfeM_contr" value="${esc(entry?.contratante||'')}"></div>
+      <div class="nf-field"><label>RG</label><input id="nfeM_rg" value="${esc(entry?.rg||'')}"></div>
+      <div class="nf-field"><label>CPF</label><input id="nfeM_cpf" value="${esc(entry?.cpf||'')}"></div>
+      <div class="nf-field"><label>Valor (R$)</label><input type="number" step="0.01" id="nfeM_valor" value="${entry?.valor||''}"></div>
+      <div class="nf-field"><label>Turma</label><input id="nfeM_turma" value="${esc(entry?.turma||'')}"></div>
+      <div class="nf-field"><label>Escola</label>
+        <select id="nfeM_escola">
+          <option value="">Selecione</option>
+          ${SCHOOLS.map(s=>`<option value="${s.id}" ${entry?.escola===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="nf-field"><label>Documento</label><input id="nfeM_doc" value="${esc(entry?.documento||'')}"></div>
+      <div class="nf-field"><label>Vencimento</label><input id="nfeM_venc" value="${esc(entry?.vencimento||'')}"></div>
+    </div>`;
+  showSettingsModal(isEdit?'Editar Registro':'Novo Registro', body, `saveNfeDbEntry(${idx!==undefined?idx:-1})`);
+}
+
+function saveNfeDbEntry(idx){
+  const entry = {
+    id: idx>=0 ? nfeDatabase[idx].id : uid(),
+    matricula: document.getElementById('nfeM_mat')?.value||'',
+    aluno: document.getElementById('nfeM_aluno')?.value||'',
+    contratante: document.getElementById('nfeM_contr')?.value||'',
+    rg: document.getElementById('nfeM_rg')?.value||'',
+    cpf: document.getElementById('nfeM_cpf')?.value||'',
+    valor: document.getElementById('nfeM_valor')?.value||'0',
+    turma: document.getElementById('nfeM_turma')?.value||'',
+    escola: document.getElementById('nfeM_escola')?.value||'',
+    documento: document.getElementById('nfeM_doc')?.value||'',
+    vencimento: document.getElementById('nfeM_venc')?.value||'',
+    contratada: nfeConfig.cnpj_emitente||'',
+    dataPagamento: idx>=0 ? nfeDatabase[idx].dataPagamento||'' : '',
+  };
+  if(!entry.contratante && !entry.aluno){ showToast('Preencha ao menos o nome','error'); return; }
+  if(idx>=0) nfeDatabase[idx] = entry;
+  else nfeDatabase.push(entry);
+  saveNfeData();
+  closeSettingsModal();
+  showToast(idx>=0?'Registro atualizado':'Registro adicionado');
+  renderPage();
+}
+
+function editNfeDbEntry(idx){ openNfeDbModal(idx); }
+
+function deleteNfeDbEntry(idx){
+  if(!confirm('Excluir registro de '+nfeDatabase[idx]?.aluno+'?')) return;
+  nfeDatabase.splice(idx,1);
+  saveNfeData(); renderPage();
+  showToast('Registro excluído');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// NOTA FISCAL — CUSTOM PAGE (replaces generic Kanban)
+// ═══════════════════════════════════════════════════════════════════════
+
+let nfPageTab = 'emitir'; // emitir | historico
+let nfSearchQ = '';
+let nfSelectedItems = [];
+
+function buildNotaFiscalPage(){
+  loadNfeData();
+  return `<div class="nf-wrap">
+    <div class="nf-sidebar">
+      <div class="nf-sidebar-header">
+        <div style="width:32px;height:32px;border-radius:8px;background:#0EA5E9;display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M4 2h10l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Base de Dados</h3>
+        <span style="font-size:11px;color:var(--muted)">${nfeDatabase.length}</span>
+      </div>
+      <div class="nf-search">
+        <input type="text" placeholder="Buscar aluno, contratante, CPF..." value="${esc(nfSearchQ)}" oninput="nfSearchQ=this.value;renderPage()">
+      </div>
+      <div class="nf-items" id="nfItemList">
+        ${(()=>{
+          let items = nfeDatabase;
+          if(nfSearchQ){
+            const q = nfSearchQ.toLowerCase();
+            items = items.filter(r=>(r.aluno||'').toLowerCase().includes(q)||(r.contratante||'').toLowerCase().includes(q)||(r.cpf||'').includes(q)||(r.matricula||'').includes(q));
+          }
+          if(items.length===0) return '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Nenhum registro encontrado.<br>Cadastre na aba Configurações > Nota Fiscal.</div>';
+          return items.slice(0,80).map(r=>{
+            const sel = nfSelectedItems.find(s=>s.id===r.id);
+            return `<div class="nf-item ${sel?'selected':''}" onclick="toggleNfItem('${r.id}')">
+              <div class="nf-item-icon">📄</div>
+              <div class="nf-item-info">
+                <div class="nf-item-name">${esc(r.aluno)}</div>
+                <div class="nf-item-detail">${esc(r.contratante)} · Mat. ${esc(r.matricula||'—')}</div>
+                <div class="nf-item-detail">${esc(r.cpf)} · ${esc(r.turma||'—')}</div>
+              </div>
+              <div class="nf-item-price">R$ ${parseFloat(r.valor||0).toFixed(2).replace('.',',')}</div>
+            </div>`;
+          }).join('');
+        })()}
+      </div>
+    </div>
+    <div class="nf-main">
+      <div class="nf-tab-bar" style="flex-shrink:0">
+        <div class="nf-tab ${nfPageTab==='emitir'?'active':''}" onclick="nfPageTab='emitir';renderPage()">🧾 Emitir NF-e</div>
+        <div class="nf-tab ${nfPageTab==='historico'?'active':''}" onclick="nfPageTab='historico';renderPage()">📋 Histórico</div>
+      </div>
+      ${nfPageTab==='emitir' ? buildNfEmitirTab() : buildNfHistoricoTab()}
+    </div>
+  </div>`;
+}
+
+function toggleNfItem(id){
+  const idx = nfSelectedItems.findIndex(s=>s.id===id);
+  if(idx>=0) nfSelectedItems.splice(idx,1);
+  else {
+    const r = nfeDatabase.find(d=>d.id===id);
+    if(r) nfSelectedItems.push({...r});
+  }
+  renderPage();
+}
+
+function buildNfEmitirTab(){
+  if(nfSelectedItems.length===0){
+    return `<div class="nf-empty">
+      <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path d="M4 2h10l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="var(--muted)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <div style="font-size:15px;font-weight:600;color:var(--text)">Selecione registros para emissão</div>
+      <div style="font-size:13px;max-width:320px">Busque na lista à esquerda e clique nos registros que deseja incluir na Nota Fiscal.</div>
+    </div>`;
+  }
+  const total = nfSelectedItems.reduce((a,r)=>a+parseFloat(r.valor||0),0);
+  return `
+  <div class="nf-section">
+    <h4>📝 Itens Selecionados (${nfSelectedItems.length})</h4>
+    <div class="nf-cart">
+      <div class="nf-cart-header"><div>#</div><div>Aluno / Contratante</div><div>CPF</div><div>Turma</div><div>Valor</div><div></div></div>
+      ${nfSelectedItems.map((r,i)=>`<div class="nf-cart-row">
+        <div style="font-weight:600;color:var(--muted)">${i+1}</div>
+        <div><strong>${esc(r.aluno)}</strong><br><span style="font-size:11px;color:var(--muted)">${esc(r.contratante)}</span></div>
+        <div style="font-family:monospace;font-size:11px">${esc(r.cpf)}</div>
+        <div>${esc(r.turma||'—')}</div>
+        <div style="font-weight:600;color:#0EA5E9">R$ ${parseFloat(r.valor||0).toFixed(2).replace('.',',')}</div>
+        <div><button onclick="nfSelectedItems.splice(${i},1);renderPage()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px" title="Remover">✕</button></div>
+      </div>`).join('')}
+      <div class="nf-cart-total"><span>Total:</span><span style="color:#0EA5E9">R$ ${total.toFixed(2).replace('.',',')}</span></div>
+    </div>
+  </div>
+
+  <div class="nf-section">
+    <h4>📋 Dados da Nota</h4>
+    <div class="nf-grid">
+      <div class="nf-field"><label>Natureza da Operação</label><input id="nfNatureza" value="Prestação de Serviços Educacionais"></div>
+      <div class="nf-field"><label>Tipo</label>
+        <select id="nfTipo">
+          <option value="nfse" selected>NFS-e (Serviço)</option>
+          <option value="nfe">NF-e (Produto)</option>
+        </select>
+      </div>
+      <div class="nf-field"><label>Descrição do Serviço</label>
+        <input id="nfDescricao" value="Mensalidade escolar - ${new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}">
+      </div>
+      <div class="nf-field"><label>CNAE</label><input id="nfCnae" value="8512-1/00" placeholder="ex: 8512-1/00"></div>
+      <div class="nf-field"><label>Código do Serviço</label><input id="nfCodServ" value="06.01" placeholder="Código municipal"></div>
+      <div class="nf-field"><label>Alíquota ISS (%)</label><input type="number" step="0.01" id="nfAliqIss" value="5.00"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:12px;flex-shrink:0;padding-top:8px">
+    <button class="btn-ghost" style="padding:10px 20px;font-size:13px" onclick="nfSelectedItems=[];renderPage()">Limpar Seleção</button>
+    <button class="nf-emit-btn" onclick="emitirNfe()" ${!nfeConfig.token?'disabled title="Configure o token da API nas Configurações"':''}>
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Enviar para Emissão (${nfSelectedItems.length} ${nfSelectedItems.length===1?'nota':'notas'})
+    </button>
+  </div>`;
+}
+
+function buildNfHistoricoTab(){
+  loadNfeData();
+  if(nfeEmitted.length===0){
+    return `<div class="nf-empty">
+      <div style="font-size:15px;font-weight:600;color:var(--text)">Nenhuma nota emitida ainda</div>
+      <div style="font-size:13px">As notas aparecerão aqui após a emissão.</div>
+    </div>`;
+  }
+  return `
+  <div class="nf-section">
+    <h4>📋 Notas Emitidas (${nfeEmitted.length})</h4>
+    <div style="overflow-x:auto">
+      <table class="nf-history-table" style="background:var(--white)">
+        <thead><tr><th>Ref</th><th>Contratante</th><th>Aluno</th><th>Valor</th><th>Tipo</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead>
+        <tbody>
+          ${nfeEmitted.slice().reverse().map(n=>`<tr>
+            <td style="font-family:monospace;font-size:11px">${esc(n.ref||'—')}</td>
+            <td>${esc(n.contratante)}</td>
+            <td>${esc(n.aluno)}</td>
+            <td style="font-weight:600">R$ ${parseFloat(n.valor||0).toFixed(2).replace('.',',')}</td>
+            <td>${esc(n.tipo==='nfse'?'NFS-e':'NF-e')}</td>
+            <td><span class="nf-status ${n.status||'rascunho'}">${esc(nfStatusLabel(n.status))}</span></td>
+            <td style="font-size:11px">${esc(n.data||'—')}</td>
+            <td style="display:flex;gap:4px">
+              <button onclick="consultarNfe('${esc(n.ref)}')" style="padding:4px 8px;font-size:11px;background:#EFF6FF;color:#2563EB;border:none;border-radius:4px;cursor:pointer">Consultar</button>
+              ${n.status==='autorizada'?`<button onclick="cancelarNfe('${esc(n.ref)}')" style="padding:4px 8px;font-size:11px;background:#FEF2F2;color:#DC2626;border:none;border-radius:4px;cursor:pointer">Cancelar</button>`:''}
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function nfStatusLabel(s){
+  const map = {processando:'Processando',autorizada:'Autorizada',rejeitada:'Rejeitada',cancelada:'Cancelada',erro:'Erro',rascunho:'Rascunho',enviada:'Enviada'};
+  return map[s]||s||'Rascunho';
+}
+
+// ─── FOCUS NFE API INTEGRATION ────────────────────────────────────────
+function getFocusBaseUrl(){
+  return nfeConfig.ambiente==='producao' ? 'https://api.focusnfe.com.br' : 'https://homologacao.focusnfe.com.br';
+}
+
+async function focusApi(method, path, body){
+  const base = getFocusBaseUrl();
+  const headers = {
+    'Authorization': 'Basic ' + btoa(nfeConfig.token + ':'),
+    'Content-Type': 'application/json',
+  };
+  const opts = { method, headers };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(base + path, opts);
+  const data = await res.json().catch(()=>({}));
+  return { ok: res.ok, status: res.status, data };
+}
+
+async function emitirNfe(){
+  if(!nfeConfig.token){ showToast('Configure o token da API primeiro (Configurações > Nota Fiscal)','error'); return; }
+  if(nfSelectedItems.length===0){ showToast('Selecione ao menos um registro','error'); return; }
+
+  const tipo = document.getElementById('nfTipo')?.value||'nfse';
+  const natureza = document.getElementById('nfNatureza')?.value||'Prestação de Serviços Educacionais';
+  const descricao = document.getElementById('nfDescricao')?.value||'Mensalidade escolar';
+  const aliqIss = parseFloat(document.getElementById('nfAliqIss')?.value||'5');
+  const cnae = document.getElementById('nfCnae')?.value||'';
+  const codServ = document.getElementById('nfCodServ')?.value||'';
+
+  const total = nfSelectedItems.length;
+  let success = 0, errors = 0;
+
+  showToast(`Enviando ${total} nota(s) para emissão...`);
+
+  for(const item of nfSelectedItems){
+    const ref = 'nf_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+
+    let payload;
+    if(tipo==='nfse'){
+      payload = {
+        data_emissao: new Date().toISOString(),
+        natureza_operacao: natureza,
+        prestador: {
+          cnpj: nfeConfig.cnpj_emitente?.replace(/\D/g,''),
+          inscricao_municipal: nfeConfig.inscricao_municipal_emitente,
+          codigo_municipio: nfeConfig.municipio_emitente,
+        },
+        tomador: {
+          cpf: item.cpf?.replace(/\D/g,''),
+          razao_social: item.contratante,
+          email: '',
+        },
+        servico: {
+          aliquota: aliqIss,
+          discriminacao: descricao + ' - Aluno: ' + item.aluno + (item.turma?' - Turma: '+item.turma:''),
+          iss_retido: false,
+          codigo_cnae: cnae?.replace(/\D/g,''),
+          codigo_tributario_municipio: codServ,
+          valor_servicos: parseFloat(item.valor||0),
+        },
+      };
+    } else {
+      // NF-e (produto) — simplified
+      payload = {
+        natureza_operacao: natureza,
+        data_emissao: new Date().toISOString(),
+        tipo_documento: '1',
+        finalidade_emissao: '1',
+        cnpj_emitente: nfeConfig.cnpj_emitente?.replace(/\D/g,''),
+        nome_emitente: nfeConfig.nome_emitente,
+        inscricao_estadual_emitente: nfeConfig.inscricao_estadual_emitente,
+        logradouro_emitente: nfeConfig.logradouro_emitente,
+        numero_emitente: nfeConfig.numero_emitente,
+        bairro_emitente: nfeConfig.bairro_emitente,
+        municipio_emitente: nfeConfig.municipio_emitente,
+        uf_emitente: nfeConfig.uf_emitente,
+        cep_emitente: nfeConfig.cep_emitente?.replace(/\D/g,''),
+        nome_destinatario: item.contratante,
+        cpf_destinatario: item.cpf?.replace(/\D/g,''),
+        items: [{
+          numero_item: '1',
+          descricao: descricao + ' - ' + item.aluno,
+          quantidade_comercial: '1',
+          valor_unitario_comercial: parseFloat(item.valor||0).toFixed(2),
+          valor_bruto: parseFloat(item.valor||0).toFixed(2),
+        }],
+      };
+    }
+
+    try {
+      const endpoint = tipo==='nfse' ? '/v2/nfse' : '/v2/nfe';
+      const res = await focusApi('POST', endpoint + '?ref=' + ref, payload);
+
+      nfeEmitted.push({
+        id: uid(), ref, aluno:item.aluno, contratante:item.contratante,
+        cpf:item.cpf, valor:item.valor, tipo, status: res.ok?'processando':'erro',
+        data: now(), response: res.data, matricula:item.matricula, turma:item.turma,
+      });
+
+      if(res.ok) success++; else errors++;
+    } catch(e){
+      nfeEmitted.push({
+        id: uid(), ref, aluno:item.aluno, contratante:item.contratante,
+        cpf:item.cpf, valor:item.valor, tipo, status:'erro',
+        data: now(), response:{erro:e.message},
+      });
+      errors++;
+    }
+  }
+
+  saveNfeData();
+  addAudit('Emitiu notas fiscais', `${success} ok, ${errors} erros (${total} total)`, 'nota_fiscal');
+  nfSelectedItems = [];
+  nfPageTab = 'historico';
+  renderPage();
+  showToast(errors>0 ? `${success} enviadas, ${errors} com erro` : `${success} nota(s) enviadas para emissão!`, errors>0?'warn':'success');
+}
+
+async function consultarNfe(ref){
+  if(!nfeConfig.token){ showToast('Configure o token','error'); return; }
+  const entry = nfeEmitted.find(n=>n.ref===ref);
+  if(!entry) return;
+  const tipo = entry.tipo||'nfse';
+  const endpoint = tipo==='nfse' ? '/v2/nfse/' : '/v2/nfe/';
+
+  try {
+    showToast('Consultando status...');
+    const res = await focusApi('GET', endpoint + ref + '?completa=1');
+    if(res.ok && res.data){
+      const st = res.data.status;
+      if(st==='autorizado'||st==='autorizada') entry.status='autorizada';
+      else if(st==='cancelado'||st==='cancelada') entry.status='cancelada';
+      else if(st==='erro_autorizacao') entry.status='rejeitada';
+      else if(st==='processando_autorizacao') entry.status='processando';
+      entry.response = res.data;
+      saveNfeData(); renderPage();
+      showToast('Status: '+nfStatusLabel(entry.status));
+    } else {
+      showToast('Erro ao consultar: '+(res.data?.mensagem||res.status),'error');
+    }
+  } catch(e){
+    showToast('Erro de conexão: '+e.message,'error');
+  }
+}
+
+async function cancelarNfe(ref){
+  if(!confirm('Cancelar esta nota fiscal? Esta ação não pode ser desfeita.')) return;
+  const entry = nfeEmitted.find(n=>n.ref===ref);
+  if(!entry) return;
+  const tipo = entry.tipo||'nfse';
+  const endpoint = tipo==='nfse' ? '/v2/nfse/' : '/v2/nfe/';
+
+  try {
+    showToast('Cancelando NF...');
+    const res = await focusApi('DELETE', endpoint + ref, {justificativa:'Cancelamento solicitado pelo emissor'});
+    if(res.ok){
+      entry.status = 'cancelada';
+      saveNfeData(); renderPage();
+      addAudit('Cancelou nota fiscal', ref, 'nota_fiscal');
+      showToast('Nota fiscal cancelada');
+    } else {
+      showToast('Erro: '+(res.data?.mensagem||'Falha no cancelamento'),'error');
+    }
+  } catch(e){
+    showToast('Erro de conexão: '+e.message,'error');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -4947,6 +5647,7 @@ document.addEventListener('keydown',e=>{
     }
   }
   initSettingsData();
+  loadNfeData();
   initEmailSystem();
   document.getElementById('notifPanel').style.display='none';
   setTimeout(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 3000);
