@@ -4610,8 +4610,9 @@ function buildNfHistoricoTab(){
             <td>${esc(n.tipo==='nfse'?'NFS-e':'NF-e')}</td>
             <td><span class="nf-status ${n.status||'rascunho'}">${esc(nfStatusLabel(n.status))}</span></td>
             <td style="font-size:11px">${esc(n.data||'—')}</td>
-            <td style="display:flex;gap:4px">
+            <td style="display:flex;gap:4px;flex-wrap:wrap">
               <button onclick="consultarNfe('${esc(n.ref)}')" style="padding:4px 8px;font-size:11px;background:#EFF6FF;color:#2563EB;border:none;border-radius:4px;cursor:pointer">Consultar</button>
+              ${n.status==='erro'||n.status==='rejeitada'?`<button onclick="reenviarNfe('${esc(n.ref)}')" style="padding:4px 8px;font-size:11px;background:#ECFDF5;color:#059669;border:none;border-radius:4px;cursor:pointer">Reenviar</button><button onclick="excluirNfeHist('${esc(n.ref)}')" style="padding:4px 8px;font-size:11px;background:#FEF2F2;color:#DC2626;border:none;border-radius:4px;cursor:pointer">Excluir</button>`:''}
               ${n.status==='autorizada'?`<button onclick="cancelarNfe('${esc(n.ref)}')" style="padding:4px 8px;font-size:11px;background:#FEF2F2;color:#DC2626;border:none;border-radius:4px;cursor:pointer">Cancelar</button>`:''}
             </td>
           </tr>`).join('')}
@@ -4789,6 +4790,82 @@ async function cancelarNfe(ref){
   } catch(e){
     showToast('Erro de conexão: '+e.message,'error');
   }
+}
+
+async function reenviarNfe(ref){
+  const entry = nfeEmitted.find(n=>n.ref===ref);
+  if(!entry) return;
+  if(!nfeConfig.token){ showToast('Configure o token da API primeiro','error'); return; }
+
+  // Generate new ref (Focus NFe requires unique refs)
+  const newRef = 'nf_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  const tipo = entry.tipo||'nfse';
+  const endpoint = tipo==='nfse' ? '/v2/nfse' : '/v2/nfe';
+
+  showToast('Reenviando nota fiscal...');
+
+  try {
+    // Rebuild payload from original entry data
+    let payload;
+    if(tipo==='nfse'){
+      payload = {
+        data_emissao: new Date().toISOString(),
+        natureza_operacao: 'Prestação de Serviços Educacionais',
+        prestador: {
+          cnpj: nfeConfig.cnpj_emitente?.replace(/\D/g,''),
+          inscricao_municipal: nfeConfig.inscricao_municipal_emitente,
+          codigo_municipio: nfeConfig.municipio_emitente,
+        },
+        tomador: {
+          cpf: entry.cpf?.replace(/\D/g,''),
+          razao_social: entry.contratante,
+        },
+        servico: {
+          aliquota: 5,
+          discriminacao: 'Mensalidade escolar - Aluno: ' + entry.aluno + (entry.turma?' - Turma: '+entry.turma:''),
+          iss_retido: false,
+          valor_servicos: parseFloat(entry.valor||0),
+        },
+      };
+    } else {
+      payload = {
+        natureza_operacao: 'Prestação de Serviços Educacionais',
+        data_emissao: new Date().toISOString(),
+        tipo_documento: '1', finalidade_emissao: '1',
+        cnpj_emitente: nfeConfig.cnpj_emitente?.replace(/\D/g,''),
+        nome_emitente: nfeConfig.nome_emitente,
+        inscricao_estadual_emitente: nfeConfig.inscricao_estadual_emitente,
+        nome_destinatario: entry.contratante,
+        cpf_destinatario: entry.cpf?.replace(/\D/g,''),
+        items: [{ numero_item:'1', descricao:'Mensalidade escolar - '+entry.aluno,
+          quantidade_comercial:'1', valor_unitario_comercial:parseFloat(entry.valor||0).toFixed(2),
+          valor_bruto:parseFloat(entry.valor||0).toFixed(2) }],
+      };
+    }
+
+    const res = await focusApi('POST', endpoint + '?ref=' + newRef, payload);
+
+    // Update the existing entry with new ref and status
+    entry.ref = newRef;
+    entry.status = res.ok ? 'processando' : 'erro';
+    entry.data = now();
+    entry.response = res.data;
+    entry._tentativas = (entry._tentativas||1) + 1;
+
+    saveNfeData();
+    addAudit('Reenviou nota fiscal', newRef + ' (tentativa ' + entry._tentativas + ')', 'nota_fiscal');
+    renderPage();
+    showToast(res.ok ? 'Nota reenviada com sucesso!' : 'Erro no reenvio: '+(res.data?.mensagem||'verifique os dados'), res.ok?'success':'error');
+  } catch(e){
+    showToast('Erro de conexão: '+e.message,'error');
+  }
+}
+
+function excluirNfeHist(ref){
+  if(!confirm('Excluir este registro do histórico?')) return;
+  nfeEmitted = nfeEmitted.filter(n=>n.ref!==ref);
+  saveNfeData(); renderPage();
+  showToast('Registro excluído do histórico');
 }
 
 // ═══════════════════════════════════════════════════════════════════════
