@@ -436,24 +436,131 @@ svg{display:block;flex-shrink:0}
 .notif-item-time{font-size:10px;color:var(--faint);white-space:nowrap}
 
 /* ─── SETTINGS ────────────────────────────────────────────────────── */
-.settings-wrap{padding:24px;max-width:900px}
+.settings-wrap{padding:24px;max-width:1100px}
 .settings-wrap h2{font-size:20px;font-weight:700;margin-bottom:6px}
 .settings-wrap p{color:var(--muted);margin-bottom:24px;font-size:13.5px}
-.settings-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px}
+.settings-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;flex-wrap:wrap}
 .stab{
-  padding:10px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
-  border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--t);
+  padding:12px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--t);white-space:nowrap;
 }
-.stab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.stab:hover{color:var(--text)}
+.stab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
 .users-table{width:100%;border-collapse:collapse;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
-.users-table th{background:var(--surface);padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)}
+.users-table th{background:var(--surface);padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)}
 .users-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
 .users-table tr:last-child td{border-bottom:none}
-.users-table tr:hover td{background:var(--surface)}
-.role-badge{display:inline-flex;padding:2px 10px;border-radius:9999px;font-size:11px;font-weight:600}
+.users-table tbody tr:hover td{background:var(--surface);transition:background var(--t)}
+.role-badge{display:inline-flex;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:600}
 .role-badge.admin{background:#FEE2E2;color:#DC2626}
 .role-badge.gestor{background:var(--accent-l);color:var(--accent)}
 .role-badge.colaborador{background:var(--surface);color:var(--muted)}
+.status-dot{display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.status-dot::before{content:'';width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.active::before{background:var(--ok)}
+.status-dot.inactive::before{background:var(--faint)}
+
+/* ─── SCHOOLS GRID ────────────────────────────────────────────── */
+.schools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px}
+.school-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh);transition:all var(--t)}
+.school-card:hover{box-shadow:var(--sh-md);border-color:var(--accent)}
+.school-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.school-card-title{font-size:15px;font-weight:700;color:var(--text);flex:1}
+.school-card-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--accent-l);color:var(--accent);border-radius:9999px;font-size:11px;font-weight:600}
+.school-card-info{display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--muted)}
+.school-info-row{display:flex;align-items:center;gap:8px}
+.school-info-label{font-weight:600;color:var(--text);min-width:70px}
+.school-card-actions{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* ─── MODULE MATRIX ───────────────────────────────────────────── */
+.modules-matrix{margin-bottom:24px;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);overflow-x:auto}
+.modules-matrix-table{width:100%;border-collapse:collapse;min-width:400px}
+.modules-matrix-table th{background:var(--surface);padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.modules-matrix-table th:first-child{text-align:left;background:var(--navy);color:#fff}
+.modules-matrix-table td{padding:12px 16px;border-bottom:1px solid var(--border);text-align:center;font-size:13px}
+.modules-matrix-table td:first-child{text-align:left;font-weight:600;background:var(--surface);border-right:1px solid var(--border)}
+.toggle-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer;width:44px;height:24px}
+.toggle-switch input{display:none}
+.toggle-switch-bg{width:44px;height:24px;background:var(--border);border-radius:9999px;transition:background var(--t);flex-shrink:0}
+.toggle-switch input:checked~.toggle-switch-bg{background:var(--ok)}
+.toggle-switch-dot{position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left var(--t);box-shadow:var(--sh-md)}
+.toggle-switch input:checked~.toggle-switch-dot{left:23px}
+
+/* ─── WORKFLOWS ───────────────────────────────────────────────── */
+.workflows-list{display:flex;flex-direction:column;gap:12px}
+.workflow-item{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px;transition:all var(--t)}
+.workflow-item:hover{box-shadow:var(--sh-md);border-color:var(--accent)}
+.workflow-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.workflow-title{font-size:14px;font-weight:700;color:var(--text)}
+.workflow-module-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:9999px;font-size:11px;font-weight:600}
+.workflow-steps{display:flex;align-items:center;gap:0;margin:12px 0;flex-wrap:wrap}
+.workflow-step{display:flex;flex-direction:column;align-items:center;gap:4px}
+.workflow-step-circle{width:36px;height:36px;border-radius:50%;background:var(--accent-l);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid var(--accent)}
+.workflow-step-label{font-size:11px;color:var(--muted);text-align:center;max-width:80px}
+.workflow-arrow{color:var(--accent);font-size:18px;margin:0 8px;margin-bottom:20px}
+
+/* ─── NOTIFICATION PREFERENCES ───────────────────────────────── */
+.notif-preferences{display:flex;flex-direction:column;gap:16px}
+.notif-pref-group{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;transition:all var(--t)}
+.notif-pref-group:hover{box-shadow:var(--sh)}
+.notif-pref-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.notif-pref-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.notif-pref-desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.4}
+.notif-channels{display:flex;gap:12px;flex-wrap:wrap}
+.notif-channel{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:12px;cursor:pointer;transition:all var(--t)}
+.notif-channel:hover{border-color:var(--accent);background:var(--accent-l)}
+.notif-channel input{margin:0;width:auto}
+
+/* ─── AUDIT LOG ────────────────────────────────────────────────── */
+.audit-filters{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end}
+.audit-filter-group{display:flex;flex-direction:column;gap:4px}
+.audit-filter-group label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.audit-filter-group select,.audit-filter-group input{font-size:12px;padding:7px 10px;max-width:180px}
+.audit-table{width:100%;border-collapse:collapse;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.audit-table th{background:var(--surface);padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)}
+.audit-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+.audit-table tr:last-child td{border-bottom:none}
+.audit-table tbody tr:hover td{background:var(--surface);transition:background var(--t)}
+.audit-action{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.audit-action.create{background:#ECFDF5;color:#059669}
+.audit-action.update{background:#EFF6FF;color:#0284C7}
+.audit-action.delete{background:#FEF2F2;color:#DC2626}
+.audit-action.login{background:#FEF3C7;color:#B45309}
+.audit-action.settings{background:var(--accent-l);color:var(--accent)}
+
+/* ─── SETTINGS MODALS ──────────────────────────────────────────── */
+.settings-modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.settings-modal-overlay.active{display:flex;animation:fadeIn .2s ease}
+.settings-modal{background:var(--white);border-radius:var(--r);max-width:620px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:fadeUp .25s ease;display:flex;flex-direction:column}
+.settings-modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.settings-modal-header h3{font-size:16px;font-weight:700;color:var(--text)}
+.settings-modal-body{padding:24px;overflow-y:auto;flex:1}
+.settings-modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--surface);justify-content:flex-end}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.checkbox-list{display:flex;flex-direction:column;gap:8px}
+.checkbox-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--r-sm);cursor:pointer;transition:background var(--t)}
+.checkbox-item:hover{background:var(--surface)}
+.checkbox-item input{margin:0;width:auto}
+.checkbox-item label{margin:0;font-weight:400;text-transform:none;cursor:pointer;font-size:13px}
+
+/* ─── PERMISSION MATRIX ───────────────────────────────────────── */
+.permission-matrix{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--r-sm);overflow:hidden;margin-top:8px}
+.permission-matrix th{background:var(--slate);padding:8px 12px;font-size:11px;font-weight:700;text-align:center;color:#fff}
+.permission-matrix th:first-child{text-align:left}
+.permission-matrix td{padding:10px 12px;border:1px solid var(--border);text-align:center;background:var(--white)}
+.permission-matrix td:first-child{text-align:left;font-size:12px;font-weight:500;color:var(--text);background:var(--surface)}
+.permission-matrix input[type=checkbox]{margin:0;width:18px;height:18px;cursor:pointer;accent-color:var(--accent)}
+
+/* ─── ACTION BUTTONS ───────────────────────────────────────────── */
+.btn-action{padding:6px 12px;font-size:12px;border-radius:var(--r-sm);cursor:pointer;border:1px solid transparent;transition:all var(--t);white-space:nowrap;background:none}
+.btn-action-edit{background:var(--accent-l);color:var(--accent);border-color:var(--accent)44}
+.btn-action-edit:hover{background:var(--accent);color:#fff}
+.btn-action-delete{background:#FEF2F2;color:var(--err);border-color:#EF444444}
+.btn-action-delete:hover{background:var(--err);color:#fff}
+.btn-action-view{background:var(--surface);color:var(--muted);border-color:var(--border)}
+.btn-action-view:hover{background:var(--text);color:#fff}
 
 /* ─── TOAST ───────────────────────────────────────────────────────── */
 #toastContainer{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
@@ -926,6 +1033,7 @@ function loginAs(u){
   populateResponsavelSelect();
   navigate('dashboard');
   showToast(`Bem-vindo(a), ${u.name.split(' ')[0]}!`);
+  try{logAudit('login','sistema','Login: '+u.name);}catch(e){}
 }
 
 // ─── ROUTER ───────────────────────────────────────────────────────────
@@ -1194,6 +1302,7 @@ function onDrop(e, mod, fase){
   card.historico.push({ texto:`Fase alterada: "${MODULES[mod].fases[oldFase]?.label||oldFase}" → "${MODULES[mod].fases[fase]?.label||fase}"`, data:now(), usuario:currentUser?.name||'Sistema' });
   save();
   addNotif(`Card movido para "${MODULES[mod].fases[fase]?.label}"`, card.titulo, 'move');
+  try{logAudit('card_move',mod,card.titulo+' → '+MODULES[mod].fases[fase]?.label);}catch(e){}
   renderPage();
   updateBadges();
 }
@@ -1388,6 +1497,7 @@ function saveCard(){
   setTimeout(()=>msg.style.opacity='0',2000);
   showToast(isNew?'Card criado com sucesso!':'Card salvo!');
   addNotif(isNew?'Novo card criado':'Card atualizado', titulo, isNew?'create':'update');
+  try{logAudit(isNew?'card_create':'card_update',modulo,titulo);}catch(e){}
   if(MODULES[currentPage]) renderPage();
 }
 
@@ -1403,10 +1513,12 @@ function handleModalOverlayClick(e){
 function deleteCurrentCard(){
   if(!editCardId) return;
   if(!confirm('Excluir este card? Esta ação não pode ser desfeita.')) return;
+  const delCard = allCards.find(c=>c.id===editCardId);
   allCards = allCards.filter(c=>c.id!==editCardId);
   save(); updateBadges();
   closeCard();
   showToast('Card excluído','warn');
+  try{logAudit('card_delete',delCard?.modulo||'—',delCard?.titulo||'');}catch(e){}
 }
 
 // ─── NOTIFICATIONS ────────────────────────────────────────────────────
@@ -1451,72 +1563,652 @@ function renderNotifList(){
 function markRead(id){ const n=notifications.find(x=>x.id===id); if(n) n.read=true; save(); }
 function clearNotifs(){ notifications=[]; save(); document.getElementById('notifList').innerHTML='<div style="padding:24px;text-align:center;color:var(--faint);font-size:13px">Limpas.</div>'; renderNotifBell(); }
 
-// ─── SETTINGS ─────────────────────────────────────────────────────────
+// ─── SETTINGS PAGE STATE ──────────────────────────────────────────────
+let settingsTab = 'usuarios';
+let editingUserId = null;
+let editingSchoolId = null;
+let editingWorkflowId = null;
+
+// ─── SETTINGS DATA LAYER ─────────────────────────────────────────────
+function getSettingsSchools(){ return JSON.parse(localStorage.getItem('SETTINGS_SCHOOLS')||'[]') }
+function getSettingsSchoolModules(){ return JSON.parse(localStorage.getItem('SETTINGS_SCHOOL_MODULES')||'{}') }
+function getSettingsWorkflows(){ return JSON.parse(localStorage.getItem('SETTINGS_WORKFLOWS')||'[]') }
+function getSettingsNotifications(){ return JSON.parse(localStorage.getItem('SETTINGS_NOTIFICATIONS')||'{}') }
+function getAuditLog(){ return JSON.parse(localStorage.getItem('AUDIT_LOG')||'[]') }
+
+function initSettingsData(){
+  if(!localStorage.getItem('SETTINGS_SCHOOLS')){
+    localStorage.setItem('SETTINGS_SCHOOLS', JSON.stringify([
+      {id:'ped1',name:'PED 1 — Centro',cnpj:'12.345.678/0001-01',address:'Rua da Educação, 100 — Centro, Salvador/BA',phone:'(71) 3333-1001',director:'Emerson Santos'},
+      {id:'ped2',name:'PED 2 — Norte',cnpj:'12.345.678/0002-02',address:'Av. do Conhecimento, 200 — Norte, Salvador/BA',phone:'(71) 3333-1002',director:'Ana Lima'},
+      {id:'ped3',name:'PED 3 — Sul',cnpj:'12.345.678/0003-03',address:'Praça do Saber, 300 — Sul, Salvador/BA',phone:'(71) 3333-1003',director:'Ricardo Nunes'},
+    ]));
+  }
+  if(!localStorage.getItem('SETTINGS_WORKFLOWS')){
+    localStorage.setItem('SETTINGS_WORKFLOWS', JSON.stringify([
+      {id:'wf1',name:'Aprovação de Compras',module:'compras',steps:[
+        {name:'Coordenação',role:'gestor'},
+        {name:'Financeiro',role:'gestor'},
+        {name:'Diretoria',role:'admin'}
+      ]},
+    ]));
+  }
+  if(!localStorage.getItem('SETTINGS_NOTIFICATIONS')){
+    localStorage.setItem('SETTINGS_NOTIFICATIONS', JSON.stringify({}));
+  }
+  if(!localStorage.getItem('AUDIT_LOG')) localStorage.setItem('AUDIT_LOG','[]');
+}
+
+// ─── AUDIT LOGGING ─────────────────────────────────────────────────
+function logAudit(action, module, details){
+  const logs = getAuditLog();
+  logs.push({id:uid(),timestamp:now(),date:today(),userId:currentUser?.id||'system',userName:currentUser?.name||'Sistema',action,module:module||'—',details:details||''});
+  if(logs.length>200) logs.splice(0,logs.length-200);
+  localStorage.setItem('AUDIT_LOG',JSON.stringify(logs));
+}
+
+// ─── SWITCH SETTINGS TAB ──────────────────────────────────────────────
+function switchSettingsTab(tab){ settingsTab=tab; renderPage(); }
+
+// ─── BUILD SETTINGS PAGE ──────────────────────────────────────────────
 function buildSettings(){
+  initSettingsData();
+  const tabs = [
+    {id:'usuarios',icon:'👤',label:'Usuários'},
+    {id:'escolas',icon:'🏫',label:'Escolas'},
+    {id:'modulos',icon:'📦',label:'Módulos'},
+    {id:'workflows',icon:'🔄',label:'Workflows'},
+    {id:'notificacoes',icon:'🔔',label:'Notificações'},
+    {id:'auditoria',icon:'📋',label:'Auditoria'},
+  ];
+  let content = '';
+  if(settingsTab==='usuarios')    content = buildSettingsUsuarios();
+  if(settingsTab==='escolas')     content = buildSettingsEscolas();
+  if(settingsTab==='modulos')     content = buildSettingsModulos();
+  if(settingsTab==='workflows')   content = buildSettingsWorkflows();
+  if(settingsTab==='notificacoes')content = buildSettingsNotificacoes();
+  if(settingsTab==='auditoria')   content = buildSettingsAuditoria();
+
   return `<div class="settings-wrap">
-    <h2>Configurações</h2>
-    <p>Gerencie usuários, permissões e configurações gerais do sistema.</p>
+    <h2>Configurações do Sistema</h2>
+    <p>Gerencie usuários, escolas, módulos, workflows, notificações e auditoria.</p>
     <div class="settings-tabs">
-      <div class="stab active">Usuários</div>
-      <div class="stab" style="opacity:.5">Módulos</div>
-      <div class="stab" style="opacity:.5">Automações</div>
+      ${tabs.map(t=>`<div class="stab ${settingsTab===t.id?'active':''}" onclick="switchSettingsTab('${t.id}')">${t.icon} ${t.label}</div>`).join('')}
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h3 style="font-size:14px;font-weight:600">Usuários do sistema (${USERS.length})</h3>
+    ${content}
+  </div>
+  ${buildSettingsModals()}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 1 — USUÁRIOS (RBAC)
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsUsuarios(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h3 style="font-size:14px;font-weight:600">Usuários do Sistema (${USERS.length})</h3>
+    ${currentUser?.role==='admin'?'<button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openUserModal()">+ Novo Usuário</button>':''}
+  </div>
+  <div style="overflow-x:auto">
+  <table class="users-table">
+    <thead><tr>
+      <th>Usuário</th><th>E-mail</th><th>Departamento</th><th>Função</th><th>Escolas</th><th>Status</th><th>Cards</th>${currentUser?.role==='admin'?'<th>Ações</th>':''}
+    </tr></thead>
+    <tbody>
+      ${USERS.map(u=>{
+        const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[u.role];
+        const active = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
+        const st = localStorage.getItem('user_status_'+u.id)||'ativo';
+        const schools = JSON.parse(localStorage.getItem('user_schools_'+u.id)||'null')||SCHOOLS.map(s=>s.id);
+        return `<tr style="${st==='inativo'?'opacity:.55':''}">
+          <td><div style="display:flex;align-items:center;gap:10px">
+            <div class="avatar sm" style="background:${u.color}">${u.initials}</div>
+            <span style="font-weight:500">${esc(u.name)}</span>
+          </div></td>
+          <td style="color:var(--muted);font-size:12px">${esc(u.email)}</td>
+          <td style="font-size:12px">${esc(u.dept)}</td>
+          <td><span class="role-badge ${u.role}">${esc(roleLabel)}</span></td>
+          <td style="font-size:11px">${schools.length}/${SCHOOLS.length}</td>
+          <td><span class="status-dot ${st==='ativo'?'active':'inactive'}">${st==='ativo'?'Ativo':'Inativo'}</span></td>
+          <td style="font-weight:700;color:var(--accent)">${active}</td>
+          ${currentUser?.role==='admin'?`<td><div style="display:flex;gap:6px">
+            <button class="btn-action btn-action-edit" onclick="openUserModal('${u.id}')">Editar</button>
+            <button class="btn-action btn-action-delete" onclick="toggleUserStatus('${u.id}')">${st==='ativo'?'Desativar':'Ativar'}</button>
+          </div></td>`:''}
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>
+  </div>
+  <div class="dash-row" style="margin-top:24px">
+    <div class="dash-panel">
+      <div class="panel-title"><span>Resumo do Sistema</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        ${[
+          ['Total cards',allCards.length,'var(--accent)'],
+          ['Ativos',allCards.filter(c=>c.fase!==MODULES[c.modulo]?.lastPhase).length,'#F59E0B'],
+          ['Concluídos',allCards.filter(c=>c.fase===MODULES[c.modulo]?.lastPhase).length,'#10B981'],
+          ['Atrasados',allCards.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).length,'#EF4444'],
+        ].map(([l,v,c])=>`<div style="padding:14px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:22px;font-weight:800;color:${c}">${v}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(l)}</div>
+        </div>`).join('')}
+      </div>
     </div>
-    <table class="users-table">
-      <thead><tr>
-        <th>Usuário</th><th>E-mail</th><th>Departamento</th><th>Perfil</th><th>Cards ativos</th>
-      </tr></thead>
-      <tbody>
-        ${USERS.map(u=>{
-          const active = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
-          const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[u.role];
-          return `<tr>
-            <td><div style="display:flex;align-items:center;gap:10px">
-              <div class="avatar sm" style="background:${u.color}">${u.initials}</div>
-              <span style="font-weight:500">${esc(u.name)}</span>
-            </div></td>
-            <td style="color:var(--muted)">${esc(u.email)}</td>
-            <td>${esc(u.dept)}</td>
-            <td><span class="role-badge ${u.role}">${esc(roleLabel)}</span></td>
-            <td style="font-weight:700;color:var(--accent)">${active}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-    <div class="dash-row" style="margin-top:24px">
-      <div class="dash-panel">
-        <div class="panel-title"><span>Resumo do Sistema</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          ${[
-            ['Total de cards',allCards.length,'#6366F1'],
-            ['Cards ativos',allCards.filter(c=>c.fase!==MODULES[c.modulo]?.lastPhase).length,'#F59E0B'],
-            ['Cards concluídos',allCards.filter(c=>c.fase===MODULES[c.modulo]?.lastPhase).length,'#10B981'],
-            ['Cards atrasados',allCards.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).length,'#EF4444'],
-          ].map(([label,val,color])=>`
-          <div style="padding:14px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
-            <div style="font-size:24px;font-weight:800;color:${color}">${val}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(label)}</div>
-          </div>`).join('')}
-        </div>
+    <div class="dash-panel">
+      <div class="panel-title"><span>Versão e Informações</span></div>
+      <div style="font-size:13px;color:var(--muted);line-height:2.2">
+        <div><strong style="color:var(--text)">Sistema:</strong> PIPEPED v2.0 SaaS</div>
+        <div><strong style="color:var(--text)">Grupo:</strong> Grupo PED</div>
+        <div><strong style="color:var(--text)">Build:</strong> 2026.04</div>
+        <div><strong style="color:var(--text)">Stack:</strong> HTML5 / CSS3 / Vanilla JS</div>
+        <div><strong style="color:var(--text)">Logado:</strong> ${esc(currentUser?.name||'—')} (${esc({admin:'Admin',gestor:'Gestor',colaborador:'Colab.'}[currentUser?.role]||'—')})</div>
       </div>
-      <div class="dash-panel">
-        <div class="panel-title"><span>Versão e Informações</span></div>
-        <div style="font-size:13px;color:var(--muted);line-height:2">
-          <div><strong style="color:var(--text)">Sistema:</strong> PIPEPED v1.0</div>
-          <div><strong style="color:var(--text)">Grupo:</strong> Grupo PED</div>
-          <div><strong style="color:var(--text)">Build:</strong> 2026.04 — SPA</div>
-          <div><strong style="color:var(--text)">Stack:</strong> HTML5 / CSS3 / Vanilla JS</div>
-          <div><strong style="color:var(--text)">Usuário logado:</strong> ${esc(currentUser?.name||'—')}</div>
-          <div><strong style="color:var(--text)">Perfil:</strong> ${esc({admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[currentUser?.role]||'—')}</div>
-        </div>
-        <button onclick="if(confirm('Limpar todos os dados?')){localStorage.clear();location.reload()}" style="margin-top:16px;padding:8px 16px;border:1px solid var(--err);color:var(--err);border-radius:6px;font-size:12px;cursor:pointer;background:transparent">
-          Resetar dados (demo)
-        </button>
-      </div>
+      <button onclick="if(confirm('Limpar todos os dados?')){localStorage.clear();location.reload()}" style="margin-top:12px;padding:8px 16px;border:1px solid var(--err);color:var(--err);border-radius:6px;font-size:12px;cursor:pointer;background:transparent">Resetar dados</button>
     </div>
   </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 2 — ESCOLAS
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsEscolas(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
+  const schoolsData = getSettingsSchools();
+  const mods = getSettingsSchoolModules();
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h3 style="font-size:14px;font-weight:600">Escolas (${SCHOOLS.length})</h3>
+    ${currentUser?.role==='admin'?'<button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openSchoolModal()">+ Nova Escola</button>':''}
+  </div>
+  <div class="schools-grid">
+    ${SCHOOLS.map(s=>{
+      const data = schoolsData.find(x=>x.id===s.id)||{};
+      const activeModules = Object.keys(MODULES).filter(m=>(mods[s.id]||{})[m]!==false).length;
+      const usersCount = USERS.filter(u=>{const us=JSON.parse(localStorage.getItem('user_schools_'+u.id)||'null');return !us||us.includes(s.id)}).length;
+      return `<div class="school-card">
+        <div class="school-card-header">
+          <div class="school-card-title">${esc(s.name)}</div>
+          <div class="school-card-badge">${activeModules}/${Object.keys(MODULES).length} módulos</div>
+        </div>
+        <div class="school-card-info">
+          <div class="school-info-row"><span class="school-info-label">CNPJ:</span><span>${esc(data.cnpj||'—')}</span></div>
+          <div class="school-info-row"><span class="school-info-label">Endereço:</span><span>${esc(data.address||'—')}</span></div>
+          <div class="school-info-row"><span class="school-info-label">Telefone:</span><span>${esc(data.phone||'—')}</span></div>
+          <div class="school-info-row"><span class="school-info-label">Diretor:</span><span>${esc(data.director||'—')}</span></div>
+          <div class="school-info-row"><span class="school-info-label">Equipe:</span><span>${usersCount} usuários</span></div>
+        </div>
+        <div class="school-card-actions">
+          <button class="btn-action btn-action-edit" style="flex:1" onclick="openSchoolModal('${s.id}')">Editar</button>
+          <button class="btn-action btn-action-view" style="flex:1" onclick="switchSettingsTab('modulos')">Módulos</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 3 — MÓDULOS POR ESCOLA
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsModulos(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores.</p></div>';
+  const mods = getSettingsSchoolModules();
+  const modKeys = Object.keys(MODULES);
+  return `
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">Ativar / Desativar Módulos por Escola</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Use as chaves para ativar ou desativar módulos individualmente por escola.</p>
+  <div class="modules-matrix">
+    <table class="modules-matrix-table">
+      <thead><tr>
+        <th>Escola</th>
+        ${modKeys.map(m=>`<th><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${MODULES[m].color};margin-right:6px"></span>${MODULES[m].shortLabel}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${SCHOOLS.map(s=>`<tr>
+          <td>${esc(s.name)}</td>
+          ${modKeys.map(m=>{
+            const on = (mods[s.id]||{})[m]!==false;
+            return `<td>
+              <label class="toggle-switch">
+                <input type="checkbox" ${on?'checked':''} onchange="toggleSchoolModule('${s.id}','${m}',this.checked)">
+                <span class="toggle-switch-bg"></span>
+                <span class="toggle-switch-dot"></span>
+              </label>
+            </td>`;
+          }).join('')}
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 4 — WORKFLOWS
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsWorkflows(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
+  const workflows = getSettingsWorkflows();
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h3 style="font-size:14px;font-weight:600">Fluxos de Aprovação (${workflows.length})</h3>
+    <button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openWorkflowModal()">+ Novo Workflow</button>
+  </div>
+  <div class="workflows-list">
+    ${workflows.length===0?'<div class="empty-state"><svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#94A3B8" stroke-width="1.5"/></svg><h3>Nenhum workflow</h3><p>Crie um fluxo de aprovação para começar.</p></div>':
+    workflows.map(w=>{
+      const mod = MODULES[w.module];
+      return `<div class="workflow-item">
+        <div class="workflow-header">
+          <div>
+            <div class="workflow-title">${esc(w.name)}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Módulo: ${mod?.label||'—'}</div>
+          </div>
+          <div class="workflow-module-badge" style="background:${mod?.colorLight||'var(--accent-l)'};color:${mod?.color||'var(--accent)'}">${w.steps.length} etapa${w.steps.length!==1?'s':''}</div>
+        </div>
+        <div class="workflow-steps">
+          ${w.steps.map((st,i)=>`
+            <div class="workflow-step">
+              <div class="workflow-step-circle">${i+1}</div>
+              <div class="workflow-step-label">${esc(st.name)}</div>
+            </div>
+            ${i<w.steps.length-1?'<div class="workflow-arrow">→</div>':''}
+          `).join('')}
+        </div>
+        <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border)">
+          <button class="btn-action btn-action-edit" onclick="openWorkflowModal('${w.id}')">Editar</button>
+          <button class="btn-action btn-action-delete" onclick="deleteWorkflow('${w.id}')">Remover</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 5 — NOTIFICAÇÕES
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsNotificacoes(){
+  const prefs = getSettingsNotifications();
+  const userId = currentUser?.id||'default';
+  const up = prefs[userId]||{};
+  const events = [
+    {id:'new_card',      icon:'🆕',label:'Novo Card',              desc:'Notificar quando um novo card é criado nos módulos que participo.'},
+    {id:'phase_change',  icon:'↗️',label:'Mudança de Fase',        desc:'Notificar quando um card em que sou responsável muda de fase.'},
+    {id:'overdue',       icon:'⚠️',label:'Vencimento / Atraso',    desc:'Notificar sobre cards atrasados ou próximos do prazo.'},
+    {id:'comment',       icon:'💬',label:'Novo Comentário',        desc:'Notificar quando alguém comenta em meus cards.'},
+    {id:'approval',      icon:'✅',label:'Aprovação Requerida',    desc:'Notificar quando há um card aguardando minha aprovação no workflow.'},
+  ];
+  return `
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">Preferências de Notificação</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Configure quais eventos geram notificações para você.</p>
+  <div class="notif-preferences">
+    ${events.map(e=>{
+      const enabled = up[e.id]?.sistema!==false;
+      return `<div class="notif-pref-group">
+        <div class="notif-pref-header">
+          <div class="notif-pref-title">${e.icon} ${e.label}</div>
+          <label class="toggle-switch">
+            <input type="checkbox" ${enabled?'checked':''} onchange="updateNotifPref('${e.id}','sistema',this.checked)">
+            <span class="toggle-switch-bg"></span>
+            <span class="toggle-switch-dot"></span>
+          </label>
+        </div>
+        <p class="notif-pref-desc">${esc(e.desc)}</p>
+        <div class="notif-channels">
+          <label class="notif-channel" style="${enabled?'':'opacity:.5'}">
+            <input type="checkbox" ${enabled?'checked':''} onchange="updateNotifPref('${e.id}','sistema',this.checked)" style="width:auto"> Sistema
+          </label>
+          <label class="notif-channel" style="opacity:.45;cursor:not-allowed">
+            <input type="checkbox" disabled style="width:auto"> E-mail (em breve)
+          </label>
+          <label class="notif-channel" style="opacity:.45;cursor:not-allowed">
+            <input type="checkbox" disabled style="width:auto"> WhatsApp (em breve)
+          </label>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 6 — AUDITORIA
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsAuditoria(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores.</p></div>';
+  const logs = getAuditLog().slice().reverse();
+  const actionLabels = {
+    card_create:'Card criado',card_update:'Card atualizado',card_delete:'Card excluído',
+    card_move:'Card movido',login:'Login',user_create:'Usuário criado',user_update:'Usuário editado',
+    user_activate:'Usuário ativado',user_deactivate:'Usuário desativado',school_save:'Escola salva',
+    module_toggle:'Módulo alterado',workflow_save:'Workflow salvo',workflow_delete:'Workflow removido',
+    notif_pref:'Notificação ajustada',settings_change:'Configuração alterada'
+  };
+  const actionType = a => {
+    if(a.includes('create')||a==='login') return 'create';
+    if(a.includes('delete')||a.includes('deactivate')) return 'delete';
+    if(a.includes('user')||a.includes('school')||a.includes('workflow')||a.includes('module')||a.includes('notif')) return 'settings';
+    return 'update';
+  };
+  return `
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:16px">Log de Auditoria (${logs.length} registros)</h3>
+  <div class="audit-filters">
+    <div class="audit-filter-group">
+      <label>Usuário</label>
+      <select id="auditFilterUser" onchange="renderPage()">
+        <option value="">Todos</option>
+        ${USERS.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="audit-filter-group">
+      <label>Módulo</label>
+      <select id="auditFilterModule" onchange="renderPage()">
+        <option value="">Todos</option>
+        ${Object.keys(MODULES).map(m=>`<option value="${m}">${MODULES[m].label}</option>`).join('')}
+        <option value="settings">Configurações</option>
+      </select>
+    </div>
+    <div class="audit-filter-group">
+      <label>A partir de</label>
+      <input type="date" id="auditFilterFrom" onchange="renderPage()">
+    </div>
+    <button class="btn-ghost" style="padding:7px 14px;font-size:12px;align-self:flex-end" onclick="clearAuditFilters()">Limpar</button>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="audit-table">
+    <thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhes</th></tr></thead>
+    <tbody>
+      ${(()=>{
+        const fu = document.getElementById('auditFilterUser')?.value||'';
+        const fm = document.getElementById('auditFilterModule')?.value||'';
+        const fd = document.getElementById('auditFilterFrom')?.value||'';
+        return logs.filter(l=>{
+          if(fu && l.userId!==fu) return false;
+          if(fm && l.module!==fm) return false;
+          if(fd && (l.date||'')<fd) return false;
+          return true;
+        }).slice(0,100).map(l=>`<tr>
+          <td style="font-size:11px;white-space:nowrap">${esc(l.timestamp)}</td>
+          <td style="font-size:12px">${esc(l.userName)}</td>
+          <td><span class="audit-action ${actionType(l.action)}">${esc(actionLabels[l.action]||l.action)}</span></td>
+          <td style="font-size:12px">${esc(MODULES[l.module]?.shortLabel||l.module||'—')}</td>
+          <td style="font-size:11px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(typeof l.details==='string'?l.details:JSON.stringify(l.details||''))}</td>
+        </tr>`).join('');
+      })()}
+    </tbody>
+  </table>
+  </div>
+  ${logs.length===0?'<div style="text-align:center;padding:32px;color:var(--muted);font-size:13px">Nenhum registro de auditoria ainda. As ações serão registradas automaticamente.</div>':''}`;
+}
+
+function clearAuditFilters(){
+  const u=document.getElementById('auditFilterUser'),m=document.getElementById('auditFilterModule'),f=document.getElementById('auditFilterFrom');
+  if(u)u.value='';if(m)m.value='';if(f)f.value='';
+  renderPage();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SETTINGS MODALS
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsModals(){
+  return `
+  <div id="settingsModalOverlay" class="settings-modal-overlay" onclick="if(event.target===this)closeSettingsModal()">
+    <div class="settings-modal" id="settingsModalContent"></div>
+  </div>`;
+}
+
+function showSettingsModal(title, bodyHtml, onSave){
+  const el = document.getElementById('settingsModalContent');
+  el.innerHTML = `
+    <div class="settings-modal-header">
+      <h3>${title}</h3>
+      <button class="btn-icon" onclick="closeSettingsModal()">✕</button>
+    </div>
+    <div class="settings-modal-body">${bodyHtml}</div>
+    <div class="settings-modal-footer">
+      <button class="btn-ghost" onclick="closeSettingsModal()">Cancelar</button>
+      <button class="btn-save" onclick="${onSave}">Salvar</button>
+    </div>`;
+  document.getElementById('settingsModalOverlay').classList.add('active');
+}
+function closeSettingsModal(){
+  document.getElementById('settingsModalOverlay').classList.remove('active');
+  editingUserId=null; editingSchoolId=null; editingWorkflowId=null;
+}
+
+// ─── USER MODAL ───────────────────────────────────────────────────────
+function openUserModal(userId){
+  editingUserId = userId||null;
+  const user = userId? USERS.find(u=>u.id===userId) : null;
+  const userSchools = JSON.parse(localStorage.getItem('user_schools_'+(userId||''))  ||'null')||SCHOOLS.map(s=>s.id);
+  const perms = JSON.parse(localStorage.getItem('user_perms_'+(userId||''))  ||'null')||{};
+  const body = `
+    <div class="form-row">
+      <div class="form-group"><label>Nome completo</label><input id="uf_name" value="${user?esc(user.name):''}"></div>
+      <div class="form-group"><label>E-mail</label><input id="uf_email" type="email" value="${user?esc(user.email):''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Departamento</label>
+        <select id="uf_dept">
+          ${['Diretoria','Coordenação','Financeiro','TI','Comercial','Secretaria','Pedagógico'].map(d=>`<option ${user?.dept===d?'selected':''}>${d}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>Função (RBAC)</label>
+        <select id="uf_role">
+          <option value="colaborador" ${user?.role==='colaborador'?'selected':''}>Colaborador</option>
+          <option value="gestor" ${user?.role==='gestor'?'selected':''}>Gestor</option>
+          <option value="admin" ${user?.role==='admin'?'selected':''}>Administrador</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Escolas Atribuídas</label>
+      <div class="checkbox-list">
+        ${SCHOOLS.map(s=>`<div class="checkbox-item">
+          <input type="checkbox" id="uf_sch_${s.id}" ${userSchools.includes(s.id)?'checked':''}>
+          <label for="uf_sch_${s.id}">${esc(s.name)}</label>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="form-group"><label>Permissões por Módulo</label>
+      <table class="permission-matrix">
+        <thead><tr><th>Módulo</th><th>Ver</th><th>Criar</th><th>Editar</th><th>Excluir</th><th>Aprovar</th></tr></thead>
+        <tbody>
+          ${Object.keys(MODULES).map(m=>{
+            const p = perms[m]||{};
+            const r = user?.role||'colaborador';
+            return `<tr>
+              <td>${MODULES[m].label}</td>
+              <td><input type="checkbox" data-mod="${m}" data-p="ver" ${p.ver!==false?'checked':''}></td>
+              <td><input type="checkbox" data-mod="${m}" data-p="criar" ${p.criar!==undefined?p.criar?'checked':'':r!=='colaborador'?'checked':''}></td>
+              <td><input type="checkbox" data-mod="${m}" data-p="editar" ${p.editar!==undefined?p.editar?'checked':'':r==='admin'?'checked':''}></td>
+              <td><input type="checkbox" data-mod="${m}" data-p="excluir" ${p.excluir!==undefined?p.excluir?'checked':'':r==='admin'?'checked':''}></td>
+              <td><input type="checkbox" data-mod="${m}" data-p="aprovar" ${p.aprovar!==undefined?p.aprovar?'checked':'':r!=='colaborador'?'checked':''}></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  showSettingsModal(userId?'Editar Usuário':'Novo Usuário', body, 'saveUserForm()');
+}
+
+function saveUserForm(){
+  const name  = document.getElementById('uf_name').value.trim();
+  const email = document.getElementById('uf_email').value.trim();
+  const dept  = document.getElementById('uf_dept').value;
+  const role  = document.getElementById('uf_role').value;
+  if(!name||!email){showToast('Nome e e-mail obrigatórios','error');return;}
+  const schools = SCHOOLS.map(s=>s.id).filter(id=>document.getElementById('uf_sch_'+id)?.checked);
+  const perms = {};
+  document.querySelectorAll('.permission-matrix input[type=checkbox]').forEach(cb=>{
+    const m=cb.dataset.mod, p=cb.dataset.p;
+    if(m&&p){if(!perms[m])perms[m]={}; perms[m][p]=cb.checked;}
+  });
+  if(editingUserId){
+    const u=USERS.find(x=>x.id===editingUserId);
+    if(u){u.name=name;u.email=email;u.dept=dept;u.role=role;u.initials=name.split(' ').filter(Boolean).map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+    localStorage.setItem('user_schools_'+editingUserId,JSON.stringify(schools));
+    localStorage.setItem('user_perms_'+editingUserId,JSON.stringify(perms));
+    logAudit('user_update','settings','Editou usuário '+name);
+    showToast('Usuário atualizado');
+  } else {
+    const id = 'u'+uid();
+    const initials = name.split(' ').filter(Boolean).map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    const colors = ['#6366F1','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
+    USERS.push({id,name,email,role,dept,initials,color:colors[USERS.length%colors.length]});
+    localStorage.setItem('user_schools_'+id,JSON.stringify(schools));
+    localStorage.setItem('user_perms_'+id,JSON.stringify(perms));
+    populateResponsavelSelect();
+    logAudit('user_create','settings','Criou usuário '+name);
+    showToast('Usuário criado!');
+  }
+  closeSettingsModal();
+  renderPage();
+}
+
+function toggleUserStatus(userId){
+  const st = localStorage.getItem('user_status_'+userId)||'ativo';
+  const ns = st==='ativo'?'inativo':'ativo';
+  localStorage.setItem('user_status_'+userId,ns);
+  logAudit(ns==='ativo'?'user_activate':'user_deactivate','settings','Usuário '+userName(userId));
+  showToast(ns==='ativo'?'Usuário ativado':'Usuário desativado');
+  renderPage();
+}
+
+// ─── SCHOOL MODAL ─────────────────────────────────────────────────────
+function openSchoolModal(schoolId){
+  editingSchoolId = schoolId||null;
+  const schoolsData = getSettingsSchools();
+  const data = schoolId? schoolsData.find(s=>s.id===schoolId)||{} : {};
+  const body = `
+    <div class="form-group"><label>Nome da Escola</label><input id="sf_name" value="${esc(data.name||'')}"></div>
+    <div class="form-group"><label>CNPJ</label><input id="sf_cnpj" value="${esc(data.cnpj||'')}"></div>
+    <div class="form-group"><label>Endereço</label><input id="sf_address" value="${esc(data.address||'')}"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Telefone</label><input id="sf_phone" value="${esc(data.phone||'')}"></div>
+      <div class="form-group"><label>Diretor(a)</label><input id="sf_director" value="${esc(data.director||'')}"></div>
+    </div>`;
+  showSettingsModal(schoolId?'Editar Escola':'Nova Escola', body, 'saveSchoolForm()');
+}
+
+function saveSchoolForm(){
+  const name=document.getElementById('sf_name').value.trim();
+  if(!name){showToast('Nome é obrigatório','error');return;}
+  const cnpj=document.getElementById('sf_cnpj').value.trim();
+  const address=document.getElementById('sf_address').value.trim();
+  const phone=document.getElementById('sf_phone').value.trim();
+  const director=document.getElementById('sf_director').value.trim();
+  const schools = getSettingsSchools();
+  if(editingSchoolId){
+    const s=schools.find(x=>x.id===editingSchoolId);
+    if(s) Object.assign(s,{name,cnpj,address,phone,director});
+  } else {
+    const id='ped'+uid();
+    schools.push({id,name,cnpj,address,phone,director});
+    SCHOOLS.push({id,name});
+  }
+  localStorage.setItem('SETTINGS_SCHOOLS',JSON.stringify(schools));
+  logAudit('school_save','settings','Escola: '+name);
+  showToast('Escola salva!');
+  closeSettingsModal();
+  renderPage();
+}
+
+// ─── MODULE TOGGLE ────────────────────────────────────────────────────
+function toggleSchoolModule(schoolId,mod,checked){
+  if(!checked && !confirm(`Desativar ${MODULES[mod].label} para esta escola?`)){
+    renderPage(); return;
+  }
+  const mods = getSettingsSchoolModules();
+  if(!mods[schoolId]) mods[schoolId]={};
+  mods[schoolId][mod] = checked;
+  localStorage.setItem('SETTINGS_SCHOOL_MODULES',JSON.stringify(mods));
+  logAudit('module_toggle','settings',`${MODULES[mod].label} ${checked?'ativado':'desativado'} em ${schoolName(schoolId)||schoolId}`);
+  showToast(`${MODULES[mod].label} ${checked?'ativado':'desativado'}`);
+}
+
+// ─── WORKFLOW MODAL ───────────────────────────────────────────────────
+function openWorkflowModal(wfId){
+  editingWorkflowId = wfId||null;
+  const workflows = getSettingsWorkflows();
+  const wf = wfId? workflows.find(w=>w.id===wfId) : null;
+  const steps = wf?.steps||[{name:'Coordenação',role:'gestor'},{name:'Financeiro',role:'gestor'},{name:'Diretoria',role:'admin'}];
+  const body = `
+    <div class="form-group"><label>Nome do Workflow</label><input id="wf_name" value="${esc(wf?.name||'')}"></div>
+    <div class="form-group"><label>Módulo</label>
+      <select id="wf_module">
+        ${Object.keys(MODULES).map(m=>`<option value="${m}" ${wf?.module===m?'selected':''}>${MODULES[m].label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group"><label>Etapas do Workflow</label>
+      <div id="wfStepsContainer">
+        ${steps.map((s,i)=>`<div class="wf-step-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:700;color:var(--accent);width:20px">${i+1}.</span>
+          <input class="wfStepName" value="${esc(s.name)}" style="flex:1" placeholder="Nome da etapa">
+          <select class="wfStepRole" style="max-width:140px">
+            <option value="gestor" ${s.role==='gestor'?'selected':''}>Gestor</option>
+            <option value="admin" ${s.role==='admin'?'selected':''}>Admin</option>
+            <option value="colaborador" ${s.role==='colaborador'?'selected':''}>Colaborador</option>
+          </select>
+          <button class="btn-action btn-action-delete" onclick="this.closest('.wf-step-row').remove()" style="padding:4px 8px;font-size:14px">×</button>
+        </div>`).join('')}
+      </div>
+      <button class="btn-ghost" style="width:100%;margin-top:4px" onclick="addWfStep()">+ Adicionar Etapa</button>
+    </div>`;
+  showSettingsModal(wfId?'Editar Workflow':'Novo Workflow', body, 'saveWorkflowForm()');
+}
+
+function addWfStep(){
+  const c = document.getElementById('wfStepsContainer');
+  const n = c.querySelectorAll('.wf-step-row').length+1;
+  c.insertAdjacentHTML('beforeend',`<div class="wf-step-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+    <span style="font-size:12px;font-weight:700;color:var(--accent);width:20px">${n}.</span>
+    <input class="wfStepName" value="" style="flex:1" placeholder="Nome da etapa">
+    <select class="wfStepRole" style="max-width:140px">
+      <option value="gestor" selected>Gestor</option><option value="admin">Admin</option><option value="colaborador">Colaborador</option>
+    </select>
+    <button class="btn-action btn-action-delete" onclick="this.closest('.wf-step-row').remove()" style="padding:4px 8px;font-size:14px">×</button>
+  </div>`);
+}
+
+function saveWorkflowForm(){
+  const name = document.getElementById('wf_name').value.trim();
+  const module = document.getElementById('wf_module').value;
+  if(!name){showToast('Nome é obrigatório','error');return;}
+  const names = document.querySelectorAll('.wfStepName');
+  const roles = document.querySelectorAll('.wfStepRole');
+  const steps = Array.from(names).map((inp,i)=>({name:inp.value.trim(),role:roles[i]?.value||'gestor'})).filter(s=>s.name);
+  if(!steps.length){showToast('Adicione pelo menos uma etapa','error');return;}
+  const workflows = getSettingsWorkflows();
+  if(editingWorkflowId){
+    const w = workflows.find(x=>x.id===editingWorkflowId);
+    if(w) Object.assign(w,{name,module,steps});
+  } else {
+    workflows.push({id:'wf'+uid(),name,module,steps});
+  }
+  localStorage.setItem('SETTINGS_WORKFLOWS',JSON.stringify(workflows));
+  logAudit('workflow_save','settings','Workflow: '+name);
+  showToast('Workflow salvo!');
+  closeSettingsModal();
+  renderPage();
+}
+
+function deleteWorkflow(wfId){
+  if(!confirm('Remover este workflow?')) return;
+  const wfs = getSettingsWorkflows().filter(w=>w.id!==wfId);
+  localStorage.setItem('SETTINGS_WORKFLOWS',JSON.stringify(wfs));
+  logAudit('workflow_delete','settings','Workflow removido');
+  showToast('Workflow removido');
+  renderPage();
+}
+
+// ─── NOTIFICATION PREFERENCES ─────────────────────────────────────────
+function updateNotifPref(eventId,channel,enabled){
+  const prefs = getSettingsNotifications();
+  const userId = currentUser?.id||'default';
+  if(!prefs[userId]) prefs[userId]={};
+  if(!prefs[userId][eventId]) prefs[userId][eventId]={};
+  prefs[userId][eventId][channel] = enabled;
+  localStorage.setItem('SETTINGS_NOTIFICATIONS',JSON.stringify(prefs));
+  logAudit('notif_pref','settings',eventId+' → '+(enabled?'ativado':'desativado'));
 }
 
 // ─── BADGES ───────────────────────────────────────────────────────────
@@ -1577,6 +2269,7 @@ document.addEventListener('keydown',e=>{
 (function init(){
   load();
   if(!allCards.length) seedData();
+  initSettingsData();
   document.getElementById('notifPanel').style.display='none';
 })();
 </script></body></html>
