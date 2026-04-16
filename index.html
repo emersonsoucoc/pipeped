@@ -16,6 +16,7 @@
   --ti:#3B82F6;     --ti-l:#EFF6FF;
   --comercial:#10B981; --comercial-l:#ECFDF5;
   --contratos:#8B5CF6; --contratos-l:#F5F3FF;
+  --whatsapp:#25D366; --whatsapp-l:#E8F8EE;
   --p-urgente:#EF4444; --p-alta:#F97316; --p-media:#F59E0B; --p-baixa:#22C55E;
   --sb:240px; --top:60px;
   --r:10px; --r-sm:6px;
@@ -67,7 +68,7 @@ svg{display:block;flex-shrink:0}
 .btn-primary:hover{background:var(--accent-h);transform:translateY(-1px)}
 .login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--faint);font-size:12px}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.login-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.login-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .btn-quick{
   padding:9px 6px;border:1px solid var(--border);border-radius:var(--r-sm);
   font-size:12px;font-weight:500;color:var(--muted);transition:all var(--t);text-align:center;
@@ -531,6 +532,68 @@ svg{display:block;flex-shrink:0}
 .audit-action.login{background:#FEF3C7;color:#B45309}
 .audit-action.settings{background:var(--accent-l);color:var(--accent)}
 
+/* ─── WHATSAPP ────────────────────────────────────────────────────── */
+.wa-wrap{display:flex;height:100%;overflow:hidden}
+.wa-sidebar{
+  width:340px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.wa-sidebar-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;
+}
+.wa-sidebar-header h3{font:600 14px/1.3 inherit;flex:1}
+.wa-search{
+  padding:8px 16px;border-bottom:1px solid var(--border);
+}
+.wa-search input{font-size:13px;padding:7px 12px;background:var(--surface)}
+.wa-convs{flex:1;overflow-y:auto}
+.wa-conv{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;
+  border-bottom:1px solid var(--border);transition:background var(--t);
+}
+.wa-conv:hover{background:var(--surface)}
+.wa-conv.active{background:var(--whatsapp-l);border-left:3px solid var(--whatsapp)}
+.wa-conv-avatar{
+  width:40px;height:40px;border-radius:50%;background:var(--whatsapp);
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  font-weight:700;font-size:14px;flex-shrink:0;
+}
+.wa-conv-info{flex:1;min-width:0}
+.wa-conv-name{font-size:13px;font-weight:600;color:var(--text);display:flex;justify-content:space-between}
+.wa-conv-name .wa-time{font-size:10px;font-weight:400;color:var(--faint)}
+.wa-conv-last{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.wa-conv-unread{
+  background:var(--whatsapp);color:#fff;font-size:10px;font-weight:700;
+  width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.wa-chat{flex:1;display:flex;flex-direction:column;background:#E5DDD5;overflow:hidden}
+.wa-chat-header{
+  padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.wa-chat-header h4{font-size:14px;font-weight:600;flex:1}
+.wa-chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:4px}
+.wa-msg{
+  max-width:65%;padding:8px 12px;border-radius:8px;font-size:13px;line-height:1.5;
+  position:relative;margin-bottom:2px;
+}
+.wa-msg.inbound{background:var(--white);align-self:flex-start;border-bottom-left-radius:0;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.wa-msg.outbound{background:#DCF8C6;align-self:flex-end;border-bottom-right-radius:0;box-shadow:0 1px 1px rgba(0,0,0,.06)}
+.wa-msg-time{font-size:10px;color:var(--faint);text-align:right;margin-top:2px}
+.wa-msg-checks{color:var(--info);margin-left:4px}
+.wa-input-bar{
+  display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--white);
+  border-top:1px solid var(--border);flex-shrink:0;
+}
+.wa-input-bar input{border-radius:20px;padding:9px 16px;background:var(--surface);flex:1}
+.wa-send-btn{
+  width:38px;height:38px;border-radius:50%;background:var(--whatsapp);color:#fff;
+  display:flex;align-items:center;justify-content:center;transition:background var(--t);flex-shrink:0;
+}
+.wa-send-btn:hover{background:#20BA5C}
+.wa-empty{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--muted);gap:12px}
+.wa-empty svg{opacity:.3}
+
 /* ─── SETTINGS MODALS ──────────────────────────────────────────── */
 .settings-modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 .settings-modal-overlay.active{display:flex;animation:fadeIn .2s ease}
@@ -884,6 +947,9 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
       <button class="btn-quick" onclick="quickLogin('colaborador')">
         Colaborador<div class="login-role">Cria e executa</div>
       </button>
+      <button class="btn-quick" onclick="quickLogin('visualizador')">
+        Visualizador<div class="login-role">Somente leitura</div>
+      </button>
     </div>
   </div>
 </div>
@@ -1233,6 +1299,25 @@ const SCHOOLS = [
   { id:'ped3', name:'PED 3 — Sul'    },
 ];
 
+// ─── RBAC — Role-Based Access Control ────────────────────────────
+const ROLE_PERMISSIONS = {
+  admin:        { label:'Administrador',  canCreate:true, canEdit:true, canDelete:true, canApprove:true, canViewFinancial:true, canManageUsers:true, canManageSchools:true, canViewAudit:true, canConfigFlows:true, canManageModules:true, canManageWhatsApp:true },
+  gestor:       { label:'Gestor',         canCreate:true, canEdit:true, canDelete:false,canApprove:true, canViewFinancial:true, canManageUsers:false,canManageSchools:false,canViewAudit:true, canConfigFlows:false,canManageModules:false,canManageWhatsApp:false },
+  colaborador:  { label:'Colaborador',    canCreate:true, canEdit:true, canDelete:false,canApprove:false,canViewFinancial:false,canManageUsers:false,canManageSchools:false,canViewAudit:false,canConfigFlows:false,canManageModules:false,canManageWhatsApp:false },
+  visualizador: { label:'Visualizador',   canCreate:false,canEdit:false,canDelete:false,canApprove:false,canViewFinancial:false,canManageUsers:false,canManageSchools:false,canViewAudit:false,canConfigFlows:false,canManageModules:false,canManageWhatsApp:false },
+};
+
+const ALL_PERMISSIONS = ['canCreate','canEdit','canDelete','canApprove','canViewFinancial','canManageUsers','canManageSchools','canViewAudit','canConfigFlows','canManageModules','canManageWhatsApp'];
+const PERM_LABELS = {canCreate:'Criar cards',canEdit:'Editar cards',canDelete:'Excluir cards',canApprove:'Aprovar',canViewFinancial:'Ver financeiro',canManageUsers:'Gerenciar usuários',canManageSchools:'Gerenciar escolas',canViewAudit:'Ver auditoria',canConfigFlows:'Configurar fluxos',canManageModules:'Gerenciar módulos',canManageWhatsApp:'Gerenciar WhatsApp'};
+
+function hasPermission(perm){
+  if(!currentUser) return false;
+  // Check custom overrides first
+  if(currentUser.customPerms && typeof currentUser.customPerms[perm] !== 'undefined') return currentUser.customPerms[perm];
+  const rp = ROLE_PERMISSIONS[currentUser.role];
+  return rp ? !!rp[perm] : false;
+}
+
 const MODULES = {
   compras: {
     label:'Compras', shortLabel:'Compras', btnLabel:'Nova Solicitação',
@@ -1332,16 +1417,66 @@ let editCardId   = null;
 let dragCardId   = null;
 let selectedPrio = 'media';
 
+// ─── WHATSAPP DATA ────────────────────────────────────────────────
+let waConversations = [
+  { id:'wc1', phone:'+5571999990001', contact:'Maria Silva', school:'ped1', status:'open', lastMsg:'Tenho interesse na escola para minha filha', lastTime:'10:32', unread:2, leadId:null },
+  { id:'wc2', phone:'+5571999990002', contact:'João Pereira', school:'ped1', status:'open', lastMsg:'Qual o valor da mensalidade do 5º ano?', lastTime:'09:15', unread:1, leadId:null },
+  { id:'wc3', phone:'+5571999990003', contact:'Ana Oliveira', school:'ped2', status:'open', lastMsg:'Obrigada! Vou levar os documentos amanhã', lastTime:'Ontem', unread:0, leadId:null },
+  { id:'wc4', phone:'+5571999990004', contact:'Pedro Santos', school:'ped2', status:'closed', lastMsg:'Matrícula confirmada. Obrigado!', lastTime:'14/04', unread:0, leadId:null },
+  { id:'wc5', phone:'+5571999990005', contact:'Fernanda Lima', school:'ped3', status:'open', lastMsg:'Boa tarde, vocês têm vaga para maternal?', lastTime:'08:45', unread:3, leadId:null },
+];
+
+let waMessages = {
+  'wc1': [
+    { id:'wm1', dir:'inbound', text:'Boa tarde! Tenho interesse na escola para minha filha de 5 anos.', time:'10:28' },
+    { id:'wm2', dir:'outbound', text:'Olá Maria! Muito obrigada pelo interesse. Para o Infantil II, temos vagas disponíveis. Gostaria de agendar uma visita?', time:'10:30' },
+    { id:'wm3', dir:'inbound', text:'Sim! Pode ser nesta sexta-feira?', time:'10:31' },
+    { id:'wm4', dir:'inbound', text:'Tenho interesse na escola para minha filha', time:'10:32' },
+  ],
+  'wc2': [
+    { id:'wm5', dir:'inbound', text:'Bom dia! Qual o valor da mensalidade do 5º ano?', time:'09:10' },
+    { id:'wm6', dir:'outbound', text:'Bom dia João! O valor da mensalidade do Fund. I (5º ano) é R$ 1.290,00. Temos condições especiais para matrícula antecipada!', time:'09:12' },
+    { id:'wm7', dir:'inbound', text:'Qual o valor da mensalidade do 5º ano?', time:'09:15' },
+  ],
+  'wc3': [
+    { id:'wm8', dir:'inbound', text:'Olá! Fiz a visita ontem e gostei muito da escola', time:'14:00' },
+    { id:'wm9', dir:'inbound', text:'Obrigada! Vou levar os documentos amanhã', time:'14:05' },
+  ],
+};
+
+let activeWaConv = null;
+
+// ─── AUDIT LOG ────────────────────────────────────────────────────
+let auditLog = [];
+function addAudit(action, target, module){
+  auditLog.unshift({
+    id: uid(), action, target, module: module||'',
+    user: currentUser?.name||'Sistema', userId: currentUser?.id||'',
+    school: filterSchool||'todas', time: now(),
+  });
+  if(auditLog.length > 200) auditLog.length = 200;
+  saveAudit();
+}
+function saveAudit(){ localStorage.setItem('pipeped_audit', JSON.stringify(auditLog)); }
+function loadAudit(){ const a = localStorage.getItem('pipeped_audit'); if(a) auditLog = JSON.parse(a); }
+
 // ─── STORAGE ──────────────────────────────────────────────────────────
 function save() {
   localStorage.setItem('pipeped_cards', JSON.stringify(allCards));
   localStorage.setItem('pipeped_notifs', JSON.stringify(notifications));
+  localStorage.setItem('pipeped_waconvs', JSON.stringify(waConversations));
+  localStorage.setItem('pipeped_wamsgs', JSON.stringify(waMessages));
 }
 function load() {
   const c = localStorage.getItem('pipeped_cards');
   const n = localStorage.getItem('pipeped_notifs');
+  const wc = localStorage.getItem('pipeped_waconvs');
+  const wm = localStorage.getItem('pipeped_wamsgs');
   if (c) allCards = JSON.parse(c);
   if (n) notifications = JSON.parse(n);
+  if (wc) waConversations = JSON.parse(wc);
+  if (wm) waMessages = JSON.parse(wm);
+  loadAudit();
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────
@@ -1363,6 +1498,7 @@ function userInitials(id){ const u=userById(id); return u?u.initials:'?' }
 function userName(id){ const u=userById(id); return u?u.name:'—' }
 function userColor(id){ const u=userById(id); return u?u.color:'#6366F1' }
 function schoolName(id){ const s=SCHOOLS.find(x=>x.id===id); return s?s.name:'' }
+function schoolById(id){ return SCHOOLS.find(x=>x.id===id) }
 
 // ─── ACL — ACCESS CONTROL LAYER ──────────────────────────────────────
 // Centraliza TODA a lógica de visibilidade de dados.
@@ -1487,7 +1623,7 @@ function loginAs(u){
   document.getElementById('sbAvatar').textContent = u.initials;
   document.getElementById('sbAvatar').style.background = u.color;
   document.getElementById('sbName').textContent = u.name;
-  document.getElementById('sbRole').textContent = { admin:'Administrador', gestor:'Gestor', colaborador:'Colaborador' }[u.role];
+  document.getElementById('sbRole').textContent = { admin:'Administrador', gestor:'Gestor', colaborador:'Colaborador', visualizador:'Visualizador' }[u.role];
   populateResponsavelSelect();
   buildSidebar();
   populateSchoolFilter();
@@ -1524,6 +1660,13 @@ function buildSidebar(){
     </a>`;
   });
   html += `
+    <div class="sb-section">Comunicação</div>
+    <a class="nav-item" data-page="whatsapp" onclick="navigate('whatsapp')">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="nav-text">WhatsApp</span>
+      <span class="nav-badge" id="badge-whatsapp">0</span>
+    </a>
+
     <div class="sb-section">Sistema</div>
     <a class="nav-item" data-page="settings" onclick="navigate('settings')">
       <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
@@ -1564,18 +1707,19 @@ function navigate(page){
     // Esconde botão "Novo" se Clicksign (form inline) ou sem permissão
     newBtn.style.display = (mod.isClicksign || !canCreateInModule(page)) ? 'none' : '';
   }
-  else { newBtn.style.display = page==='settings' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
+  else { newBtn.style.display = page==='settings' || page==='whatsapp' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
   // Clicksign polling
   if(page==='contratos') csStartPolling(); else csStopPolling();
   renderPage();
   updateBadges();
 }
-const pageTitles = { dashboard:'Dashboard', settings:'Configurações' };
+const pageTitles = { dashboard:'Dashboard', settings:'Configurações', whatsapp:'WhatsApp' };
 
 function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
   else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
+  else if(currentPage==='whatsapp') el.innerHTML = buildWhatsApp();
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
   else if(currentPage==='settings') el.innerHTML = buildSettings();
 }
@@ -1737,6 +1881,159 @@ function kpiCard(label, icon, val, sub, bg, color){
     <div class="kpi-value" style="color:${color}">${val}</div>
     ${sub?`<div class="kpi-sub" style="color:${color}">${esc(sub)}</div>`:''}
   </div>`;
+}
+
+// ─── WHATSAPP ──────────────────────────────────────────────────────────
+function buildWhatsApp(){
+  const filteredConvs = filterSchool ? waConversations.filter(c=>c.school===filterSchool) : waConversations;
+
+  return `<div class="wa-wrap">
+    <div class="wa-sidebar">
+      <div class="wa-sidebar-header">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--whatsapp);display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>WhatsApp</h3>
+        <span style="font-size:11px;color:var(--muted)">${filteredConvs.length} conversas</span>
+      </div>
+      <div class="wa-search">
+        <input type="text" placeholder="Buscar conversa..." oninput="filterWaConvs(this.value)">
+      </div>
+      <div class="wa-convs" id="waConvList">
+        ${filteredConvs.map(c=>{
+          const s = schoolById(c.school);
+          return `<div class="wa-conv ${activeWaConv===c.id?'active':''}" onclick="selectWaConv('${c.id}')">
+            <div class="wa-conv-avatar">${(c.contact||'?')[0]}</div>
+            <div class="wa-conv-info">
+              <div class="wa-conv-name">${esc(c.contact)} <span class="wa-time">${esc(c.lastTime)}</span></div>
+              <div class="wa-conv-last">${esc(c.lastMsg)}</div>
+              ${s?`<div style="font-size:10px;color:${s.color};margin-top:2px">${esc(s.name)}</div>`:''}
+            </div>
+            ${c.unread>0?`<div class="wa-conv-unread">${c.unread}</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="wa-chat" id="waChatArea">
+      ${activeWaConv ? buildWaChatArea() : `
+        <div class="wa-empty">
+          <svg width="60" height="60" fill="none" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="var(--muted)" stroke-width="1.5"/></svg>
+          <div style="font-size:15px;font-weight:600;color:var(--text)">PIPEPED WhatsApp</div>
+          <div style="font-size:13px">Selecione uma conversa para começar</div>
+        </div>
+      `}
+    </div>
+  </div>`;
+}
+
+function buildWaChatArea(){
+  const conv = waConversations.find(c=>c.id===activeWaConv);
+  if(!conv) return '';
+  const msgs = waMessages[conv.id]||[];
+  const school = schoolById(conv.school);
+
+  return `
+    <div class="wa-chat-header">
+      <div class="wa-conv-avatar" style="width:36px;height:36px;font-size:14px">${(conv.contact||'?')[0]}</div>
+      <div style="flex:1">
+        <h4 style="font-size:14px;font-weight:600">${esc(conv.contact)}</h4>
+        <div style="font-size:11px;color:var(--muted)">${esc(conv.phone)} ${school?'· '+esc(school.name):''}</div>
+      </div>
+      ${!conv.leadId?`<button onclick="createLeadFromWa('${conv.id}')" style="padding:6px 12px;background:var(--comercial);color:#fff;border-radius:var(--r-sm);font-size:11px;font-weight:600;cursor:pointer;border:none">
+        + Criar Lead
+      </button>`:`<span style="font-size:11px;color:var(--ok);font-weight:600">Lead criado</span>`}
+    </div>
+    <div class="wa-chat-msgs" id="waMsgList">
+      ${msgs.map(m=>`<div class="wa-msg ${m.dir}">
+        <div>${esc(m.text)}</div>
+        <div class="wa-msg-time">${esc(m.time)} ${m.dir==='outbound'?'<span class="wa-msg-checks">✓✓</span>':''}</div>
+      </div>`).join('')}
+    </div>
+    <div class="wa-input-bar">
+      <input type="text" id="waInput" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendWaMessage()">
+      <button class="wa-send-btn" onclick="sendWaMessage()">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>`;
+}
+
+function selectWaConv(convId){
+  activeWaConv = convId;
+  const conv = waConversations.find(c=>c.id===convId);
+  if(conv) { conv.unread=0; save(); }
+  renderPage();
+  // Scroll to bottom
+  setTimeout(()=>{
+    const el = document.getElementById('waMsgList');
+    if(el) el.scrollTop = el.scrollHeight;
+  },50);
+}
+
+function filterWaConvs(q){
+  const list = document.getElementById('waConvList');
+  if(!list) return;
+  const query = q.toLowerCase();
+  list.querySelectorAll('.wa-conv').forEach(el=>{
+    const text = el.textContent.toLowerCase();
+    el.style.display = text.includes(query)?'':'none';
+  });
+}
+
+function sendWaMessage(){
+  const input = document.getElementById('waInput');
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text||!activeWaConv) return;
+
+  if(!waMessages[activeWaConv]) waMessages[activeWaConv]=[];
+  const timeStr = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  waMessages[activeWaConv].push({ id:uid(), dir:'outbound', text, time:timeStr });
+
+  const conv = waConversations.find(c=>c.id===activeWaConv);
+  if(conv){ conv.lastMsg=text; conv.lastTime=timeStr; }
+  input.value='';
+  save();
+  addAudit('create',`Mensagem WhatsApp para ${conv?.contact||''}`,`whatsapp`);
+
+  // Re-render chat area only
+  const chatArea = document.getElementById('waChatArea');
+  if(chatArea) chatArea.innerHTML = buildWaChatArea();
+  setTimeout(()=>{
+    const el = document.getElementById('waMsgList');
+    if(el) el.scrollTop = el.scrollHeight;
+  },50);
+
+  // Simulate delivery
+  setTimeout(()=>{
+    showToast('Mensagem enviada com sucesso');
+  }, 800);
+}
+
+function createLeadFromWa(convId){
+  const conv = waConversations.find(c=>c.id===convId);
+  if(!conv) return;
+
+  const card = {
+    id:uid(), modulo:'comercial', titulo:`Lead WhatsApp — ${conv.contact}`,
+    descricao:`Lead criado automaticamente a partir de conversa no WhatsApp.\nContato: ${conv.phone}\nEscola de interesse: ${schoolName(conv.school)||'Não informada'}`,
+    escola:conv.school, categoria:'', prioridade:'alta', fase:'lead',
+    responsavel:currentUser?.id||'u4', prazo:'',
+    criadoEm:today(), criadoPor:currentUser?.id||'u1',
+    comentarios:[{ id:uid(), texto:`Conversa iniciada via WhatsApp em ${conv.lastTime}. Última mensagem: "${conv.lastMsg}"`, usuario:currentUser?.id||'u1', data:now() }],
+    historico:[{ texto:`Lead criado automaticamente via WhatsApp (${conv.phone})`, data:now(), usuario:'Sistema' }],
+    anexos:[]
+  };
+  allCards.unshift(card);
+  conv.leadId = card.id;
+  save();
+  updateBadges();
+  addNotif('Lead criado via WhatsApp', conv.contact, 'create');
+  addAudit('create',`Lead WhatsApp: ${conv.contact}`,'comercial');
+  showToast(`Lead criado: ${conv.contact}`);
+
+  // Re-render chat
+  const chatArea = document.getElementById('waChatArea');
+  if(chatArea) chatArea.innerHTML = buildWaChatArea();
 }
 
 // ─── KANBAN ───────────────────────────────────────────────────────────
@@ -2277,7 +2574,7 @@ function buildSettingsUsuarios(){
     </tr></thead>
     <tbody>
       ${USERS.map(u=>{
-        const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[u.role];
+        const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador',visualizador:'Visualizador'}[u.role];
         const active = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
         const st = localStorage.getItem('user_status_'+u.id)||'ativo';
         const schools = getUserSchools(u);
@@ -2325,7 +2622,7 @@ function buildSettingsUsuarios(){
         <div><strong style="color:var(--text)">Grupo:</strong> Grupo PED</div>
         <div><strong style="color:var(--text)">Build:</strong> 2026.04</div>
         <div><strong style="color:var(--text)">Stack:</strong> HTML5 / CSS3 / Vanilla JS</div>
-        <div><strong style="color:var(--text)">Logado:</strong> ${esc(currentUser?.name||'—')} (${esc({admin:'Admin',gestor:'Gestor',colaborador:'Colab.'}[currentUser?.role]||'—')})</div>
+        <div><strong style="color:var(--text)">Logado:</strong> ${esc(currentUser?.name||'—')} (${esc({admin:'Admin',gestor:'Gestor',colaborador:'Colab.',visualizador:'Viz.'}[currentUser?.role]||'—')})</div>
       </div>
       <button onclick="if(confirm('Limpar todos os dados?')){localStorage.clear();location.reload()}" style="margin-top:12px;padding:8px 16px;border:1px solid var(--err);color:var(--err);border-radius:6px;font-size:12px;cursor:pointer;background:transparent">Resetar dados</button>
     </div>
@@ -3821,6 +4118,12 @@ function updateBadges(){
       const n=activeCards(mod).length; el.textContent=n||''; el.dataset.count=n;
     }
   });
+  const waBadge = document.getElementById('badge-whatsapp');
+  if(waBadge){
+    const unread = waConversations.reduce((a,c)=>a+c.unread,0);
+    waBadge.textContent = unread||'';
+    waBadge.dataset.count = unread;
+  }
   renderNotifBell();
 }
 
