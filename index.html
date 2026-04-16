@@ -165,8 +165,10 @@ svg{display:block;flex-shrink:0}
 }
 .btn-notif:hover{background:var(--surface);color:var(--text)}
 .notif-dot{
-  position:absolute;top:6px;right:6px;width:8px;height:8px;
-  background:var(--err);border-radius:50%;border:2px solid var(--white);
+  position:absolute;top:2px;right:0px;min-width:16px;height:16px;padding:0 4px;
+  background:var(--err);border-radius:9999px;border:2px solid var(--white);
+  font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;
+  line-height:1;
 }
 .btn-new{
   display:flex;align-items:center;gap:6px;padding:8px 16px;
@@ -434,6 +436,7 @@ svg{display:block;flex-shrink:0}
 }
 .notif-item-text{flex:1;font-size:12.5px;line-height:1.45;color:var(--text)}
 .notif-item-time{font-size:10px;color:var(--faint);white-space:nowrap}
+.notif-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
 
 /* ─── SETTINGS ────────────────────────────────────────────────────── */
 .settings-wrap{padding:24px;max-width:1100px}
@@ -1063,9 +1066,16 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 <div id="notifPanel">
   <div class="notif-header">
     <h4>Notificações</h4>
-    <span class="notif-clear" onclick="clearNotifs()">Limpar tudo</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="notif-clear" onclick="markAllNotifReadBell()">Marcar lidas</span>
+      <span class="notif-clear" style="color:var(--err)" onclick="clearNotifs()">Limpar</span>
+    </div>
   </div>
   <div id="notifList"></div>
+  <div class="notif-footer" id="notifFooter">
+    <span id="notifEmailCount" style="font-size:11px;color:var(--faint)"></span>
+    <span class="notif-clear" onclick="closeNotif();navigate('settings');switchSettingsTab('automacoes')">⚙️ Automações</span>
+  </div>
 </div>
 
 <!-- ─── TEMPLATE EDITOR MODAL ──────────────────────────────────────── -->
@@ -1515,11 +1525,6 @@ function buildSidebar(){
   });
   html += `
     <div class="sb-section">Sistema</div>
-    <a class="nav-item" data-page="notif_center" onclick="navigate('notif_center')">
-      <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="nav-text">Notificações</span>
-      <span class="nav-badge" id="badge-notif_center" style="background:var(--err);color:#fff"></span>
-    </a>
     <a class="nav-item" data-page="settings" onclick="navigate('settings')">
       <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
       <span class="nav-text">Configurações</span>
@@ -1559,20 +1564,19 @@ function navigate(page){
     // Esconde botão "Novo" se Clicksign (form inline) ou sem permissão
     newBtn.style.display = (mod.isClicksign || !canCreateInModule(page)) ? 'none' : '';
   }
-  else { newBtn.style.display = (page==='settings'||page==='notif_center') ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
+  else { newBtn.style.display = page==='settings' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
   // Clicksign polling
   if(page==='contratos') csStartPolling(); else csStopPolling();
   renderPage();
   updateBadges();
 }
-const pageTitles = { dashboard:'Dashboard', settings:'Configurações', notif_center:'Central de Notificações' };
+const pageTitles = { dashboard:'Dashboard', settings:'Configurações' };
 
 function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
   else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
-  else if(currentPage==='notif_center') el.innerHTML = buildNotifCenter();
   else if(currentPage==='settings') el.innerHTML = buildSettings();
 }
 
@@ -2125,7 +2129,9 @@ function addNotif(title, body, type){
 }
 function renderNotifBell(){
   const unread = notifications.filter(n=>!n.read).length;
-  document.getElementById('notifDot').classList.toggle('hidden', unread===0);
+  const dot = document.getElementById('notifDot');
+  dot.classList.toggle('hidden', unread===0);
+  dot.textContent = unread > 9 ? '9+' : (unread || '');
 }
 function toggleNotif(){
   const p = document.getElementById('notifPanel');
@@ -2141,21 +2147,34 @@ function closeNotif(){
 }
 function renderNotifList(){
   const list = document.getElementById('notifList');
-  const icons = { create:'🆕', update:'✏️', move:'↗️', comment:'💬' };
+  const iconStyles = {
+    create:{ icon:'🆕', bg:'#ECFDF5' },
+    update:{ icon:'✏️', bg:'#EFF6FF' },
+    move:  { icon:'↗️', bg:'#F5F3FF' },
+    comment:{ icon:'💬', bg:'#FEF3C7' }
+  };
   if(!notifications.length){
     list.innerHTML='<div style="padding:24px;text-align:center;color:var(--faint);font-size:13px">Nenhuma notificação</div>';
-    return;
+  } else {
+    list.innerHTML = notifications.slice(0,20).map(n=>{
+      const ic = iconStyles[n.type]||{icon:'🔔',bg:'var(--accent-l)'};
+      return `<div class="notif-item ${n.read?'':'unread'}" onclick="markRead('${n.id}')">
+        <div class="notif-item-icon" style="background:${ic.bg};font-size:16px">${ic.icon}</div>
+        <div class="notif-item-text"><strong>${esc(n.title)}</strong><br>${esc(n.body)}</div>
+        <div class="notif-item-time">${esc(n.time)}</div>
+      </div>`;
+    }).join('');
   }
-  list.innerHTML = notifications.slice(0,20).map(n=>`
-  <div class="notif-item ${n.read?'':'unread'}" onclick="markRead('${n.id}')">
-    <div class="notif-item-icon" style="background:var(--accent-l);font-size:16px">${icons[n.type]||'🔔'}</div>
-    <div class="notif-item-text"><strong>${esc(n.title)}</strong><br>${esc(n.body)}</div>
-    <div class="notif-item-time">${esc(n.time)}</div>
-  </div>`).join('');
+  try{
+    const emailCount = getEmailLogs().length;
+    const el = document.getElementById('notifEmailCount');
+    if(el) el.textContent = emailCount ? '📩 '+emailCount+' e-mails enviados' : '';
+  }catch(e){}
   notifications.forEach(n=>n.read=true);
   save(); renderNotifBell();
 }
 function markRead(id){ const n=notifications.find(x=>x.id===id); if(n) n.read=true; save(); }
+function markAllNotifReadBell(){ notifications.forEach(n=>n.read=true); save(); renderNotifBell(); renderNotifList(); }
 function clearNotifs(){ notifications=[]; save(); document.getElementById('notifList').innerHTML='<div style="padding:24px;text-align:center;color:var(--faint);font-size:13px">Limpas.</div>'; renderNotifBell(); }
 
 // ─── SETTINGS PAGE STATE ──────────────────────────────────────────────
@@ -2214,6 +2233,9 @@ function buildSettings(){
     {id:'modulos',icon:'📦',label:'Módulos'},
     {id:'workflows',icon:'🔄',label:'Workflows'},
     {id:'notificacoes',icon:'🔔',label:'Notificações'},
+    {id:'templates',icon:'🧩',label:'Templates'},
+    {id:'automacoes',icon:'⚙️',label:'Automações'},
+    {id:'emails_log',icon:'📩',label:'Log E-mails'},
     {id:'auditoria',icon:'📋',label:'Auditoria'},
   ];
   let content = '';
@@ -2222,6 +2244,9 @@ function buildSettings(){
   if(settingsTab==='modulos')     content = buildSettingsModulos();
   if(settingsTab==='workflows')   content = buildSettingsWorkflows();
   if(settingsTab==='notificacoes')content = buildSettingsNotificacoes();
+  if(settingsTab==='templates')   content = buildSettingsTemplates();
+  if(settingsTab==='automacoes')  content = buildSettingsAutomacoes();
+  if(settingsTab==='emails_log')  content = buildSettingsEmailLog();
   if(settingsTab==='auditoria')   content = buildSettingsAuditoria();
 
   return `<div class="settings-wrap">
@@ -2468,7 +2493,51 @@ function buildSettingsNotificacoes(){
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// TAB 6 — AUDITORIA
+// TAB 6 — TEMPLATES DE E-MAIL
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsTemplates(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
+  initEmailSystem();
+  const tpls = getEmailTemplates();
+  return `
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">Templates de E-mail (${tpls.length})</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Configure os modelos de e-mail enviados pelas automações do sistema.</p>
+  ${buildNCTemplates(tpls)}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 7 — AUTOMAÇÕES
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsAutomacoes(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
+  initEmailSystem();
+  const rules = getAutoRules();
+  return `
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">Regras de Automação (${rules.length})</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Defina ações automáticas ao criar cards, mudar fases, detectar atrasos e mais.</p>
+  <div class="nc-stats" style="margin-bottom:20px">
+    <div class="nc-stat"><div class="nc-stat-value" style="color:var(--ok)">${rules.filter(r=>r.active).length}</div><div class="nc-stat-label">Ativas</div></div>
+    <div class="nc-stat"><div class="nc-stat-value" style="color:var(--faint)">${rules.filter(r=>!r.active).length}</div><div class="nc-stat-label">Inativas</div></div>
+    <div class="nc-stat"><div class="nc-stat-value" style="color:var(--accent)">${rules.reduce((s,r)=>s+(r.executionCount||0),0)}</div><div class="nc-stat-label">Total Execuções</div></div>
+  </div>
+  ${buildNCAutomations(rules)}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 8 — LOG DE E-MAILS
+// ═══════════════════════════════════════════════════════════════════════
+function buildSettingsEmailLog(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
+  initEmailSystem();
+  const logs = getEmailLogs();
+  return `
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">Log de E-mails Enviados (${logs.length})</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Histórico de todos os e-mails disparados pelas automações.</p>
+  ${buildNCEmailLogs(logs)}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB 9 — AUDITORIA
 // ═══════════════════════════════════════════════════════════════════════
 function buildSettingsAuditoria(){
   if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores.</p></div>';
@@ -3753,13 +3822,6 @@ function updateBadges(){
     }
   });
   renderNotifBell();
-  // Notification center badge
-  const ncBadge = document.getElementById('badge-notif_center');
-  if(ncBadge){
-    const unread = notifications.filter(n=>!n.read).length;
-    ncBadge.textContent = unread||'';
-    ncBadge.dataset.count = unread;
-  }
 }
 
 // ─── SEARCH / FILTER ──────────────────────────────────────────────────
