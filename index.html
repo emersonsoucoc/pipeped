@@ -1417,6 +1417,114 @@ let editCardId   = null;
 let dragCardId   = null;
 let selectedPrio = 'media';
 
+// ─── API CLIENT ──────────────────────────────────────────────────────
+let authToken = localStorage.getItem('pipeped_token')||'';
+let apiModules = []; // loaded from API
+let apiUsers = [];   // loaded from API
+let apiSchools = []; // loaded from API
+
+const API_BASE = '/api';
+
+async function api(path, opts = {}){
+  const headers = { 'Content-Type':'application/json', ...opts.headers };
+  if(authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  const res = await fetch(API_BASE + path, { ...opts, headers });
+  if(res.status === 401){ authToken=''; localStorage.removeItem('pipeped_token'); location.reload(); return; }
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || 'Erro na API');
+  return data;
+}
+
+// Convert API task → frontend card format
+function apiToCard(t){
+  return {
+    id: t.id,
+    modulo: t.module?.slug || '',
+    titulo: t.title || '',
+    descricao: t.description || '',
+    escola: t.school?.id || t.schoolId || '',
+    categoria: t.category?.name || '',
+    prioridade: (t.priority||'MEDIA').toLowerCase(),
+    fase: t.phase?.slug || '',
+    responsavel: t.assignedTo?.id || t.assignedToId || '',
+    prazo: t.dueDate ? t.dueDate.split('T')[0] : '',
+    criadoEm: t.createdAt ? t.createdAt.split('T')[0] : '',
+    criadoPor: t.createdBy?.id || t.createdById || '',
+    valor: t.amount || '',
+    fornecedor: t.supplier || '',
+    vencimento: t.paymentDue ? t.paymentDue.split('T')[0] : '',
+    comentarios: (t.comments||[]).map(c=>({
+      id: c.id,
+      texto: c.content,
+      usuario: c.user?.id || c.userId || '',
+      data: c.createdAt ? new Date(c.createdAt).toLocaleString('pt-BR') : ''
+    })),
+    historico: (t.history||[]).map(h=>({
+      texto: h.action + ': ' + (h.details||''),
+      data: h.createdAt ? new Date(h.createdAt).toLocaleString('pt-BR') : '',
+      usuario: h.userName || ''
+    })),
+    anexos: t.attachments || [],
+    _apiPhaseId: t.phase?.id || t.phaseId || '',
+    _apiModuleId: t.module?.id || t.moduleId || '',
+    _apiCategoryId: t.category?.id || t.categoryId || '',
+    _apiSchoolId: t.school?.id || t.schoolId || '',
+    _apiAssignedToId: t.assignedTo?.id || t.assignedToId || '',
+    _commentCount: t._count?.comments || 0,
+  };
+}
+
+// Load all boards from API into allCards
+async function loadFromAPI(){
+  try {
+    const modules = await api('/modules');
+    apiModules = modules;
+
+    // Load users and schools
+    try { const res = await api('/users?limit=100'); apiUsers = res.data || []; } catch(e){}
+    try { apiSchools = await api('/schools'); } catch(e){}
+
+    // Update USERS and SCHOOLS arrays from API data
+    if(apiUsers.length){
+      USERS.length = 0;
+      apiUsers.forEach(u => {
+        USERS.push({
+          id: u.id, name: u.name, email: u.email,
+          role: u.role === 'ADMIN' ? 'admin' : u.role === 'MANAGER' ? 'gestor' : 'colaborador',
+          initials: u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+          dept: '', color: '#' + (u.id.slice(0,6).replace(/[^0-9a-f]/g,'0') || '6366F1'),
+          schools: [u.schoolId],
+          modulos: u.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial','contratos'],
+        });
+      });
+    }
+    if(apiSchools.length){
+      SCHOOLS.length = 0;
+      apiSchools.forEach(s => {
+        SCHOOLS.push({ id: s.id, name: s.name });
+      });
+    }
+
+    // Load boards for all modules
+    allCards = [];
+    for(const mod of modules){
+      if(mod.slug === 'contratos') continue; // contratos uses Clicksign
+      try {
+        const board = await api('/tasks/board/' + mod.slug);
+        board.board.forEach(col => {
+          col.tasks.forEach(t => {
+            allCards.push(apiToCard(t));
+          });
+        });
+      } catch(e){ console.warn('Erro ao carregar board:', mod.slug, e); }
+    }
+
+    console.log('✅ Dados carregados da API:', allCards.length, 'cards');
+  } catch(e){
+    console.error('Erro ao carregar dados da API:', e);
+  }
+}
+
 // ─── WHATSAPP DATA ────────────────────────────────────────────────
 let waConversations = [
   { id:'wc1', phone:'+5571999990001', contact:'Maria Silva', school:'ped1', status:'open', lastMsg:'Tenho interesse na escola para minha filha', lastTime:'10:32', unread:2, leadId:null },
@@ -1462,17 +1570,16 @@ function loadAudit(){ const a = localStorage.getItem('pipeped_audit'); if(a) aud
 
 // ─── STORAGE ──────────────────────────────────────────────────────────
 function save() {
-  localStorage.setItem('pipeped_cards', JSON.stringify(allCards));
+  // Cards are now saved via API, only keep local notifs and WA data
   localStorage.setItem('pipeped_notifs', JSON.stringify(notifications));
   localStorage.setItem('pipeped_waconvs', JSON.stringify(waConversations));
   localStorage.setItem('pipeped_wamsgs', JSON.stringify(waMessages));
 }
 function load() {
-  const c = localStorage.getItem('pipeped_cards');
+  // Cards now come from API (loadFromAPI), only load local data
   const n = localStorage.getItem('pipeped_notifs');
   const wc = localStorage.getItem('pipeped_waconvs');
   const wm = localStorage.getItem('pipeped_wamsgs');
-  if (c) allCards = JSON.parse(c);
   if (n) notifications = JSON.parse(n);
   if (wc) waConversations = JSON.parse(wc);
   if (wm) waMessages = JSON.parse(wm);
@@ -1605,16 +1712,43 @@ function showToast(msg, type='success'){
 }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────
-function doLogin(){
+async function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
-  const u = USERS.find(x=>x.email===email);
-  if(!u || !pass){ showToast('Credenciais inválidas','error'); return; }
-  loginAs(u);
+  if(!email || !pass){ showToast('Informe email e senha','error'); return; }
+  try {
+    const res = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password: pass })
+    });
+    authToken = res.token;
+    localStorage.setItem('pipeped_token', res.token);
+    // Map API user to frontend user format
+    const apiU = res.user;
+    const u = {
+      id: apiU.id, name: apiU.name, email: apiU.email,
+      role: apiU.role === 'ADMIN' ? 'admin' : apiU.role === 'MANAGER' ? 'gestor' : 'colaborador',
+      initials: apiU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+      dept: '', color: '#6366F1',
+      schools: [apiU.schoolId],
+      modulos: apiU.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
+      schoolId: apiU.schoolId,
+    };
+    // Add to USERS if not already there
+    if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
+    await loadFromAPI();
+    loginAs(u);
+  } catch(e){
+    showToast(e.message || 'Credenciais inválidas','error');
+  }
 }
 function quickLogin(role){
-  const u = USERS.find(x=>x.role===role);
-  if(u) loginAs(u);
+  const map = { admin: 'emerson@grupoped.com.br', gestor: 'ana@grupoped.com.br', colaborador: 'carlos@grupoped.com.br' };
+  const email = map[role];
+  if(!email) return;
+  document.getElementById('loginEmail').value = email;
+  document.getElementById('loginPass').value = 'Ped@2026';
+  doLogin();
 }
 function loginAs(u){
   currentUser = u;
@@ -2119,7 +2253,7 @@ function onDragLeave(e){
   const col = e.currentTarget;
   if(!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
 }
-function onDrop(e, mod, fase){
+async function onDrop(e, mod, fase){
   e.preventDefault();
   const col = e.currentTarget.closest('.kanban-col');
   if(col) col.classList.remove('drag-over');
@@ -2128,17 +2262,29 @@ function onDrop(e, mod, fase){
   if(!card) return;
   if(!canEditCard(card)){ showToast('Sem permissão para mover este card','error'); return; }
   const oldFase = card.fase;
+
+  // Find phase ID from apiModules
+  const apiMod = apiModules.find(m => m.slug === mod);
+  const apiPhase = apiMod ? (apiMod.phases||[]).find(p => p.slug === fase) : null;
+
+  if(!apiPhase){ showToast('Fase não encontrada','error'); return; }
+
+  // Optimistic update
   card.fase = fase;
   card.modulo = mod;
-  card.historico = card.historico||[];
-  card.historico.push({ texto:`Fase alterada: "${MODULES[mod].fases[oldFase]?.label||oldFase}" → "${MODULES[mod].fases[fase]?.label||fase}"`, data:now(), usuario:currentUser?.name||'Sistema' });
-  save();
-  addNotif(`Card movido para "${MODULES[mod].fases[fase]?.label}"`, card.titulo, 'move');
-  try{logAudit('card_move',mod,card.titulo+' → '+MODULES[mod].fases[fase]?.label);}catch(e){}
-  // Automation trigger — phase change
-  try{ NotifEngine.execute('card_enter_phase', card, { fase }); }catch(e){ console.warn('NotifEngine error:', e); }
   renderPage();
   updateBadges();
+
+  try {
+    await api('/tasks/' + id + '/move', { method: 'PATCH', body: JSON.stringify({ phaseId: apiPhase.id }) });
+    addNotif(`Card movido para "${MODULES[mod].fases[fase]?.label}"`, card.titulo, 'move');
+    try{logAudit('card_move',mod,card.titulo+' → '+MODULES[mod].fases[fase]?.label);}catch(e){}
+  } catch(e){
+    // Rollback
+    card.fase = oldFase;
+    renderPage();
+    showToast('Erro ao mover card: ' + e.message, 'error');
+  }
 }
 
 // ─── CARD MODAL ───────────────────────────────────────────────────────
@@ -2310,89 +2456,131 @@ function renderHistory(c){
   </div>`).join('');
 }
 
-function addComment(){
+async function addComment(){
   const txt = document.getElementById('commentInput').value.trim();
   if(!txt){ showToast('Escreva um comentário','warn'); return; }
   if(!editCardId){ showToast('Salve o card primeiro','warn'); return; }
   const card = allCards.find(c=>c.id===editCardId);
   if(!card) return;
-  card.comentarios = card.comentarios||[];
-  card.comentarios.push({ id:uid(), texto:txt, usuario:currentUser?.id||'u1', data:now() });
-  card.historico = card.historico||[];
-  card.historico.push({ texto:`Comentário adicionado por ${currentUser?.name}`, data:now(), usuario:currentUser?.name });
-  document.getElementById('commentInput').value='';
-  save();
-  renderComments(card);
-  renderHistory(card);
-  addNotif('Novo comentário em card', card.titulo, 'comment');
-  // Automation trigger — comment
-  try{ card._lastComment = txt; NotifEngine.execute('comment_added', card, {}); delete card._lastComment; }catch(e){ console.warn('NotifEngine error:', e); }
+
+  try {
+    const comment = await api('/tasks/' + editCardId + '/comments', {
+      method: 'POST',
+      body: JSON.stringify({ content: txt })
+    });
+    card.comentarios = card.comentarios||[];
+    card.comentarios.push({
+      id: comment.id,
+      texto: comment.content,
+      usuario: comment.user?.id || currentUser?.id || '',
+      data: new Date(comment.createdAt).toLocaleString('pt-BR'),
+    });
+    document.getElementById('commentInput').value='';
+    renderComments(card);
+    addNotif('Novo comentário em card', card.titulo, 'comment');
+  } catch(e){
+    showToast('Erro ao comentar: ' + e.message, 'error');
+  }
 }
 
-function saveCard(){
+async function saveCard(){
   const titulo = document.getElementById('mTitle').value.trim();
   if(!titulo){ showToast('Informe um título para o card','error'); return; }
   const modulo = document.getElementById('mModulo').value;
   const fase   = document.getElementById('mFase').value;
   const isNew  = !editCardId;
-  // ACL: verificar permissão
   if(isNew && !canCreateInModule(modulo)){ showToast('Sem permissão para criar neste módulo','error'); return; }
   if(!isNew){ const _c=allCards.find(c=>c.id===editCardId); if(_c&&!canEditCard(_c)){showToast('Sem permissão para editar','error');return;} }
 
-  let card;
-  if(editCardId){
-    card = allCards.find(c=>c.id===editCardId);
-    if(!card){ editCardId=null; return; }
-    const oldFase = card.fase;
-    card.historico = card.historico||[];
-    if(oldFase!==fase){
-      card.historico.push({ texto:`Fase alterada para "${MODULES[modulo]?.fases[fase]?.label}"`, data:now(), usuario:currentUser?.name });
-      card.fase = fase; // set before trigger
-      try{ NotifEngine.execute('card_enter_phase', card, { fase }); }catch(e){ console.warn('NotifEngine error:', e); }
+  // Build API payload
+  const escola = document.getElementById('mEscola').value;
+  const M = MODULES[modulo];
+
+  // Find IDs from apiModules
+  const apiMod = apiModules.find(m => m.slug === modulo);
+  if(!apiMod){ showToast('Módulo não encontrado','error'); return; }
+
+  const faseSlug = fase;
+  const apiPhase = (apiMod.phases||[]).find(p => p.slug === faseSlug);
+  if(!apiPhase){ showToast('Fase não encontrada','error'); return; }
+
+  const catName = document.getElementById('mCategoria').value;
+  const apiCat = catName ? (apiMod.categories||[]).find(c => c.name === catName) : null;
+
+  try {
+    if(isNew){
+      const body = {
+        title: titulo,
+        description: document.getElementById('mDesc').value.trim(),
+        priority: selectedPrio.toUpperCase(),
+        moduleId: apiMod.id,
+        phaseId: apiPhase.id,
+        schoolId: escola,
+        assignedToId: document.getElementById('mResponsavel').value || undefined,
+        dueDate: document.getElementById('mPrazo').value || undefined,
+        categoryId: apiCat?.id || undefined,
+      };
+      if(M?.hasFinancial){
+        const val = parseFloat(document.getElementById('mValor').value);
+        if(!isNaN(val)) body.amount = val;
+        body.supplier = document.getElementById('mFornecedor').value || undefined;
+        body.paymentDue = document.getElementById('mVencimento').value || undefined;
+      }
+      // Remove undefined values
+      Object.keys(body).forEach(k => body[k] === undefined && delete body[k]);
+
+      const task = await api('/tasks', { method: 'POST', body: JSON.stringify(body) });
+      const card = apiToCard(task);
+      allCards.unshift(card);
+      editCardId = card.id;
+      document.getElementById('modalHeaderTitle').textContent = 'Editar Card';
+      document.getElementById('modalDeleteBtn').style.display = '';
+      document.getElementById('mCriadoEm').textContent = fmtDate(card.criadoEm);
+      document.getElementById('mCriadoPor').textContent = userName(card.criadoPor) || currentUser?.name || '—';
+      showToast('Card criado com sucesso!');
+      addNotif('Novo card criado', titulo, 'create');
+    } else {
+      const existingCard = allCards.find(c=>c.id===editCardId);
+      const oldFase = existingCard?.fase;
+
+      const body = {
+        title: titulo,
+        description: document.getElementById('mDesc').value.trim(),
+        priority: selectedPrio.toUpperCase(),
+        phaseId: apiPhase.id,
+        assignedToId: document.getElementById('mResponsavel').value || null,
+        dueDate: document.getElementById('mPrazo').value || null,
+        categoryId: apiCat?.id || null,
+      };
+      if(M?.hasFinancial){
+        const val = parseFloat(document.getElementById('mValor').value);
+        body.amount = isNaN(val) ? null : val;
+        body.supplier = document.getElementById('mFornecedor').value || null;
+        body.paymentDue = document.getElementById('mVencimento').value || null;
+      }
+
+      // If phase changed, do a move
+      if(oldFase !== faseSlug){
+        await api('/tasks/' + editCardId + '/move', { method: 'PATCH', body: JSON.stringify({ phaseId: apiPhase.id }) });
+      }
+
+      const task = await api('/tasks/' + editCardId, { method: 'PUT', body: JSON.stringify(body) });
+      const updated = apiToCard(task);
+      const idx = allCards.findIndex(c=>c.id===editCardId);
+      if(idx>=0) allCards[idx] = updated;
+      showToast('Card salvo!');
+      addNotif('Card atualizado', titulo, 'update');
     }
-  } else {
-    card = { id:uid(), criadoEm:today(), criadoPor:currentUser?.id||'u1', comentarios:[], historico:[], anexos:[] };
-    card.historico.push({ texto:`Card criado por ${currentUser?.name}`, data:now(), usuario:currentUser?.name });
-    allCards.unshift(card);
-    editCardId = card.id;
-    document.getElementById('modalHeaderTitle').textContent = 'Editar Card';
-    document.getElementById('modalDeleteBtn').style.display = '';
-    document.getElementById('mCriadoEm').textContent = fmtDate(today());
-    document.getElementById('mCriadoPor').textContent = userName(currentUser?.id);
+  } catch(e){
+    showToast('Erro ao salvar: ' + e.message, 'error');
+    return;
   }
 
-  card.titulo       = titulo;
-  card.descricao    = document.getElementById('mDesc').value.trim();
-  card.modulo       = modulo;
-  card.fase         = fase;
-  card.prioridade   = selectedPrio;
-  card.responsavel  = document.getElementById('mResponsavel').value;
-  card.escola       = document.getElementById('mEscola').value;
-  card.categoria    = document.getElementById('mCategoria').value;
-  card.prazo        = document.getElementById('mPrazo').value;
-  if(MODULES[modulo]?.hasFinancial){
-    card.valor      = document.getElementById('mValor').value;
-    card.fornecedor = document.getElementById('mFornecedor').value;
-    card.vencimento = document.getElementById('mVencimento').value;
-  }
-  save();
   updateBadges();
-  renderHistory(card);
   const msg = document.getElementById('mSavedMsg');
   msg.style.opacity='1';
   setTimeout(()=>msg.style.opacity='0',2000);
-  showToast(isNew?'Card criado com sucesso!':'Card salvo!');
-  addNotif(isNew?'Novo card criado':'Card atualizado', titulo, isNew?'create':'update');
   try{logAudit(isNew?'card_create':'card_update',modulo,titulo);}catch(e){}
-  // Automation triggers
-  try{
-    if(isNew){
-      NotifEngine.execute('card_created', card, {});
-      if(modulo==='comercial') NotifEngine.execute('new_lead', card, {});
-    } else {
-      NotifEngine.execute('field_updated', card, { campo:'general' });
-    }
-  }catch(e){ console.warn('NotifEngine error:', e); }
   if(MODULES[currentPage]) renderPage();
 }
 
@@ -2405,16 +2593,21 @@ function handleModalOverlayClick(e){
   if(e.target===document.getElementById('cardModalOverlay')) closeCard();
 }
 
-function deleteCurrentCard(){
+async function deleteCurrentCard(){
   if(!editCardId) return;
   const delCard = allCards.find(c=>c.id===editCardId);
   if(delCard && !canDeleteCard(delCard)){ showToast('Sem permissão para excluir este card','error'); return; }
   if(!confirm('Excluir este card? Esta ação não pode ser desfeita.')) return;
-  allCards = allCards.filter(c=>c.id!==editCardId);
-  save(); updateBadges();
-  closeCard();
-  showToast('Card excluído','warn');
-  try{logAudit('card_delete',delCard?.modulo||'—',delCard?.titulo||'');}catch(e){}
+  try {
+    await api('/tasks/' + editCardId, { method: 'DELETE' });
+    allCards = allCards.filter(c=>c.id!==editCardId);
+    updateBadges();
+    closeCard();
+    showToast('Card excluído','warn');
+    try{logAudit('card_delete',delCard?.modulo||'—',delCard?.titulo||'');}catch(e){}
+  } catch(e){
+    showToast('Erro ao excluir: ' + e.message, 'error');
+  }
 }
 
 // ─── NOTIFICATIONS ────────────────────────────────────────────────────
@@ -4168,15 +4361,33 @@ document.addEventListener('keydown',e=>{
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────
-(function init(){
-  load();
-  if(!allCards.length) seedData();
+(async function init(){
+  // Check if we have a saved token — auto-login
+  if(authToken){
+    try {
+      const me = await api('/auth/me');
+      const u = {
+        id: me.id, name: me.name, email: me.email,
+        role: me.role === 'ADMIN' ? 'admin' : me.role === 'MANAGER' ? 'gestor' : 'colaborador',
+        initials: me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+        dept: '', color: '#6366F1',
+        schools: [me.schoolId],
+        modulos: me.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
+        schoolId: me.schoolId,
+      };
+      if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
+      await loadFromAPI();
+      loginAs(u);
+    } catch(e){
+      authToken = '';
+      localStorage.removeItem('pipeped_token');
+      // Show login screen
+    }
+  }
   initSettingsData();
   initEmailSystem();
   document.getElementById('notifPanel').style.display='none';
-  // Check overdue cards once on load (with delay so UI loads first)
   setTimeout(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 3000);
-  // Periodic overdue check every 5 minutes
   setInterval(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 300000);
 })();
 </script></body></html>
