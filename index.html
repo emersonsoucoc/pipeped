@@ -619,6 +619,9 @@ svg{display:block;flex-shrink:0}
 .nf-item-name{font-size:13px;font-weight:600;color:var(--text)}
 .nf-item-detail{font-size:11px;color:var(--muted);margin-top:2px}
 .nf-item-price{font-size:13px;font-weight:700;color:#0EA5E9;flex-shrink:0}
+.nf-emitida{background:#F0FDF4;opacity:.7}.nf-emitida:hover{opacity:1}
+.nf-emit-dot{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:#16A34A;border:2px solid #fff}
+.nf-cart-emitida{background:#FEFCE8;border-left:3px solid #F59E0B}
 .nf-main{flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:24px;gap:20px}
 .nf-section{background:var(--white);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
 .nf-section h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
@@ -3796,7 +3799,22 @@ function loadNfeData(){
         });
       }
     }
-    if(d) nfeDatabase = JSON.parse(d) || [];
+    if(d) {
+      nfeDatabase = JSON.parse(d) || [];
+      // Migration: ensure all entries have parcela fields
+      nfeDatabase.forEach(r=>{
+        if(r.nfEmitida===undefined) r.nfEmitida = false;
+        if(!r.parcela && r.parcelaVenc){
+          const m = r.parcelaVenc.match(/^(\d+)\s*-/);
+          if(m) r.parcela = m[1];
+        }
+        if(!r.parcela && !r.parcelaVenc && r.vencimento){
+          // Try to extract from documento if available
+          r.parcela = '';
+          r.parcelaVenc = '';
+        }
+      });
+    }
     if(e) nfeEmitted = JSON.parse(e) || [];
   } catch(err){
     console.warn('loadNfeData error:', err);
@@ -3990,18 +4008,19 @@ function buildNfeDatabaseTab(){
   <div style="overflow-x:auto">
     <table class="nf-history-table" style="background:var(--white);border-radius:var(--r);box-shadow:var(--sh)">
       <thead><tr>
-        <th>Matrícula</th><th>Aluno</th><th>Contratante</th><th>CPF</th><th>Turma</th><th>Valor</th><th>Escola</th><th>Ações</th>
+        <th>Matrícula</th><th>Aluno</th><th>Contratante</th><th>CPF</th><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>NF</th><th>Ações</th>
       </tr></thead>
       <tbody>
-        ${filtered.length===0?`<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Nenhum registro encontrado. Adicione manualmente ou importe.</td></tr>`:''}
-        ${filtered.slice(0,100).map((r,i)=>`<tr>
+        ${filtered.length===0?`<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted)">Nenhum registro encontrado. Adicione manualmente ou importe.</td></tr>`:''}
+        ${filtered.slice(0,100).map((r,i)=>`<tr style="${r.nfEmitida?'background:#F0FDF4':''}">
           <td style="font-weight:600">${esc(r.matricula||'—')}</td>
           <td>${esc(r.aluno)}</td>
           <td>${esc(r.contratante)}</td>
           <td style="font-family:monospace;font-size:11px">${esc(r.cpf)}</td>
-          <td>${esc(r.turma||'—')}</td>
+          <td style="font-weight:600;color:#0369A1">${r.parcela?'Parc. '+r.parcela:'—'}</td>
+          <td>${esc(r.vencimento||'—')}</td>
           <td style="font-weight:600;color:#0EA5E9">R$ ${parseFloat(r.valor||0).toFixed(2).replace('.',',')}</td>
-          <td>${esc(schoolById(r.escola)?.name||r.escola||'—')}</td>
+          <td style="text-align:center">${r.nfEmitida?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#16A34A" title="NF emitida"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#E5E7EB" title="Pendente"></span>'}</td>
           <td style="display:flex;gap:4px">
             <button onclick="editNfeDbEntry(${nfeDatabase.indexOf(r)})" style="padding:4px 8px;font-size:11px;background:var(--accent-l);color:var(--accent);border:none;border-radius:4px;cursor:pointer">Editar</button>
             <button onclick="deleteNfeDbEntry(${nfeDatabase.indexOf(r)})" style="padding:4px 8px;font-size:11px;background:#FEF2F2;color:#DC2626;border:none;border-radius:4px;cursor:pointer">Excluir</button>
@@ -4160,7 +4179,9 @@ function parseNfeHtmlTable(html, fileName){
     // Data row: Matrícula, Aluno, Contratante, RG, CPF, Contratada, Documento, Parcela-Vencimento, Bruto, Descontos, Líquido, DataPG
     if(cells.length>=8 && cells[0].match(/^\d/)){
       const parcVenc = cells[7]||'';
-      // Extract vencimento date from "4 - 10/04/2026" format
+      // Extract parcela number and vencimento date from "4 - 10/04/2026" format
+      const parcNumMatch = parcVenc.match(/^(\d+)\s*-/);
+      const parcela = parcNumMatch ? parcNumMatch[1] : '';
       const vencMatch = parcVenc.match(/(\d{2}\/\d{2}\/\d{4})/);
       const vencimento = vencMatch ? vencMatch[1] : parcVenc;
       // Use Líquido (col 10) if available, otherwise Bruto (col 8)
@@ -4175,6 +4196,8 @@ function parseNfeHtmlTable(html, fileName){
         cpf: cells[4]||'',
         contratada: cells[5]||'',
         documento: cells[6]||'',
+        parcela: parcela,
+        parcelaVenc: parcVenc,
         vencimento: vencimento,
         valor: valorLiq.replace(/\./g,'').replace(',','.'),
         valorBruto: (cells[8]||'0').replace(/\./g,'').replace(',','.'),
@@ -4182,6 +4205,7 @@ function parseNfeHtmlTable(html, fileName){
         dataPagamento: cells[11]||'',
         turma: currentTurma,
         escola: school,
+        nfEmitida: false,
         _file: fileName,
       });
     }
@@ -4197,11 +4221,15 @@ function parseNfeCsvText(text){
   for(let i=1; i<lines.length; i++){
     const cols = lines[i].split(/[;\t,]/).map(c=>c.trim().replace(/^"|"$/g,''));
     if(cols.length<5) continue;
+    const parcVenc7 = cols[7]||'';
+    const pnm7 = parcVenc7.match(/^(\d+)\s*-/);
+    const vm7 = parcVenc7.match(/(\d{2}\/\d{2}\/\d{4})/);
     entries.push({
       id: uid(), matricula:cols[0]||'', aluno:cols[1]||'', contratante:cols[2]||'',
       rg:cols[3]||'', cpf:cols[4]||'', contratada:cols[5]||'', documento:cols[6]||'',
-      vencimento:cols[7]||'', valor:cols[8]?.replace(/\./g,'').replace(',','.')||'0',
-      dataPagamento:cols[9]||'', turma:cols[10]||'', escola:cols[11]||'',
+      parcela: pnm7?pnm7[1]:'', parcelaVenc: parcVenc7,
+      vencimento: vm7?vm7[1]:parcVenc7, valor:cols[8]?.replace(/\./g,'').replace(',','.')||'0',
+      dataPagamento:cols[9]||'', turma:cols[10]||'', escola:cols[11]||'', nfEmitida:false,
     });
   }
   return entries;
@@ -4220,13 +4248,17 @@ function parseNfeSpreadsheetRows(rows, fileName){
     }
     if(row[0].includes('Total')) continue;
     if(row.length>=8 && row[0].match(/^\d/)){
-      const vencMatch = (row[7]||'').match(/(\d{2}\/\d{2}\/\d{4})/);
+      const parcVenc = row[7]||'';
+      const parcNumMatch = parcVenc.match(/^(\d+)\s*-/);
+      const vencMatch = parcVenc.match(/(\d{2}\/\d{2}\/\d{4})/);
       entries.push({
         id: uid(), matricula:row[0], aluno:row[1]||'', contratante:row[2]||'',
         rg:row[3]||'', cpf:row[4]||'', contratada:row[5]||'', documento:row[6]||'',
-        vencimento: vencMatch?vencMatch[1]:(row[7]||''),
+        parcela: parcNumMatch?parcNumMatch[1]:'',
+        parcelaVenc: parcVenc,
+        vencimento: vencMatch?vencMatch[1]:parcVenc,
         valor: (row[10]||row[8]||'0').replace(/\./g,'').replace(',','.'),
-        dataPagamento:row[11]||'', turma:currentTurma, escola:'', _file:fileName,
+        dataPagamento:row[11]||'', turma:currentTurma, escola:'', nfEmitida:false, _file:fileName,
       });
     }
   }
@@ -4424,6 +4456,7 @@ function openNfeDbModal(idx){
         </select>
       </div>
       <div class="nf-field"><label>Documento</label><input id="nfeM_doc" value="${esc(entry?.documento||'')}"></div>
+      <div class="nf-field"><label>Nº Parcela</label><input id="nfeM_parc" value="${esc(entry?.parcela||'')}" placeholder="Ex: 4"></div>
       <div class="nf-field"><label>Vencimento</label><input id="nfeM_venc" value="${esc(entry?.vencimento||'')}"></div>
     </div>`;
   showSettingsModal(isEdit?'Editar Registro':'Novo Registro', body, `saveNfeDbEntry(${idx!==undefined?idx:-1})`);
@@ -4441,9 +4474,11 @@ function saveNfeDbEntry(idx){
     turma: document.getElementById('nfeM_turma')?.value||'',
     escola: document.getElementById('nfeM_escola')?.value||'',
     documento: document.getElementById('nfeM_doc')?.value||'',
+    parcela: document.getElementById('nfeM_parc')?.value||'',
     vencimento: document.getElementById('nfeM_venc')?.value||'',
     contratada: nfeConfig.cnpj_emitente||'',
     dataPagamento: idx>=0 ? nfeDatabase[idx].dataPagamento||'' : '',
+    nfEmitida: idx>=0 ? nfeDatabase[idx].nfEmitida||false : false,
   };
   if(!entry.contratante && !entry.aluno){ showToast('Preencha ao menos o nome','error'); return; }
   if(idx>=0) nfeDatabase[idx] = entry;
@@ -4500,10 +4535,15 @@ function buildNotaFiscalPage(){
           if(items.length===0) return '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Nenhum registro encontrado.<br>Cadastre na aba Configurações > Nota Fiscal.</div>';
           return items.slice(0,80).map(r=>{
             const sel = nfSelectedItems.find(s=>s.id===r.id);
-            return `<div class="nf-item ${sel?'selected':''}" onclick="toggleNfItem('${r.id}')">
-              <div class="nf-item-icon">📄</div>
+            const emitida = r.nfEmitida;
+            const parcLabel = r.parcela ? 'Parc. '+r.parcela : '';
+            const vencLabel = r.vencimento ? 'Venc. '+r.vencimento : '';
+            const parcInfo = [parcLabel,vencLabel].filter(Boolean).join(' · ');
+            return `<div class="nf-item ${sel?'selected':''} ${emitida?'nf-emitida':''}" onclick="toggleNfItem('${r.id}')" title="${emitida?'NF já emitida para esta parcela':''}">
+              <div class="nf-item-icon" style="position:relative">📄${emitida?'<span class="nf-emit-dot"></span>':''}</div>
               <div class="nf-item-info">
-                <div class="nf-item-name">${esc(r.aluno)}</div>
+                <div class="nf-item-name">${esc(r.aluno)}${emitida?' <span style="font-size:10px;color:#16A34A;font-weight:700">✓ NF</span>':''}</div>
+                ${parcInfo?'<div class="nf-item-detail" style="color:#0369A1;font-weight:600">'+esc(parcInfo)+' · Doc. '+(r.documento||'—')+'</div>':''}
                 <div class="nf-item-detail">${esc(r.contratante)} · Mat. ${esc(r.matricula||'—')}</div>
                 <div class="nf-item-detail">${esc(r.cpf)} · ${esc(r.turma||'—')}</div>
               </div>
@@ -4546,14 +4586,14 @@ function buildNfEmitirTab(){
   <div class="nf-section">
     <h4>📝 Itens Selecionados (${nfSelectedItems.length})</h4>
     <div class="nf-cart">
-      <div class="nf-cart-header"><div>#</div><div>Aluno / Contratante</div><div>CPF</div><div>Turma</div><div>Valor</div><div></div></div>
-      ${nfSelectedItems.map((r,i)=>`<div class="nf-cart-row">
+      <div class="nf-cart-header"><div>#</div><div>Aluno / Contratante</div><div>Parcela</div><div>CPF</div><div>Valor</div><div></div></div>
+      ${nfSelectedItems.map((r,i)=>`<div class="nf-cart-row${r.nfEmitida?' nf-cart-emitida':''}">
         <div style="font-weight:600;color:var(--muted)">${i+1}</div>
         <div><strong>${esc(r.aluno)}</strong><br><span style="font-size:11px;color:var(--muted)">${esc(r.contratante)}</span></div>
+        <div style="font-size:11px;font-weight:600;color:#0369A1">${r.parcela?'Parc. '+r.parcela:'—'}${r.vencimento?'<br><span style="font-size:10px;color:var(--muted)">Venc. '+esc(r.vencimento)+'</span>':''}</div>
         <div style="font-family:monospace;font-size:11px">${esc(r.cpf)}</div>
-        <div>${esc(r.turma||'—')}</div>
         <div style="font-weight:600;color:#0EA5E9">R$ ${parseFloat(r.valor||0).toFixed(2).replace('.',',')}</div>
-        <div><button onclick="nfSelectedItems.splice(${i},1);renderPage()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px" title="Remover">✕</button></div>
+        <div style="display:flex;align-items:center;gap:4px">${r.nfEmitida?'<span title="NF já emitida" style="color:#16A34A;font-size:12px">✓</span>':''}<button onclick="nfSelectedItems.splice(${i},1);renderPage()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px" title="Remover">✕</button></div>
       </div>`).join('')}
       <div class="nf-cart-total"><span>Total:</span><span style="color:#0EA5E9">R$ ${total.toFixed(2).replace('.',',')}</span></div>
     </div>
@@ -4569,8 +4609,8 @@ function buildNfEmitirTab(){
           <option value="nfe">NF-e (Produto)</option>
         </select>
       </div>
-      <div class="nf-field"><label>Descrição do Serviço</label>
-        <input id="nfDescricao" value="Mensalidade escolar - ${new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}">
+      <div class="nf-field" style="grid-column:1/-1"><label>Descrição do Serviço <span style="font-size:10px;color:var(--muted)">(auto-gerada por parcela na emissão)</span></label>
+        <input id="nfDescricao" value="${nfSelectedItems.length===1 ? esc(gerarDescricaoParcela(nfSelectedItems[0])) : 'Mensalidade escolar (descrição individual por parcela)'}" readonly style="background:#F8FAFC;cursor:default">
       </div>
       <div class="nf-field"><label>CNAE</label><input id="nfCnae" value="8512-1/00" placeholder="ex: 8512-1/00"></div>
       <div class="nf-field"><label>Código do Serviço</label><input id="nfCodServ" value="06.01" placeholder="Código municipal"></div>
@@ -4600,12 +4640,13 @@ function buildNfHistoricoTab(){
     <h4>📋 Notas Emitidas (${nfeEmitted.length})</h4>
     <div style="overflow-x:auto">
       <table class="nf-history-table" style="background:var(--white)">
-        <thead><tr><th>Ref</th><th>Contratante</th><th>Aluno</th><th>Valor</th><th>Tipo</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Ref</th><th>Contratante</th><th>Aluno</th><th>Parcela</th><th>Valor</th><th>Tipo</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead>
         <tbody>
           ${nfeEmitted.slice().reverse().map(n=>`<tr>
             <td style="font-family:monospace;font-size:11px">${esc(n.ref||'—')}</td>
             <td>${esc(n.contratante)}</td>
             <td>${esc(n.aluno)}</td>
+            <td style="font-weight:600;color:#0369A1">${n.parcela?'Parc. '+n.parcela:'—'}${n.vencimento?'<br><span style="font-size:10px;color:var(--muted)">'+esc(n.vencimento)+'</span>':''}</td>
             <td style="font-weight:600">R$ ${parseFloat(n.valor||0).toFixed(2).replace('.',',')}</td>
             <td>${esc(n.tipo==='nfse'?'NFS-e':'NF-e')}</td>
             <td><span class="nf-status ${n.status||'rascunho'}">${esc(nfStatusLabel(n.status))}</span></td>
@@ -4642,13 +4683,30 @@ async function focusApi(method, path, body){
   return { ok: res.ok, status: res.status, data };
 }
 
+// Auto-generate unique description for a parcela
+function gerarDescricaoParcela(item){
+  let desc = 'Mensalidade escolar';
+  if(item.parcela) desc += ' - Parcela ' + item.parcela;
+  if(item.vencimento) desc += ' - Venc. ' + item.vencimento;
+  if(item.documento) desc += ' - Doc. ' + item.documento;
+  desc += ' - Aluno: ' + (item.aluno||'');
+  if(item.turma) desc += ' - Turma: ' + item.turma;
+  return desc;
+}
+
 async function emitirNfe(){
   if(!nfeConfig.token){ showToast('Configure o token da API primeiro (Configurações > Nota Fiscal)','error'); return; }
   if(nfSelectedItems.length===0){ showToast('Selecione ao menos um registro','error'); return; }
 
+  // Check for already-emitted parcelas
+  const jaEmitidas = nfSelectedItems.filter(r=>r.nfEmitida);
+  if(jaEmitidas.length>0){
+    const nomes = jaEmitidas.map(r=>(r.aluno||'')+(r.parcela?' Parc.'+r.parcela:'')).join(', ');
+    if(!confirm('⚠️ As seguintes parcelas já tiveram NF emitida:\n\n'+nomes+'\n\nDeseja emitir novamente?')) return;
+  }
+
   const tipo = document.getElementById('nfTipo')?.value||'nfse';
   const natureza = document.getElementById('nfNatureza')?.value||'Prestação de Serviços Educacionais';
-  const descricao = document.getElementById('nfDescricao')?.value||'Mensalidade escolar';
   const aliqIss = parseFloat(document.getElementById('nfAliqIss')?.value||'5');
   const cnae = document.getElementById('nfCnae')?.value||'';
   const codServ = document.getElementById('nfCodServ')?.value||'';
@@ -4660,6 +4718,8 @@ async function emitirNfe(){
 
   for(const item of nfSelectedItems){
     const ref = 'nf_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    // Auto-generate unique description per parcela
+    const descAuto = gerarDescricaoParcela(item);
 
     let payload;
     if(tipo==='nfse'){
@@ -4678,7 +4738,7 @@ async function emitirNfe(){
         },
         servico: {
           aliquota: aliqIss,
-          discriminacao: descricao + ' - Aluno: ' + item.aluno + (item.turma?' - Turma: '+item.turma:''),
+          discriminacao: descAuto,
           iss_retido: false,
           codigo_cnae: cnae?.replace(/\D/g,''),
           codigo_tributario_municipio: codServ,
@@ -4705,7 +4765,7 @@ async function emitirNfe(){
         cpf_destinatario: item.cpf?.replace(/\D/g,''),
         items: [{
           numero_item: '1',
-          descricao: descricao + ' - ' + item.aluno,
+          descricao: descAuto,
           quantidade_comercial: '1',
           valor_unitario_comercial: parseFloat(item.valor||0).toFixed(2),
           valor_bruto: parseFloat(item.valor||0).toFixed(2),
@@ -4721,7 +4781,14 @@ async function emitirNfe(){
         id: uid(), ref, aluno:item.aluno, contratante:item.contratante,
         cpf:item.cpf, valor:item.valor, tipo, status: res.ok?'processando':'erro',
         data: now(), response: res.data, matricula:item.matricula, turma:item.turma,
+        parcela:item.parcela, vencimento:item.vencimento, documento:item.documento, dbId:item.id,
       });
+
+      // Mark the database entry as emitted
+      if(res.ok){
+        const dbEntry = nfeDatabase.find(d=>d.id===item.id);
+        if(dbEntry) dbEntry.nfEmitida = true;
+      }
 
       if(res.ok) success++; else errors++;
     } catch(e){
