@@ -3718,27 +3718,38 @@ function clearAuditFilters(){
 // ═══════════════════════════════════════════════════════════════════════
 
 // ─── NFe Data ────────────────────────────────────────────────────────
-let nfeConfig = {
-  ambiente: 'homologacao', // homologacao | producao
-  token: 'Fr90SAde52pUZ5yPmqs19TrTETlRLrAo',
-  tokenProducao: 'TEgQSefYreRGy9xv9AD0hjfp1UKcuAEi',
-  tokenHomologacao: 'Fr90SAde52pUZ5yPmqs19TrTETlRLrAo',
-  // Dados do Emitente
-  cnpj_emitente: '',
-  nome_emitente: '',
-  nome_fantasia_emitente: '',
-  inscricao_estadual_emitente: '',
-  inscricao_municipal_emitente: '',
-  logradouro_emitente: '',
-  numero_emitente: '',
-  complemento_emitente: '',
-  bairro_emitente: '',
-  municipio_emitente: '',
-  uf_emitente: 'BA',
-  cep_emitente: '',
-  telefone_emitente: '',
-  regime_tributario: '1', // 1=Simples Nacional, 2=Simples Excesso, 3=Normal
+const NFE_EMPTY_UNIT = {
+  ambiente:'homologacao', token:'', tokenProducao:'', tokenHomologacao:'',
+  cnpj_emitente:'', nome_emitente:'', nome_fantasia_emitente:'',
+  inscricao_estadual_emitente:'', inscricao_municipal_emitente:'',
+  logradouro_emitente:'', numero_emitente:'', complemento_emitente:'',
+  bairro_emitente:'', municipio_emitente:'', uf_emitente:'BA',
+  cep_emitente:'', telefone_emitente:'', regime_tributario:'1',
 };
+
+// Multi-unit storage: { units: { unitId: {...config} }, selected: 'unitId' }
+let nfeUnits = {
+  units: {
+    'coc_lauro': {
+      label: 'COC Lauro de Freitas',
+      ambiente: 'homologacao',
+      token: 'Fr90SAde52pUZ5yPmqs19TrTETlRLrAo',
+      tokenProducao: 'TEgQSefYreRGy9xv9AD0hjfp1UKcuAEi',
+      tokenHomologacao: 'Fr90SAde52pUZ5yPmqs19TrTETlRLrAo',
+      cnpj_emitente:'', nome_emitente:'', nome_fantasia_emitente:'',
+      inscricao_estadual_emitente:'', inscricao_municipal_emitente:'',
+      logradouro_emitente:'', numero_emitente:'', complemento_emitente:'',
+      bairro_emitente:'', municipio_emitente:'', uf_emitente:'BA',
+      cep_emitente:'', telefone_emitente:'', regime_tributario:'1',
+    },
+  },
+  selected: 'coc_lauro',
+};
+
+// Active config (points to selected unit)
+let nfeConfig = {};
+function nfeActiveUnit(){ return nfeUnits.units[nfeUnits.selected] || {}; }
+function nfeSyncConfig(){ nfeConfig = nfeActiveUnit(); }
 
 let nfeDatabase = []; // Base de contratantes/alunos
 let nfeEmitted = [];  // Histórico de NFs emitidas
@@ -3746,31 +3757,86 @@ let nfeCart = [];      // Itens selecionados para emissão
 let nfeSubTab = 'config'; // config | database | import
 
 function saveNfeData(){
-  localStorage.setItem('pipeped_nfe_config', JSON.stringify(nfeConfig));
+  localStorage.setItem('pipeped_nfe_units', JSON.stringify(nfeUnits));
   localStorage.setItem('pipeped_nfe_db', JSON.stringify(nfeDatabase));
   localStorage.setItem('pipeped_nfe_emitted', JSON.stringify(nfeEmitted));
 }
 function loadNfeData(){
-  const c = localStorage.getItem('pipeped_nfe_config');
+  const u = localStorage.getItem('pipeped_nfe_units');
   const d = localStorage.getItem('pipeped_nfe_db');
   const e = localStorage.getItem('pipeped_nfe_emitted');
-  if(c) nfeConfig = JSON.parse(c);
+  // Migration: old single-config → multi-unit
+  const oldCfg = localStorage.getItem('pipeped_nfe_config');
+  if(oldCfg && !u){
+    const parsed = JSON.parse(oldCfg);
+    if(parsed.token || parsed.tokenHomologacao){
+      nfeUnits.units['coc_lauro'] = { ...nfeUnits.units['coc_lauro'], ...parsed, label:'COC Lauro de Freitas' };
+      localStorage.removeItem('pipeped_nfe_config');
+    }
+  }
+  if(u) nfeUnits = JSON.parse(u);
   if(d) nfeDatabase = JSON.parse(d);
   if(e) nfeEmitted = JSON.parse(e);
+  nfeSyncConfig();
 }
 
 function buildSettingsNFe(){
   loadNfeData();
+  const unitKeys = Object.keys(nfeUnits.units);
   const subTabs = [
     {id:'config',label:'⚙️ Configuração API'},
     {id:'database',label:'📋 Base de Dados'},
     {id:'import',label:'📥 Importar'},
   ];
   return `
+  <div class="nf-section" style="margin-bottom:16px;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
+      <span style="font-size:13px;font-weight:700;color:var(--text)">🏫 Unidade:</span>
+      <select id="nfeUnitSelect" onchange="nfeSwitchUnit(this.value)" style="font-size:13px;padding:8px 12px;font-weight:600;border:2px solid #0EA5E9;border-radius:var(--r-sm);background:#F0F9FF;color:#0369A1;min-width:220px">
+        ${unitKeys.map(k=>`<option value="${k}" ${nfeUnits.selected===k?'selected':''}>${esc(nfeUnits.units[k].label||k)}</option>`).join('')}
+      </select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="openAddNfeUnit()" style="padding:7px 14px;font-size:12px;background:#0EA5E9;color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-weight:600">+ Nova Unidade</button>
+      ${unitKeys.length>1?`<button onclick="removeNfeUnit()" style="padding:7px 14px;font-size:12px;background:#FEF2F2;color:#DC2626;border:none;border-radius:var(--r-sm);cursor:pointer;font-weight:600">Remover</button>`:''}
+    </div>
+  </div>
   <div class="nf-tab-bar">
     ${subTabs.map(t=>`<div class="nf-tab ${nfeSubTab===t.id?'active':''}" onclick="nfeSubTab='${t.id}';renderPage()">${t.label}</div>`).join('')}
   </div>
   ${nfeSubTab==='config' ? buildNfeConfigTab() : nfeSubTab==='database' ? buildNfeDatabaseTab() : buildNfeImportTab()}`;
+}
+
+function nfeSwitchUnit(unitId){
+  nfeUnits.selected = unitId;
+  nfeSyncConfig();
+  saveNfeData();
+  renderPage();
+}
+
+function openAddNfeUnit(){
+  const name = prompt('Nome da nova unidade (ex: COC Salvador, PED Camaçari):');
+  if(!name || !name.trim()) return;
+  const key = 'unit_' + Date.now();
+  nfeUnits.units[key] = { ...NFE_EMPTY_UNIT, label: name.trim() };
+  nfeUnits.selected = key;
+  nfeSyncConfig();
+  saveNfeData();
+  renderPage();
+  showToast('Unidade "'+name.trim()+'" criada!');
+}
+
+function removeNfeUnit(){
+  const keys = Object.keys(nfeUnits.units);
+  if(keys.length<=1){ showToast('Não é possível remover a última unidade','error'); return; }
+  const unit = nfeUnits.units[nfeUnits.selected];
+  if(!confirm('Remover a unidade "'+( unit?.label||nfeUnits.selected)+'"? Os dados de configuração serão perdidos.')) return;
+  delete nfeUnits.units[nfeUnits.selected];
+  nfeUnits.selected = Object.keys(nfeUnits.units)[0];
+  nfeSyncConfig();
+  saveNfeData();
+  renderPage();
+  showToast('Unidade removida');
 }
 
 function buildNfeConfigTab(){
@@ -3836,38 +3902,41 @@ function buildNfeConfigTab(){
 }
 
 function nfeSwitchAmbiente(val){
-  // Save current tokens before switching
-  const tokH = document.getElementById('nfeCfgTokenH')?.value||nfeConfig.tokenHomologacao||'';
-  const tokP = document.getElementById('nfeCfgTokenP')?.value||nfeConfig.tokenProducao||'';
-  nfeConfig.tokenHomologacao = tokH;
-  nfeConfig.tokenProducao = tokP;
-  nfeConfig.ambiente = val;
-  nfeConfig.token = val==='producao' ? tokP : tokH;
+  const unit = nfeActiveUnit();
+  const tokH = document.getElementById('nfeCfgTokenH')?.value||unit.tokenHomologacao||'';
+  const tokP = document.getElementById('nfeCfgTokenP')?.value||unit.tokenProducao||'';
+  unit.tokenHomologacao = tokH;
+  unit.tokenProducao = tokP;
+  unit.ambiente = val;
+  unit.token = val==='producao' ? tokP : tokH;
+  nfeSyncConfig();
   saveNfeData();
   renderPage();
 }
 
 function saveNfeConfig(){
-  nfeConfig.ambiente = document.getElementById('nfeCfgAmbiente')?.value||'homologacao';
-  nfeConfig.tokenHomologacao = document.getElementById('nfeCfgTokenH')?.value||'';
-  nfeConfig.tokenProducao = document.getElementById('nfeCfgTokenP')?.value||'';
-  nfeConfig.token = nfeConfig.ambiente==='producao' ? nfeConfig.tokenProducao : nfeConfig.tokenHomologacao;
-  nfeConfig.cnpj_emitente = document.getElementById('nfeCfgCnpj')?.value||'';
-  nfeConfig.nome_emitente = document.getElementById('nfeCfgNome')?.value||'';
-  nfeConfig.nome_fantasia_emitente = document.getElementById('nfeCfgFantasia')?.value||'';
-  nfeConfig.inscricao_estadual_emitente = document.getElementById('nfeCfgIE')?.value||'';
-  nfeConfig.inscricao_municipal_emitente = document.getElementById('nfeCfgIM')?.value||'';
-  nfeConfig.regime_tributario = document.getElementById('nfeCfgRegime')?.value||'1';
-  nfeConfig.logradouro_emitente = document.getElementById('nfeCfgLogr')?.value||'';
-  nfeConfig.numero_emitente = document.getElementById('nfeCfgNum')?.value||'';
-  nfeConfig.complemento_emitente = document.getElementById('nfeCfgCompl')?.value||'';
-  nfeConfig.bairro_emitente = document.getElementById('nfeCfgBairro')?.value||'';
-  nfeConfig.municipio_emitente = document.getElementById('nfeCfgMun')?.value||'';
-  nfeConfig.uf_emitente = document.getElementById('nfeCfgUF')?.value||'BA';
-  nfeConfig.cep_emitente = document.getElementById('nfeCfgCep')?.value||'';
-  nfeConfig.telefone_emitente = document.getElementById('nfeCfgTel')?.value||'';
+  const unit = nfeActiveUnit();
+  unit.ambiente = document.getElementById('nfeCfgAmbiente')?.value||'homologacao';
+  unit.tokenHomologacao = document.getElementById('nfeCfgTokenH')?.value||'';
+  unit.tokenProducao = document.getElementById('nfeCfgTokenP')?.value||'';
+  unit.token = unit.ambiente==='producao' ? unit.tokenProducao : unit.tokenHomologacao;
+  unit.cnpj_emitente = document.getElementById('nfeCfgCnpj')?.value||'';
+  unit.nome_emitente = document.getElementById('nfeCfgNome')?.value||'';
+  unit.nome_fantasia_emitente = document.getElementById('nfeCfgFantasia')?.value||'';
+  unit.inscricao_estadual_emitente = document.getElementById('nfeCfgIE')?.value||'';
+  unit.inscricao_municipal_emitente = document.getElementById('nfeCfgIM')?.value||'';
+  unit.regime_tributario = document.getElementById('nfeCfgRegime')?.value||'1';
+  unit.logradouro_emitente = document.getElementById('nfeCfgLogr')?.value||'';
+  unit.numero_emitente = document.getElementById('nfeCfgNum')?.value||'';
+  unit.complemento_emitente = document.getElementById('nfeCfgCompl')?.value||'';
+  unit.bairro_emitente = document.getElementById('nfeCfgBairro')?.value||'';
+  unit.municipio_emitente = document.getElementById('nfeCfgMun')?.value||'';
+  unit.uf_emitente = document.getElementById('nfeCfgUF')?.value||'BA';
+  unit.cep_emitente = document.getElementById('nfeCfgCep')?.value||'';
+  unit.telefone_emitente = document.getElementById('nfeCfgTel')?.value||'';
+  nfeSyncConfig();
   saveNfeData();
-  showToast('Configurações NFe salvas!');
+  showToast('Configurações de "'+( unit.label||'Unidade')+'" salvas!');
 }
 
 function buildNfeDatabaseTab(){
@@ -4072,14 +4141,19 @@ let nfSelectedItems = [];
 
 function buildNotaFiscalPage(){
   loadNfeData();
+  const unitKeys = Object.keys(nfeUnits.units);
+  const activeLabel = nfeActiveUnit().label||nfeUnits.selected;
   return `<div class="nf-wrap">
     <div class="nf-sidebar">
-      <div class="nf-sidebar-header">
+      <div class="nf-sidebar-header" style="flex-wrap:wrap;gap:6px">
         <div style="width:32px;height:32px;border-radius:8px;background:#0EA5E9;display:flex;align-items:center;justify-content:center">
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M4 2h10l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
         </div>
-        <h3>Base de Dados</h3>
+        <h3 style="flex:1">Base de Dados</h3>
         <span style="font-size:11px;color:var(--muted)">${nfeDatabase.length}</span>
+        ${unitKeys.length>1?`<select onchange="nfeSwitchUnit(this.value);renderPage()" style="width:100%;font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r-sm);background:#F0F9FF;color:#0369A1;font-weight:600;margin-top:2px">
+          ${unitKeys.map(k=>`<option value="${k}" ${nfeUnits.selected===k?'selected':''}>${esc(nfeUnits.units[k].label||k)}</option>`).join('')}
+        </select>`:`<div style="width:100%;font-size:11px;color:#0369A1;font-weight:600;background:#F0F9FF;padding:5px 8px;border-radius:var(--r-sm);margin-top:2px">🏫 ${esc(activeLabel)}</div>`}
       </div>
       <div class="nf-search">
         <input type="text" placeholder="Buscar aluno, contratante, CPF..." value="${esc(nfSearchQ)}" oninput="nfSearchQ=this.value;renderPage()">
