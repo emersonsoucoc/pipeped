@@ -117,6 +117,27 @@ svg{display:block;flex-shrink:0}
   padding:1px 6px;border-radius:9999px;min-width:18px;text-align:center;
 }
 .nav-badge:empty,.nav-badge[data-count="0"]{display:none}
+/* Sidebar submenu / collapsible group */
+.nav-group{margin:1px 8px}
+.nav-group-header{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:var(--r-sm);color:rgba(255,255,255,.55);cursor:pointer;
+  transition:background var(--t),color var(--t);position:relative;
+}
+.nav-group-header:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.nav-group-header.active{color:rgba(255,255,255,.85)}
+.nav-group-arrow{
+  width:14px;height:14px;transition:transform .2s;opacity:.5;flex-shrink:0;
+}
+.nav-group.open .nav-group-arrow{transform:rotate(90deg);opacity:.8}
+.nav-group-items{
+  max-height:0;overflow:hidden;transition:max-height .25s ease;
+}
+.nav-group.open .nav-group-items{max-height:200px}
+.nav-group-items .nav-item{
+  padding-left:40px;margin:0;font-size:12.5px;
+}
+.nav-group-items .nav-item .nav-icon{width:15px;height:15px}
 
 .sb-footer{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(255,255,255,.08)}
 .sb-user{
@@ -1437,11 +1458,11 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 'use strict';
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
-  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos'] },
+  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos','nota_fiscal'] },
   { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial'] },
   { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B', schools:['ped1','ped2','ped3'], modulos:['ti'] },
   { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444', schools:['ped1','ped2','ped3'], modulos:['comercial'] },
-  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos'] },
+  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos','nota_fiscal'] },
 ];
 
 const SCHOOLS = [
@@ -1527,7 +1548,7 @@ const MODULES = {
   contratos: {
     label:'Contratos', shortLabel:'Contratos', btnLabel:'Novo Contrato',
     color:'#8B5CF6', colorLight:'#F5F3FF', hasFinancial:false,
-    isClicksign: true,
+    isClicksign: true, parentGroup:'financeiro',
     categorias:['Fornecedor','Prestador de Serviço','Locação','Parceria','Franquia','Outros'],
     fases:{
       novo_envio:             { label:'Novo Envio',              color:'#94A3B8', bg:'#F8FAFC' },
@@ -1536,6 +1557,21 @@ const MODULES = {
       recusado:               { label:'Recusado / Cancelado',    color:'#DC2626', bg:'#FEE2E2' },
     },
     lastPhase:'assinado',
+  },
+  nota_fiscal: {
+    label:'Nota Fiscal', shortLabel:'NF-e', btnLabel:'Nova Nota Fiscal',
+    color:'#0EA5E9', colorLight:'#F0F9FF', hasFinancial:true,
+    parentGroup:'financeiro',
+    categorias:['NF-e Produto','NF-e Serviço','NFS-e','CT-e','Devolução','Outros'],
+    fases:{
+      rascunho:        { label:'Rascunho',          color:'#94A3B8', bg:'#F1F5F9' },
+      aguardando_envio:{ label:'Aguardando Envio',   color:'#F59E0B', bg:'#FFFBEB' },
+      enviada:         { label:'Enviada à SEFAZ',    color:'#3B82F6', bg:'#EFF6FF' },
+      autorizada:      { label:'Autorizada',          color:'#10B981', bg:'#ECFDF5' },
+      rejeitada:       { label:'Rejeitada',           color:'#EF4444', bg:'#FEF2F2' },
+      cancelada:       { label:'Cancelada',           color:'#64748B', bg:'#F8FAFC' },
+    },
+    lastPhase:'autorizada',
   },
 };
 
@@ -1948,8 +1984,13 @@ const MODULE_ICONS = {
   comercial:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   financeiro:'<line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
   contratos:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  nota_fiscal:'<path d="M4 2h10l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="17" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M17 15.5v1.5l1 .5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
 };
 
+function toggleNavGroup(groupId){
+  const g = document.getElementById('navgroup-'+groupId);
+  if(g) g.classList.toggle('open');
+}
 function buildSidebar(){
   const nav = document.getElementById('sidebarNav');
   if(!nav) return;
@@ -1961,14 +2002,58 @@ function buildSidebar(){
       <span class="nav-text">Dashboard</span>
     </a>
     <div class="sb-section">Módulos</div>`;
+
+  // Separate grouped (financeiro) vs ungrouped modules
+  const grouped = {};
+  const ungrouped = [];
   Object.keys(MODULES).forEach(k=>{
     if(!mods.includes(k)) return;
+    const m = MODULES[k];
+    if(m.parentGroup){
+      if(!grouped[m.parentGroup]) grouped[m.parentGroup]=[];
+      grouped[m.parentGroup].push(k);
+    } else {
+      ungrouped.push(k);
+    }
+  });
+
+  // Render ungrouped modules normally
+  ungrouped.forEach(k=>{
     html += `<a class="nav-item" data-page="${k}" onclick="navigate('${k}')">
       <svg class="nav-icon" fill="none" viewBox="0 0 24 24">${MODULE_ICONS[k]||''}</svg>
       <span class="nav-text">${MODULES[k].label}</span>
       <span class="nav-badge" id="badge-${k}">0</span>
     </a>`;
   });
+
+  // Render grouped modules (Financeiro)
+  const GROUP_META = {
+    financeiro: {
+      label:'Financeiro',
+      icon:'<line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.8"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+    }
+  };
+  Object.keys(grouped).forEach(gk=>{
+    const meta = GROUP_META[gk]||{label:gk,icon:''};
+    const items = grouped[gk];
+    const isOpen = items.some(k=>k===currentPage);
+    html += `<div class="nav-group ${isOpen?'open':''}" id="navgroup-${gk}">
+      <div class="nav-group-header" onclick="toggleNavGroup('${gk}')">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24">${meta.icon}</svg>
+        <span class="nav-text">${meta.label}</span>
+        <svg class="nav-group-arrow" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="nav-group-items">`;
+    items.forEach(k=>{
+      html += `<a class="nav-item" data-page="${k}" onclick="navigate('${k}')">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24">${MODULE_ICONS[k]||''}</svg>
+        <span class="nav-text">${MODULES[k].label}</span>
+        <span class="nav-badge" id="badge-${k}">0</span>
+      </a>`;
+    });
+    html += `</div></div>`;
+  });
+
   html += `
     <div class="sb-section">Comunicação</div>
     <a class="nav-item" data-page="whatsapp" onclick="navigate('whatsapp')">
@@ -2008,6 +2093,12 @@ function navigate(page){
   document.querySelectorAll('.nav-item').forEach(el=>{
     el.classList.toggle('active', el.dataset.page===page);
   });
+  // Auto-open parent group if navigating to a grouped module
+  const mod = MODULES[page];
+  if(mod && mod.parentGroup){
+    const g = document.getElementById('navgroup-'+mod.parentGroup);
+    if(g) g.classList.add('open');
+  }
   const mod = MODULES[page];
   document.getElementById('topbarTitle').textContent = mod ? mod.label : pageTitles[page]||'PIPEPED';
   const newBtn = document.getElementById('topbarNewBtn');
