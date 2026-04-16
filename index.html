@@ -1056,6 +1056,7 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
   box-shadow:var(--sh-md);z-index:600;animation:fadeIn .2s ease;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -3992,29 +3993,18 @@ function buildNfeDatabaseTab(){
 function buildNfeImportTab(){
   return `
   <div class="nf-section">
-    <h4>📥 Importar Arquivo XML (NF-e / NFS-e)</h4>
+    <h4>📥 Importar Planilha (XLS / XLSX / CSV)</h4>
     <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
-      Importe arquivos <strong>XML de notas fiscais</strong> (NF-e, NFS-e, CT-e) ou <strong>múltiplos XMLs</strong> de uma vez.<br>
-      O sistema extrai automaticamente: destinatário, CPF/CNPJ, valor, produtos/serviços.
+      Importe o relatório do <strong>SISED</strong> ou qualquer planilha com dados de alunos/contratantes.<br>
+      Aceita arquivos <strong>.xls</strong> (exportado do SISED), <strong>.xlsx</strong>, <strong>.csv</strong> e <strong>.xml</strong>.
     </p>
-    <div style="border:2px dashed #0EA5E9;border-radius:var(--r);padding:32px;text-align:center;background:#F0F9FF;cursor:pointer" onclick="document.getElementById('nfeXmlInput').click()">
-      <input type="file" id="nfeXmlInput" accept=".xml" multiple style="display:none" onchange="importNfeXml(this)">
-      <div style="font-size:32px;margin-bottom:8px">📋</div>
-      <div style="font-size:14px;font-weight:700;color:#0369A1">Clique para selecionar arquivos XML</div>
-      <div style="font-size:12px;color:#0EA5E9;margin-top:4px">Aceita múltiplos arquivos · NF-e, NFS-e, CT-e</div>
+    <div style="border:2px dashed #0EA5E9;border-radius:var(--r);padding:32px;text-align:center;background:#F0F9FF;cursor:pointer" onclick="document.getElementById('nfeFileInput').click()">
+      <input type="file" id="nfeFileInput" accept=".xls,.xlsx,.csv,.txt,.xml" multiple style="display:none" onchange="importNfeFile(this)">
+      <div style="font-size:32px;margin-bottom:8px">📊</div>
+      <div style="font-size:14px;font-weight:700;color:#0369A1">Clique para selecionar arquivo</div>
+      <div style="font-size:12px;color:#0EA5E9;margin-top:4px">.xls (SISED) · .xlsx · .csv · .xml</div>
     </div>
-    <div id="nfeXmlPreview" style="margin-top:12px"></div>
-  </div>
-
-  <div class="nf-section">
-    <h4>📄 Importar CSV</h4>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">
-      Formato: <code style="font-size:11px;background:var(--surface);padding:2px 6px;border-radius:4px">matricula, aluno, contratante, rg, cpf, contratada, documento, vencimento, valor, data_pagamento, turma, escola</code>
-    </p>
-    <div style="border:2px dashed var(--border);border-radius:var(--r);padding:24px;text-align:center;background:var(--surface);cursor:pointer" onclick="document.getElementById('nfeCsvInput').click()">
-      <input type="file" id="nfeCsvInput" accept=".csv,.txt" style="display:none" onchange="importNfeCsv(this)">
-      <div style="font-size:13px;font-weight:600;color:var(--text)">📄 Selecionar arquivo CSV</div>
-    </div>
+    <div id="nfeImportPreview" style="margin-top:12px"></div>
   </div>
 
   <div class="nf-section">
@@ -4035,64 +4025,189 @@ function buildNfeImportTab(){
   </div>`;
 }
 
-function importNfeCsv(input){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e){
-    const lines = e.target.result.split('\n').filter(l=>l.trim());
-    if(lines.length<2){ showToast('Arquivo vazio ou sem dados','error'); return; }
-    // Skip header
-    let imported = 0;
-    for(let i=1; i<lines.length; i++){
-      const cols = lines[i].split(/[;\t,]/).map(c=>c.trim().replace(/^"|"$/g,''));
-      if(cols.length<5) continue;
-      nfeDatabase.push({
-        id: uid(), matricula:cols[0]||'', aluno:cols[1]||'', contratante:cols[2]||'',
-        rg:cols[3]||'', cpf:cols[4]||'', contratada:cols[5]||'', documento:cols[6]||'',
-        vencimento:cols[7]||'', valor:cols[8]?.replace(/\./g,'').replace(',','.')||'0',
-        dataPagamento:cols[9]||'', turma:cols[10]||'', escola:cols[11]||'',
-      });
-      imported++;
-    }
-    saveNfeData();
-    showToast(`${imported} registros importados!`);
-    renderPage();
-  };
-  reader.readAsText(file, 'UTF-8');
-}
+// importNfeCsv is now handled by the unified importNfeFile function
 
-// ─── XML IMPORT (NF-e / NFS-e) ────────────────────────────────────────
-function importNfeXml(input){
+// ─── UNIFIED FILE IMPORT (XLS/XLSX/CSV/XML) ──────────────────────────
+function importNfeFile(input){
   const files = input.files;
   if(!files || files.length===0) return;
   let totalImported = 0;
   let totalFiles = files.length;
   let processed = 0;
 
-  Array.from(files).forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = function(e){
-      try {
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(e.target.result, 'text/xml');
-        const parseError = xml.querySelector('parsererror');
-        if(parseError){ showToast('Erro no XML: '+file.name,'error'); processed++; return; }
+  const finish = ()=>{
+    processed++;
+    if(processed===totalFiles){
+      saveNfeData();
+      showToast(`${totalImported} registro(s) importados de ${totalFiles} arquivo(s)!`);
+      renderPage();
+    }
+  };
 
-        const entries = parseNfeXml(xml, file.name);
-        entries.forEach(entry=>{ nfeDatabase.push(entry); totalImported++; });
-      } catch(err){
-        showToast('Erro ao processar: '+file.name,'error');
-      }
-      processed++;
-      if(processed===totalFiles){
-        saveNfeData();
-        showToast(`${totalImported} registro(s) importados de ${totalFiles} arquivo(s)!`);
-        renderPage();
-      }
-    };
-    reader.readAsText(file, 'UTF-8');
+  Array.from(files).forEach(file=>{
+    const ext = file.name.split('.').pop().toLowerCase();
+    const reader = new FileReader();
+
+    if(ext==='xml'){
+      reader.onload = function(e){
+        try {
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(e.target.result, 'text/xml');
+          const entries = parseNfeXml(xml, file.name);
+          entries.forEach(entry=>{ nfeDatabase.push(entry); totalImported++; });
+        } catch(err){ showToast('Erro XML: '+file.name,'error'); }
+        finish();
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+    else if(ext==='csv' || ext==='txt'){
+      reader.onload = function(e){
+        try {
+          const entries = parseNfeCsvText(e.target.result);
+          entries.forEach(entry=>{ nfeDatabase.push(entry); totalImported++; });
+        } catch(err){ showToast('Erro CSV: '+file.name,'error'); }
+        finish();
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+    else if(ext==='xls' || ext==='xlsx'){
+      // XLS from SISED is actually HTML; true XLSX is binary
+      // Try reading as text first (for HTML-format .xls)
+      const textReader = new FileReader();
+      textReader.onload = function(e){
+        const text = e.target.result;
+        if(text.trim().startsWith('<!') || text.trim().startsWith('<html') || text.includes('<table')){
+          // It's HTML disguised as .xls (SISED format)
+          try {
+            const entries = parseNfeHtmlTable(text, file.name);
+            entries.forEach(entry=>{ nfeDatabase.push(entry); totalImported++; });
+          } catch(err){ showToast('Erro ao processar HTML/XLS: '+file.name,'error'); }
+          finish();
+        } else {
+          // True binary Excel — use SheetJS
+          const binReader = new FileReader();
+          binReader.onload = function(e2){
+            try {
+              if(typeof XLSX==='undefined'){ showToast('Carregando biblioteca Excel...','warn'); finish(); return; }
+              const wb = XLSX.read(new Uint8Array(e2.target.result), {type:'array'});
+              const ws = wb.Sheets[wb.SheetNames[0]];
+              const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+              const entries = parseNfeSpreadsheetRows(rows, file.name);
+              entries.forEach(entry=>{ nfeDatabase.push(entry); totalImported++; });
+            } catch(err){ showToast('Erro XLSX: '+file.name,'error'); }
+            finish();
+          };
+          binReader.readAsArrayBuffer(file);
+        }
+      };
+      textReader.readAsText(file, 'iso-8859-1');
+    }
+    else {
+      showToast('Formato não suportado: '+ext,'error');
+      finish();
+    }
   });
+}
+
+// ─── Parse HTML table (SISED .xls format) ─────────────────────────────
+function parseNfeHtmlTable(html, fileName){
+  const entries = [];
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const rows = doc.querySelectorAll('tr');
+  let currentTurma = '';
+  const school = nfeUnits.selected ? (nfeActiveUnit().label||'') : '';
+
+  rows.forEach(tr=>{
+    const cells = Array.from(tr.querySelectorAll('td,th')).map(c=>c.textContent.trim());
+    if(!cells.length) return;
+
+    // Header row with column names — skip
+    if(cells[0]==='Matrícula' && cells[1]==='Aluno') return;
+
+    // Turma row (single cell or few cells with class name)
+    if(cells.length<=3 && cells[0] && !cells[0].match(/^\d/) && cells[0].length>2 && !cells[0].includes('Total') && !cells[0].includes('Recebimento')){
+      currentTurma = cells[0].replace(/\s+/g,' ');
+      return;
+    }
+
+    // Total rows — skip
+    if(cells[0]?.includes('Total') || cells[0]?.includes('Recebimento')) return;
+
+    // Data row: Matrícula, Aluno, Contratante, RG, CPF, Contratada, Documento, Parcela-Vencimento, Bruto, Descontos, Líquido, DataPG
+    if(cells.length>=8 && cells[0].match(/^\d/)){
+      const parcVenc = cells[7]||'';
+      // Extract vencimento date from "4 - 10/04/2026" format
+      const vencMatch = parcVenc.match(/(\d{2}\/\d{2}\/\d{4})/);
+      const vencimento = vencMatch ? vencMatch[1] : parcVenc;
+      // Use Líquido (col 10) if available, otherwise Bruto (col 8)
+      const valorLiq = cells[10]||cells[8]||'0';
+
+      entries.push({
+        id: uid(),
+        matricula: cells[0]||'',
+        aluno: cells[1]||'',
+        contratante: cells[2]||'',
+        rg: cells[3]||'',
+        cpf: cells[4]||'',
+        contratada: cells[5]||'',
+        documento: cells[6]||'',
+        vencimento: vencimento,
+        valor: valorLiq.replace(/\./g,'').replace(',','.'),
+        valorBruto: (cells[8]||'0').replace(/\./g,'').replace(',','.'),
+        descontos: (cells[9]||'0').replace(/\./g,'').replace(',','.'),
+        dataPagamento: cells[11]||'',
+        turma: currentTurma,
+        escola: school,
+        _file: fileName,
+      });
+    }
+  });
+  return entries;
+}
+
+// ─── Parse CSV text ───────────────────────────────────────────────────
+function parseNfeCsvText(text){
+  const entries = [];
+  const lines = text.split('\n').filter(l=>l.trim());
+  if(lines.length<2) return entries;
+  for(let i=1; i<lines.length; i++){
+    const cols = lines[i].split(/[;\t,]/).map(c=>c.trim().replace(/^"|"$/g,''));
+    if(cols.length<5) continue;
+    entries.push({
+      id: uid(), matricula:cols[0]||'', aluno:cols[1]||'', contratante:cols[2]||'',
+      rg:cols[3]||'', cpf:cols[4]||'', contratada:cols[5]||'', documento:cols[6]||'',
+      vencimento:cols[7]||'', valor:cols[8]?.replace(/\./g,'').replace(',','.')||'0',
+      dataPagamento:cols[9]||'', turma:cols[10]||'', escola:cols[11]||'',
+    });
+  }
+  return entries;
+}
+
+// ─── Parse spreadsheet rows (from SheetJS) ───────────────────────────
+function parseNfeSpreadsheetRows(rows, fileName){
+  const entries = [];
+  let currentTurma = '';
+  for(let i=0; i<rows.length; i++){
+    const row = rows[i].map(c=>String(c||'').trim());
+    if(!row.length || !row[0]) continue;
+    if(row[0]==='Matrícula') continue;
+    if(row.length<=3 && !row[0].match(/^\d/) && row[0].length>2 && !row[0].includes('Total')){
+      currentTurma = row[0]; continue;
+    }
+    if(row[0].includes('Total')) continue;
+    if(row.length>=8 && row[0].match(/^\d/)){
+      const vencMatch = (row[7]||'').match(/(\d{2}\/\d{2}\/\d{4})/);
+      entries.push({
+        id: uid(), matricula:row[0], aluno:row[1]||'', contratante:row[2]||'',
+        rg:row[3]||'', cpf:row[4]||'', contratada:row[5]||'', documento:row[6]||'',
+        vencimento: vencMatch?vencMatch[1]:(row[7]||''),
+        valor: (row[10]||row[8]||'0').replace(/\./g,'').replace(',','.'),
+        dataPagamento:row[11]||'', turma:currentTurma, escola:'', _file:fileName,
+      });
+    }
+  }
+  return entries;
 }
 
 function parseNfeXml(xml, fileName){
