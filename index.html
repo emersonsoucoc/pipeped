@@ -572,6 +572,32 @@ svg{display:block;flex-shrink:0}
   background:var(--whatsapp);color:#fff;font-size:10px;font-weight:700;
   width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
+/* Context Menu WhatsApp */
+.wa-ctx-menu{
+  position:fixed;background:var(--white);border-radius:var(--r);
+  box-shadow:0 4px 20px rgba(0,0,0,.18);z-index:9999;min-width:180px;
+  padding:6px 0;animation:fadeScale .15s ease;
+}
+@keyframes fadeScale{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.wa-ctx-item{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;
+  font-size:13px;color:var(--text);transition:background .15s;
+}
+.wa-ctx-item:hover{background:var(--surface)}
+.wa-ctx-item svg{width:16px;height:16px;flex-shrink:0}
+.wa-ctx-item.danger{color:var(--danger)}
+.wa-ctx-item.danger:hover{background:#FEE2E2}
+.wa-conv.muted .wa-conv-name{color:var(--muted)}
+.wa-conv.muted .wa-conv-last{font-style:italic}
+.wa-conv .wa-muted-icon{color:var(--muted);margin-left:4px;font-size:10px}
+.wa-conv{position:relative}
+.wa-conv .wa-conv-menu-btn{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  opacity:0;transition:opacity .15s;background:none;border:none;
+  cursor:pointer;padding:4px;border-radius:50%;color:var(--muted);
+}
+.wa-conv:hover .wa-conv-menu-btn{opacity:1}
+.wa-conv .wa-conv-menu-btn:hover{background:var(--border);color:var(--text)}
 .wa-chat{flex:1;display:flex;flex-direction:column;background:#E5DDD5;overflow:hidden}
 .wa-chat-header{
   padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);
@@ -1536,11 +1562,11 @@ async function loadFromAPI(){
 
 // ─── WHATSAPP DATA ────────────────────────────────────────────────
 let waConversations = [
-  { id:'wc1', phone:'+5571999990001', contact:'Maria Silva', school:'ped1', status:'open', lastMsg:'Tenho interesse na escola para minha filha', lastTime:'10:32', unread:2, leadId:null },
-  { id:'wc2', phone:'+5571999990002', contact:'João Pereira', school:'ped1', status:'open', lastMsg:'Qual o valor da mensalidade do 5º ano?', lastTime:'09:15', unread:1, leadId:null },
-  { id:'wc3', phone:'+5571999990003', contact:'Ana Oliveira', school:'ped2', status:'open', lastMsg:'Obrigada! Vou levar os documentos amanhã', lastTime:'Ontem', unread:0, leadId:null },
-  { id:'wc4', phone:'+5571999990004', contact:'Pedro Santos', school:'ped2', status:'closed', lastMsg:'Matrícula confirmada. Obrigado!', lastTime:'14/04', unread:0, leadId:null },
-  { id:'wc5', phone:'+5571999990005', contact:'Fernanda Lima', school:'ped3', status:'open', lastMsg:'Boa tarde, vocês têm vaga para maternal?', lastTime:'08:45', unread:3, leadId:null },
+  { id:'wc1', phone:'+5571999990001', contact:'Maria Silva', school:'ped1', status:'open', lastMsg:'Tenho interesse na escola para minha filha', lastTime:'10:32', unread:2, leadId:null, muted:false, archived:false },
+  { id:'wc2', phone:'+5571999990002', contact:'João Pereira', school:'ped1', status:'open', lastMsg:'Qual o valor da mensalidade do 5º ano?', lastTime:'09:15', unread:1, leadId:null, muted:false, archived:false },
+  { id:'wc3', phone:'+5571999990003', contact:'Ana Oliveira', school:'ped2', status:'open', lastMsg:'Obrigada! Vou levar os documentos amanhã', lastTime:'Ontem', unread:0, leadId:null, muted:false, archived:false },
+  { id:'wc4', phone:'+5571999990004', contact:'Pedro Santos', school:'ped2', status:'closed', lastMsg:'Matrícula confirmada. Obrigado!', lastTime:'14/04', unread:0, leadId:null, muted:false, archived:false },
+  { id:'wc5', phone:'+5571999990005', contact:'Fernanda Lima', school:'ped3', status:'open', lastMsg:'Boa tarde, vocês têm vaga para maternal?', lastTime:'08:45', unread:3, leadId:null, muted:false, archived:false },
 ];
 
 let waMessages = {
@@ -2037,8 +2063,11 @@ function kpiCard(label, icon, val, sub, bg, color){
 }
 
 // ─── WHATSAPP ──────────────────────────────────────────────────────────
+let waShowArchived = false;
 function buildWhatsApp(){
-  const filteredConvs = filterSchool ? waConversations.filter(c=>c.school===filterSchool) : waConversations;
+  let filteredConvs = filterSchool ? waConversations.filter(c=>c.school===filterSchool) : [...waConversations];
+  const archivedCount = filteredConvs.filter(c=>c.archived).length;
+  filteredConvs = filteredConvs.filter(c=> waShowArchived ? c.archived : !c.archived);
 
   return `<div class="wa-wrap">
     <div class="wa-sidebar">
@@ -2052,17 +2081,24 @@ function buildWhatsApp(){
       <div class="wa-search">
         <input type="text" placeholder="Buscar conversa..." oninput="filterWaConvs(this.value)">
       </div>
+      ${archivedCount>0?`<div onclick="waShowArchived=!waShowArchived;renderPage()" style="display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--whatsapp);font-size:12px;font-weight:600">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        ${waShowArchived?'← Voltar às conversas':'Arquivadas ('+archivedCount+')'}
+      </div>`:''}
       <div class="wa-convs" id="waConvList">
         ${filteredConvs.map(c=>{
           const s = schoolById(c.school);
-          return `<div class="wa-conv ${activeWaConv===c.id?'active':''}" onclick="selectWaConv('${c.id}')">
+          return `<div class="wa-conv ${activeWaConv===c.id?'active':''} ${c.muted?'muted':''}" onclick="selectWaConv('${c.id}')" oncontextmenu="event.preventDefault();openWaCtxMenu(event,'${c.id}')">
             <div class="wa-conv-avatar">${(c.contact||'?')[0]}</div>
             <div class="wa-conv-info">
-              <div class="wa-conv-name">${esc(c.contact)} <span class="wa-time">${esc(c.lastTime)}</span></div>
+              <div class="wa-conv-name">${esc(c.contact)}${c.muted?'<span class="wa-muted-icon" title="Silenciada">🔇</span>':''} <span class="wa-time">${esc(c.lastTime)}</span></div>
               <div class="wa-conv-last">${esc(c.lastMsg)}</div>
               ${s?`<div style="font-size:10px;color:${s.color};margin-top:2px">${esc(s.name)}</div>`:''}
             </div>
-            ${c.unread>0?`<div class="wa-conv-unread">${c.unread}</div>`:''}
+            ${c.unread>0&&!c.muted?`<div class="wa-conv-unread">${c.unread}</div>`:''}
+            <button class="wa-conv-menu-btn" onclick="event.stopPropagation();openWaCtxMenu(event,'${c.id}')" title="Opções">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><circle cx="8" cy="3" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="8" cy="13" r="1.5"/></svg>
+            </button>
           </div>`;
         }).join('')}
       </div>
@@ -2130,6 +2166,77 @@ function filterWaConvs(q){
     const text = el.textContent.toLowerCase();
     el.style.display = text.includes(query)?'':'none';
   });
+}
+
+// ─── WHATSAPP CONTEXT MENU ────────────────────────────────────────
+function openWaCtxMenu(e, convId){
+  closeWaCtxMenu();
+  const conv = waConversations.find(c=>c.id===convId);
+  if(!conv) return;
+  const menu = document.createElement('div');
+  menu.className = 'wa-ctx-menu';
+  menu.id = 'waCtxMenu';
+  menu.innerHTML = `
+    <div class="wa-ctx-item" onclick="muteWaConv('${convId}')">
+      <svg fill="none" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z${conv.muted?'':' M23 9l-6 6M17 9l6 6'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      ${conv.muted?'Reativar notificações':'Silenciar conversa'}
+    </div>
+    <div class="wa-ctx-item" onclick="archiveWaConv('${convId}')">
+      <svg fill="none" viewBox="0 0 24 24"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      ${conv.archived?'Desarquivar conversa':'Arquivar conversa'}
+    </div>
+    <div class="wa-ctx-item danger" onclick="deleteWaConv('${convId}')">
+      <svg fill="none" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Excluir conversa
+    </div>
+  `;
+  document.body.appendChild(menu);
+  // Position
+  const mx = e.clientX, my = e.clientY;
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  menu.style.left = (mx + mw > window.innerWidth ? mx - mw : mx) + 'px';
+  menu.style.top = (my + mh > window.innerHeight ? my - mh : my) + 'px';
+  // Close on outside click
+  setTimeout(()=> document.addEventListener('click', closeWaCtxMenu, {once:true}), 10);
+}
+
+function closeWaCtxMenu(){
+  const m = document.getElementById('waCtxMenu');
+  if(m) m.remove();
+}
+
+function muteWaConv(convId){
+  closeWaCtxMenu();
+  const conv = waConversations.find(c=>c.id===convId);
+  if(!conv) return;
+  conv.muted = !conv.muted;
+  addAudit(conv.muted?'Silenciou conversa':'Reativou conversa', conv.contact, 'whatsapp');
+  save(); renderPage();
+  showToast(conv.muted?'Conversa silenciada':'Notificações reativadas');
+}
+
+function archiveWaConv(convId){
+  closeWaCtxMenu();
+  const conv = waConversations.find(c=>c.id===convId);
+  if(!conv) return;
+  conv.archived = !conv.archived;
+  if(activeWaConv===convId) activeWaConv = null;
+  addAudit(conv.archived?'Arquivou conversa':'Desarquivou conversa', conv.contact, 'whatsapp');
+  save(); renderPage();
+  showToast(conv.archived?'Conversa arquivada':'Conversa desarquivada');
+}
+
+function deleteWaConv(convId){
+  closeWaCtxMenu();
+  const conv = waConversations.find(c=>c.id===convId);
+  if(!conv) return;
+  if(!confirm('Excluir conversa com '+conv.contact+'? Esta ação não pode ser desfeita.')) return;
+  waConversations = waConversations.filter(c=>c.id!==convId);
+  delete waMessages[convId];
+  if(activeWaConv===convId) activeWaConv = null;
+  addAudit('Excluiu conversa', conv.contact, 'whatsapp');
+  save(); renderPage();
+  showToast('Conversa excluída');
 }
 
 function sendWaMessage(){
