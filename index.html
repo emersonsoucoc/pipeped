@@ -610,6 +610,240 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 }
 .divider{height:1px;background:var(--border);margin:16px 0}
 .section-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* ─── NOTIFICATION CENTER PAGE ────────────────────────────────────── */
+.nc-wrap{padding:24px;max-width:1200px;animation:fadeUp .3s ease}
+.nc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.nc-header h2{font-size:20px;font-weight:700}
+.nc-header-actions{display:flex;gap:8px;align-items:center}
+.nc-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px}
+.nc-tab{padding:12px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--t);white-space:nowrap}
+.nc-tab:hover{color:var(--text)}
+.nc-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.nc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.nc-stat{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;box-shadow:var(--sh)}
+.nc-stat-value{font-size:24px;font-weight:800;margin-bottom:4px}
+.nc-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.nc-list{display:flex;flex-direction:column;gap:8px}
+.nc-item{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);transition:all var(--t);cursor:pointer}
+.nc-item:hover{box-shadow:var(--sh-md);border-color:var(--accent)}
+.nc-item.unread{background:var(--accent-l);border-color:var(--accent)33}
+.nc-item-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.nc-item-body{flex:1;min-width:0}
+.nc-item-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.nc-item-desc{font-size:12px;color:var(--muted);line-height:1.4}
+.nc-item-meta{display:flex;align-items:center;gap:12px;margin-top:6px;font-size:11px;color:var(--faint)}
+.nc-item-badge{display:inline-flex;padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:600}
+.nc-empty{padding:60px 24px;text-align:center;color:var(--faint);font-size:13px}
+
+/* ─── EMAIL TEMPLATES ────────────────────────────────────────────── */
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.tpl-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:all var(--t);box-shadow:var(--sh)}
+.tpl-card:hover{box-shadow:var(--sh-md);border-color:var(--accent)}
+.tpl-card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.tpl-card-title{font-size:14px;font-weight:700;color:var(--text)}
+.tpl-card-type{font-size:10px;font-weight:700;padding:3px 8px;border-radius:9999px;text-transform:uppercase;letter-spacing:.5px}
+.tpl-card-body{padding:16px 20px;font-size:12px;color:var(--muted);line-height:1.6}
+.tpl-card-preview{background:var(--surface);border-radius:var(--r-sm);padding:12px;font-family:monospace;font-size:11px;line-height:1.5;max-height:120px;overflow:hidden;margin-top:10px;border:1px dashed var(--border)}
+.tpl-card-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--surface)}
+.tpl-var{display:inline-flex;padding:1px 6px;background:var(--accent-l);color:var(--accent);border-radius:4px;font-size:10px;font-weight:700;font-family:monospace;margin:1px 2px}
+
+/* ─── AUTOMATION RULES ───────────────────────────────────────────── */
+.auto-rules-list{display:flex;flex-direction:column;gap:12px}
+.auto-rule{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px;transition:all var(--t);box-shadow:var(--sh)}
+.auto-rule:hover{box-shadow:var(--sh-md);border-color:var(--accent)}
+.auto-rule-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.auto-rule-name{font-size:14px;font-weight:700;color:var(--text)}
+.auto-rule-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:9999px}
+.auto-rule-status.active{background:#ECFDF5;color:#059669}
+.auto-rule-status.inactive{background:var(--surface);color:var(--faint)}
+.auto-rule-flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-bottom:12px}
+.auto-rule-step{padding:8px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:500;border:1px solid var(--border)}
+.auto-rule-step.trigger{background:#FEF3C7;color:#92400E;border-color:#FCD34D}
+.auto-rule-step.condition{background:var(--accent-l);color:var(--accent);border-color:var(--accent)33}
+.auto-rule-step.action{background:#ECFDF5;color:#059669;border-color:#6EE7B733}
+.auto-rule-arrow{color:var(--faint);font-size:18px;margin:0 6px}
+.auto-rule-meta{display:flex;gap:16px;font-size:11px;color:var(--muted)}
+
+/* ─── EMAIL LOG TABLE ────────────────────────────────────────────── */
+.email-log-table{width:100%;border-collapse:collapse;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.email-log-table th{background:var(--surface);padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)}
+.email-log-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+.email-log-table tr:last-child td{border-bottom:none}
+.email-log-table tbody tr:hover td{background:var(--surface)}
+.email-status{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.email-status.sent{background:#ECFDF5;color:#059669}
+.email-status.error{background:#FEF2F2;color:#DC2626}
+.email-status.pending{background:#FEF3C7;color:#B45309}
+.email-status.mock{background:var(--accent-l);color:var(--accent)}
+
+/* ─── TEMPLATE EDITOR MODAL ──────────────────────────────────────── */
+.tpl-editor-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:700;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.tpl-editor-overlay.active{display:flex;animation:fadeIn .2s ease}
+.tpl-editor{background:var(--white);border-radius:var(--r);max-width:700px;width:94%;max-height:88vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:fadeUp .25s ease}
+.tpl-editor-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.tpl-editor-header h3{font-size:16px;font-weight:700}
+.tpl-editor-body{padding:24px}
+.tpl-editor-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface)}
+.tpl-editor-vars{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;margin-bottom:16px}
+.tpl-editor-var{display:inline-flex;padding:4px 10px;background:var(--accent-l);color:var(--accent);border-radius:var(--r-sm);font-size:11px;font-weight:600;font-family:monospace;cursor:pointer;transition:all var(--t);border:1px solid transparent}
+.tpl-editor-var:hover{border-color:var(--accent);background:var(--accent);color:#fff}
+
+/* ─── AUTOMATION EDITOR MODAL ────────────────────────────────────── */
+.auto-editor-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:700;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.auto-editor-overlay.active{display:flex;animation:fadeIn .2s ease}
+.auto-editor{background:var(--white);border-radius:var(--r);max-width:650px;width:94%;max-height:88vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:fadeUp .25s ease}
+
+/* ─── CLICKSIGN CONTRATOS ────────────────────────────────────────── */
+.cs-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.cs-topbar{
+  background:var(--navy);padding:12px 24px;display:flex;align-items:center;
+  justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.cs-brand{display:flex;align-items:center;gap:8px;color:#fff}
+.cs-brand-name{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.cs-brand-div{color:#4a6fa5;font-weight:300}
+.cs-brand-sub{color:#93b4e0;font-size:12px;font-weight:500}
+.cs-topbar-actions{display:flex;align-items:center;gap:8px}
+.cs-search{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  color:#fff;padding:7px 12px;border-radius:var(--r-sm);font-size:12px;width:260px;
+}
+.cs-search::placeholder{color:rgba(255,255,255,.4)}
+.cs-refresh{
+  background:var(--info);color:#fff;border:none;width:32px;height:32px;
+  border-radius:var(--r-sm);font-size:16px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background var(--t);
+}
+.cs-refresh:hover{background:#1d4ed8}
+.cs-filters{
+  padding:10px 24px;display:flex;gap:6px;align-items:center;
+  border-bottom:1px solid var(--border);background:var(--white);flex-wrap:wrap;flex-shrink:0;
+}
+.cs-filter-label{
+  font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.05em;margin-right:4px;
+}
+.cs-chip{
+  padding:5px 10px;font-size:11px;font-weight:600;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:9999px;cursor:pointer;color:var(--ink);user-select:none;
+  transition:all var(--t);
+}
+.cs-chip:hover{border-color:var(--accent)}
+.cs-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.cs-board{
+  flex:1;overflow-x:auto;overflow-y:hidden;
+  display:flex;gap:14px;padding:16px 24px 24px;align-items:flex-start;
+}
+.cs-col{
+  width:300px;flex-shrink:0;display:flex;flex-direction:column;
+  background:var(--white);border-radius:var(--r);
+  box-shadow:var(--sh);border:1px solid var(--border);
+  max-height:calc(100vh - var(--top) - 140px);
+}
+.cs-col-header{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  border-radius:var(--r) var(--r) 0 0;
+}
+.cs-col-title{
+  font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--text);display:flex;align-items:center;gap:7px;
+}
+.cs-col-dot{width:7px;height:7px;border-radius:50%}
+.cs-col-count{
+  background:rgba(0,0,0,.06);font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:9999px;color:var(--muted);
+  min-width:20px;text-align:center;
+}
+.cs-col-body{padding:8px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;flex:1}
+.cs-col-empty{font-size:11px;color:var(--border);text-align:center;padding:12px;font-style:italic}
+.cs-col-loading{font-size:11px;color:var(--muted);text-align:center;padding:16px}
+.cs-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:11px 12px;cursor:pointer;display:flex;flex-direction:column;gap:7px;
+  transition:box-shadow var(--t),transform var(--t);
+}
+.cs-card:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
+.cs-card-unit{
+  font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 6px;border-radius:3px;display:inline-block;align-self:flex-start;
+}
+.cs-card-title{font-size:12px;font-weight:600;color:var(--text);line-height:1.35;word-break:break-word}
+.cs-card-signer{font-size:11px;color:var(--ink);display:flex;align-items:center;gap:5px}
+.cs-card-avatar{
+  width:20px;height:20px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  color:#fff;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.cs-card-signer-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.cs-card-meta{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);flex-wrap:wrap}
+.cs-card-badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.cs-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px}
+.cs-card-link{font-size:10px;font-weight:600;color:var(--info);cursor:pointer;text-decoration:underline;text-decoration-style:dotted}
+.cs-progress{display:flex;align-items:center;gap:8px;padding-top:5px;border-top:1px dashed var(--border);font-size:10px}
+.cs-sig-done{color:var(--ok);font-weight:600}
+.cs-sig-wait{color:var(--warn);font-weight:600}
+.cs-sig-none{color:var(--muted)}
+.cs-form{
+  background:var(--white);border:2px solid var(--info);border-radius:var(--r-sm);
+  padding:12px;display:flex;flex-direction:column;gap:9px;
+  box-shadow:0 4px 16px rgba(37,99,235,.12);
+}
+.cs-form-header{display:flex;align-items:center;justify-content:space-between}
+.cs-form-badge{
+  font-size:9px;font-weight:700;background:var(--info);color:#fff;
+  padding:3px 7px;border-radius:3px;letter-spacing:.03em;text-transform:uppercase;
+}
+.cs-form-badge-sent{
+  font-size:9px;font-weight:700;background:var(--ok);color:#fff;
+  padding:3px 7px;border-radius:3px;letter-spacing:.03em;text-transform:uppercase;
+}
+.cs-form-field{display:flex;flex-direction:column;gap:3px}
+.cs-form-label{font-size:10px;font-weight:700;color:var(--ink);letter-spacing:.02em}
+.cs-form-input{
+  padding:7px 9px;font-size:11.5px;border:1px solid var(--border);
+  border-radius:var(--r-sm);background:var(--white);color:var(--text);
+}
+.cs-form-hint{font-size:10px;color:var(--muted);margin-top:1px}
+.cs-mini-drop{
+  border:1.5px dashed var(--border);border-radius:var(--r-sm);
+  padding:5px;background:var(--surface);display:flex;flex-direction:column;gap:4px;cursor:pointer;
+}
+.cs-mini-file{
+  display:flex;align-items:center;gap:6px;padding:4px 7px;
+  background:var(--white);border:1px solid #d1fae5;border-radius:4px;font-size:11px;
+}
+.cs-mini-file-info{flex:1;overflow:hidden;min-width:0}
+.cs-mini-file-name{display:block;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px}
+.cs-mini-file-size{display:block;font-size:9px;color:var(--muted)}
+.cs-mini-x{color:var(--muted);cursor:pointer;font-weight:700;padding:0 3px;font-size:12px}
+.cs-mini-drop-add{text-align:center;font-size:10px;font-weight:600;color:var(--info);padding:3px}
+.cs-parsing{margin-top:5px;font-size:11px;color:var(--muted);font-style:italic}
+.cs-sised-hint{
+  margin-top:5px;padding:7px 9px;background:#ecfdf5;border:1px solid #a7f3d0;
+  border-radius:var(--r-sm);font-size:11px;color:#065f46;line-height:1.4;
+}
+.cs-sised-warn{margin-top:3px;color:#92400e;font-weight:600;font-size:10px}
+.cs-form-error{
+  background:#fef2f2;border:1px solid #fecaca;color:var(--err);
+  padding:7px 9px;border-radius:var(--r-sm);font-size:11px;font-weight:500;
+}
+.cs-form-submit{
+  background:var(--info);color:#fff;border:none;padding:9px;
+  border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;margin-top:2px;
+  transition:background var(--t);
+}
+.cs-form-submit:hover{background:#1d4ed8}
+.cs-form-submit:disabled{background:#93b4e0;cursor:not-allowed}
+.cs-form-foot{font-size:10px;color:var(--muted);text-align:center;margin:0;font-style:italic}
+.cs-error-banner{
+  position:fixed;bottom:14px;right:14px;background:#fef2f2;border:1px solid #fecaca;
+  color:var(--err);padding:9px 14px;border-radius:var(--r-sm);font-size:12px;
+  box-shadow:var(--sh-md);z-index:600;animation:fadeIn .2s ease;
+}
 </style>
 </head>
 <body>
@@ -834,6 +1068,141 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
   <div id="notifList"></div>
 </div>
 
+<!-- ─── TEMPLATE EDITOR MODAL ──────────────────────────────────────── -->
+<div class="tpl-editor-overlay" id="tplEditorOverlay" onclick="if(event.target===this)closeTplEditor()">
+  <div class="tpl-editor">
+    <div class="tpl-editor-header">
+      <h3 id="tplEditorTitle">Editar Template</h3>
+      <button class="btn-icon" onclick="closeTplEditor()">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="tpl-editor-body">
+      <div class="form-group">
+        <label>Nome do Template</label>
+        <input type="text" id="tplName" placeholder="Ex: Nova Tarefa Criada">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="tplType">
+          <option value="new_card">Nova Tarefa</option>
+          <option value="status_change">Mudança de Status</option>
+          <option value="overdue">Tarefa Atrasada</option>
+          <option value="new_lead">Novo Lead</option>
+          <option value="approval">Aprovação</option>
+          <option value="assignment">Atribuição</option>
+          <option value="comment">Novo Comentário</option>
+          <option value="custom">Personalizado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Assunto do Email</label>
+        <input type="text" id="tplSubject" placeholder="Ex: [PIPEPED] Nova tarefa: {{task_title}}">
+      </div>
+      <div class="form-group">
+        <label>Escola (opcional — deixe vazio para global)</label>
+        <select id="tplSchool">
+          <option value="">Global (todas as escolas)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Variáveis disponíveis (clique para inserir)</label>
+        <div class="tpl-editor-vars">
+          <span class="tpl-editor-var" onclick="insertTplVar('{{user_name}}')">{{user_name}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{task_title}}')">{{task_title}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{status}}')">{{status}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{school_name}}')">{{school_name}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{due_date}}')">{{due_date}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{module}}')">{{module}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{priority}}')">{{priority}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{assigned_to}}')">{{assigned_to}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{created_by}}')">{{created_by}}</span>
+          <span class="tpl-editor-var" onclick="insertTplVar('{{comment_text}}')">{{comment_text}}</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Corpo do Email (HTML)</label>
+        <textarea id="tplBody" style="min-height:200px;font-family:monospace;font-size:12px" placeholder="Olá {{user_name}},&#10;&#10;Uma nova tarefa foi criada: {{task_title}}..."></textarea>
+      </div>
+    </div>
+    <div class="tpl-editor-footer">
+      <button class="btn-ghost" onclick="closeTplEditor()">Cancelar</button>
+      <button class="btn-save" onclick="saveTplEditor()">Salvar Template</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── AUTOMATION EDITOR MODAL ────────────────────────────────────── -->
+<div class="auto-editor-overlay" id="autoEditorOverlay" onclick="if(event.target===this)closeAutoEditor()">
+  <div class="auto-editor">
+    <div class="tpl-editor-header">
+      <h3 id="autoEditorTitle">Nova Automação</h3>
+      <button class="btn-icon" onclick="closeAutoEditor()">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="tpl-editor-body">
+      <div class="form-group">
+        <label>Nome da Automação</label>
+        <input type="text" id="autoRuleName" placeholder="Ex: Notificar responsável ao criar tarefa">
+      </div>
+      <div class="form-group">
+        <label>Gatilho (Quando)</label>
+        <select id="autoRuleTrigger" onchange="onAutoTriggerChange()">
+          <option value="card_created">Card criado</option>
+          <option value="card_enter_phase">Card muda de fase</option>
+          <option value="card_overdue">Card atrasado</option>
+          <option value="field_updated">Campo atualizado</option>
+          <option value="new_lead">Novo lead (Comercial)</option>
+          <option value="comment_added">Comentário adicionado</option>
+        </select>
+      </div>
+      <div class="form-group" id="autoPhaseGroup" style="display:none">
+        <label>Fase específica (opcional)</label>
+        <select id="autoRulePhase"><option value="">Qualquer fase</option></select>
+      </div>
+      <div class="form-group">
+        <label>Módulo (opcional — vazio = todos)</label>
+        <select id="autoRuleModule">
+          <option value="">Todos os módulos</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Escola (opcional — vazio = todas)</label>
+        <select id="autoRuleSchool">
+          <option value="">Todas as escolas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ações (o que fazer)</label>
+        <div class="checkbox-list" id="autoActionsChecklist">
+          <div class="checkbox-item"><input type="checkbox" id="autoActNotif" checked style="width:auto"><label for="autoActNotif">Enviar notificação interna</label></div>
+          <div class="checkbox-item"><input type="checkbox" id="autoActEmail" style="width:auto"><label for="autoActEmail">Enviar e-mail (mock)</label></div>
+          <div class="checkbox-item"><input type="checkbox" id="autoActWhatsapp" disabled style="width:auto;opacity:.5"><label style="opacity:.5">Enviar WhatsApp (em breve)</label></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Destinatários</label>
+        <select id="autoRuleRecipient">
+          <option value="responsavel">Responsável do card</option>
+          <option value="criador">Criador do card</option>
+          <option value="gestor">Gestores do módulo</option>
+          <option value="admin">Administradores</option>
+          <option value="todos_modulo">Todos do módulo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Template de e-mail</label>
+        <select id="autoRuleTemplate"><option value="">Nenhum (usar padrão)</option></select>
+      </div>
+    </div>
+    <div class="tpl-editor-footer">
+      <button class="btn-ghost" onclick="closeAutoEditor()">Cancelar</button>
+      <button class="btn-save" onclick="saveAutoEditor()">Salvar Automação</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── TOAST ─────────────────────────────────────────────────────── -->
 <div id="toastContainer"></div>
 
@@ -898,17 +1267,48 @@ const MODULES = {
   contratos: {
     label:'Contratos', shortLabel:'Contratos', btnLabel:'Novo Contrato',
     color:'#8B5CF6', colorLight:'#F5F3FF', hasFinancial:false,
+    isClicksign: true,
     categorias:['Fornecedor','Prestador de Serviço','Locação','Parceria','Franquia','Outros'],
     fases:{
-      rascunho:   { label:'Rascunho',       color:'#94A3B8', bg:'#F1F5F9' },
-      revisao:    { label:'Em Revisão',     color:'#F59E0B', bg:'#FFFBEB' },
-      aprovado:   { label:'Aprovado',       color:'#3B82F6', bg:'#EFF6FF' },
-      assinatura: { label:'Ag. Assinatura', color:'#8B5CF6', bg:'#F5F3FF' },
-      assinado:   { label:'Assinado',       color:'#10B981', bg:'#ECFDF5' },
-      vencendo:   { label:'Vencendo',       color:'#EF4444', bg:'#FEF2F2' },
+      novo_envio:             { label:'Novo Envio',              color:'#94A3B8', bg:'#F8FAFC' },
+      aguardando_responsavel: { label:'Aguardando Responsável',  color:'#2563EB', bg:'#EFF6FF' },
+      assinado:               { label:'Assinado',                color:'#16A34A', bg:'#DCFCE7' },
+      recusado:               { label:'Recusado / Cancelado',    color:'#DC2626', bg:'#FEE2E2' },
     },
     lastPhase:'assinado',
   },
+};
+
+// ─── CLICKSIGN CONFIG ────────────────────────────────────────────
+const CLICKSIGN_API_BASE = ''; // URL do backend Clicksign (Railway) — ex: https://sised-x-clicksign-production.up.railway.app
+const CS_AUTH_OPTIONS = [
+  { value:'email',         label:'Token por E-mail',              requiresPhone:false },
+  { value:'sms',           label:'Token por SMS',                 requiresPhone:true  },
+  { value:'whatsapp',      label:'Token por WhatsApp',            requiresPhone:true  },
+  { value:'whatsapp_full', label:'Assinatura completa via WhatsApp', requiresPhone:true  },
+  { value:'selfie',        label:'Biometria Facial',              requiresPhone:false },
+];
+const CS_UNIT_COLORS = {
+  coclauro:    { bg:'#e0e7ff', color:'#3730a3' },
+  ped_imbui:   { bg:'#fce7f3', color:'#9d174d' },
+  coc_horto:   { bg:'#dcfce7', color:'#166534' },
+  anglo_lauro: { bg:'#fef3c7', color:'#92400e' },
+};
+
+// ─── CLICKSIGN STATE ─────────────────────────────────────────────
+const csState = {
+  units: [],
+  phases: { waiting_responsavel:[], signed:[], rejected:[] },
+  loading: true,
+  error: '',
+  filterUnit: 'all',
+  search: '',
+  formFiles: [],
+  formStatus: 'idle', // idle | loading | sent
+  formError: '',
+  autoFill: null,
+  parsing: false,
+  pollInterval: null,
 };
 
 // ─── STATE ────────────────────────────────────────────────────────────
@@ -1151,10 +1551,12 @@ function navigate(page){
   const newLabel = document.getElementById('topbarNewLabel');
   if(mod){
     newLabel.textContent=mod.btnLabel;
-    // Esconde botão "Novo" se não pode criar neste módulo
-    newBtn.style.display = canCreateInModule(page) ? '' : 'none';
+    // Esconde botão "Novo" se Clicksign (form inline) ou sem permissão
+    newBtn.style.display = (mod.isClicksign || !canCreateInModule(page)) ? 'none' : '';
   }
   else { newBtn.style.display = page==='settings' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
+  // Clicksign polling
+  if(page==='contratos') csStartPolling(); else csStopPolling();
   renderPage();
   updateBadges();
 }
@@ -1163,6 +1565,7 @@ const pageTitles = { dashboard:'Dashboard', settings:'Configurações' };
 function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
+  else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
   else if(currentPage==='settings') el.innerHTML = buildSettings();
 }
@@ -1170,17 +1573,28 @@ function renderPage(){
 // ─── DASHBOARD ────────────────────────────────────────────────────────
 function buildDashboard(){
   const vis      = allVisibleCards();
-  const total    = vis.length;
-  const concl    = vis.filter(c=>c.fase===MODULES[c.modulo]?.lastPhase).length;
+  const csW=(csState.phases.waiting_responsavel||[]).length, csS=(csState.phases.signed||[]).length, csR=(csState.phases.rejected||[]).length;
+  const total    = vis.length + csW + csS + csR;
+  const concl    = vis.filter(c=>c.fase===MODULES[c.modulo]?.lastPhase).length + csS;
   const overdue  = vis.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
-  const andamento= vis.filter(c=>c.fase!==MODULES[c.modulo]?.lastPhase && c.fase!=='solicitado'&&c.fase!=='aberto'&&c.fase!=='lead'&&c.fase!=='rascunho').length;
+  const andamento= vis.filter(c=>c.fase!==MODULES[c.modulo]?.lastPhase && c.fase!=='solicitado'&&c.fase!=='aberto'&&c.fase!=='lead'&&c.fase!=='rascunho').length + csW;
+
+  // Clicksign envelope counts for contratos module
+  const csTotal=(csState.phases.waiting_responsavel||[]).length+(csState.phases.signed||[]).length+(csState.phases.rejected||[]).length;
+  const csActive=(csState.phases.waiting_responsavel||[]).length;
 
   const visibleMods = getUserModules(currentUser);
-  const modCounts = Object.keys(MODULES).filter(k=>visibleMods.includes(k)).map(k=>({ mod:k, count:vis.filter(c=>c.modulo===k).length, active:activeCards(k).length }));
+  const modCounts = Object.keys(MODULES).filter(k=>visibleMods.includes(k)).map(k=>{
+    if(k==='contratos') return { mod:k, count:csTotal, active:csActive };
+    return { mod:k, count:vis.filter(c=>c.modulo===k).length, active:activeCards(k).length };
+  });
   const maxCount  = Math.max(...modCounts.map(x=>x.count),1);
 
   // Donut chart data
-  const donutData = Object.entries(MODULES).filter(([k])=>visibleMods.includes(k)).map(([k,m])=>({ label:m.shortLabel, color:m.color, val:vis.filter(c=>c.modulo===k).length }));
+  const donutData = Object.entries(MODULES).filter(([k])=>visibleMods.includes(k)).map(([k,m])=>{
+    if(k==='contratos') return { label:m.shortLabel, color:m.color, val:csTotal };
+    return { label:m.shortLabel, color:m.color, val:vis.filter(c=>c.modulo===k).length };
+  });
   const donutTotal = donutData.reduce((a,x)=>a+x.val,0)||1;
   let dashOffset = 0;
   const donutSegs = donutData.map(d=>{
@@ -2371,11 +2785,348 @@ function updateNotifPref(eventId,channel,enabled){
   logAudit('notif_pref','settings',eventId+' → '+(enabled?'ativado':'desativado'));
 }
 
+// ─── CLICKSIGN INTEGRATION ────────────────────────────────────────
+function csInitials(name){
+  return (name||'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>(w[0]||'').toUpperCase()).join('')||'?';
+}
+function csFormatDate(iso){
+  if(!iso) return '';
+  const d=new Date(iso), t=new Date(), y=new Date(t);
+  y.setDate(t.getDate()-1);
+  const hh=String(d.getHours()).padStart(2,'0'), mm=String(d.getMinutes()).padStart(2,'0');
+  if(d.toDateString()===t.toDateString()) return 'Hoje, '+hh+':'+mm;
+  if(d.toDateString()===y.toDateString()) return 'Ontem, '+hh+':'+mm;
+  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+', '+hh+':'+mm;
+}
+
+async function csLoadUnits(){
+  try{
+    const r=await fetch(CLICKSIGN_API_BASE+'/api/units');
+    const d=await r.json();
+    csState.units=d.units||[];
+  }catch(e){ console.warn('csLoadUnits:',e.message); }
+}
+
+async function csLoadEnvelopes(){
+  try{
+    const r=await fetch(CLICKSIGN_API_BASE+'/api/envelopes');
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Falha ao carregar envelopes');
+    csState.phases=d.phases;
+    csState.error='';
+  }catch(e){
+    csState.error=e.message;
+  }finally{
+    csState.loading=false;
+  }
+  if(currentPage==='contratos') renderPage();
+  updateBadges();
+}
+
+function csStartPolling(){
+  if(csState.pollInterval) return;
+  csLoadUnits();
+  csLoadEnvelopes();
+  csState.pollInterval=setInterval(csLoadEnvelopes,30000);
+}
+function csStopPolling(){
+  if(csState.pollInterval){ clearInterval(csState.pollInterval); csState.pollInterval=null; }
+}
+
+async function csParseSised(file){
+  try{
+    csState.parsing=true; csState.autoFill=null;
+    if(currentPage==='contratos') renderPage();
+    const fd=new FormData(); fd.append('contract',file);
+    const r=await fetch(CLICKSIGN_API_BASE+'/api/parse-sised',{method:'POST',body:fd});
+    if(!r.ok){ csState.autoFill={erro:'Parser indisponivel (HTTP '+r.status+'). Preencha manualmente.'}; return; }
+    const data=await r.json();
+    if(!data.ok||!data.dados){ csState.autoFill={erro:data.sugestao||'Template nao reconhecido como SISED.'}; return; }
+    const d=data.dados;
+    csState.autoFill={alunoNome:d.alunoNome,responsavelNome:d.responsavelNome,emailFaltando:!d.emailDetectado,confianca:d._confianca};
+    const nI=document.getElementById('csName'), eI=document.getElementById('csEmail'), pI=document.getElementById('csPhone');
+    if(nI&&!nI.value&&d.responsavelNome) nI.value=d.responsavelNome;
+    if(eI&&!eI.value&&d.emailDetectado) eI.value=d.emailDetectado;
+    if(pI&&!pI.value&&d.responsavelTelefone) pI.value=d.responsavelTelefone;
+  }catch(e){
+    csState.autoFill={erro:'Erro ao ler PDF: '+e.message};
+  }finally{
+    csState.parsing=false;
+    if(currentPage==='contratos') renderPage();
+  }
+}
+
+function csAddFiles(fileList){
+  const pdfs=Array.from(fileList).filter(f=>f.type==='application/pdf');
+  if(!pdfs.length){ csState.formError='Apenas PDFs.'; if(currentPage==='contratos') renderPage(); return; }
+  const had=csState.formFiles.length>0;
+  const seen=new Set(csState.formFiles.map(f=>f.name+'-'+f.size));
+  pdfs.forEach(f=>{ if(!seen.has(f.name+'-'+f.size)) csState.formFiles.push(f); });
+  if(csState.formFiles.length>10) csState.formFiles=csState.formFiles.slice(0,10);
+  csState.formError='';
+  if(!had&&pdfs[0]) csParseSised(pdfs[0]);
+  else if(currentPage==='contratos') renderPage();
+}
+
+function csRemoveFile(idx){
+  csState.formFiles.splice(idx,1);
+  if(currentPage==='contratos') renderPage();
+}
+
+async function csSendContract(e){
+  e.preventDefault();
+  csState.formError='';
+  const nameEl=document.getElementById('csName'), emailEl=document.getElementById('csEmail'),
+        phoneEl=document.getElementById('csPhone'), authEl=document.getElementById('csAuth'),
+        unitEl=document.getElementById('csUnit');
+  if(!csState.formFiles.length){ csState.formError='Selecione ao menos um PDF.'; renderPage(); return; }
+  if(!nameEl.value.trim()){ csState.formError='Nome completo.'; renderPage(); return; }
+  if(!emailEl.value.trim()){ csState.formError='E-mail.'; renderPage(); return; }
+  const method=CS_AUTH_OPTIONS.find(m=>m.value===authEl.value);
+  if(method&&method.requiresPhone&&!(phoneEl&&phoneEl.value.trim())){ csState.formError='Telefone obrigatorio.'; renderPage(); return; }
+
+  csState.formStatus='loading'; renderPage();
+  const fd=new FormData();
+  csState.formFiles.forEach(f=>fd.append('contracts',f));
+  fd.append('name',nameEl.value.trim());
+  fd.append('email',emailEl.value.trim().toLowerCase());
+  fd.append('auth_method',authEl.value);
+  fd.append('unit_id',unitEl.value);
+  if(phoneEl&&phoneEl.value.trim()) fd.append('phone',phoneEl.value.trim());
+
+  try{
+    const r=await fetch(CLICKSIGN_API_BASE+'/api/send-contract',{method:'POST',body:fd});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||'Erro ao enviar');
+    csState.formFiles=[];csState.autoFill=null;csState.formStatus='sent';
+    showToast('Contrato enviado para assinatura!');
+    addNotif('Contrato enviado','Enviado para '+nameEl.value.trim(),'create');
+    setTimeout(()=>{ csState.formStatus='idle'; if(currentPage==='contratos') renderPage(); },2500);
+    csLoadEnvelopes();
+  }catch(err){
+    csState.formError=err.message; csState.formStatus='idle';
+  }
+  renderPage();
+}
+
+async function csArchiveEnvelope(envId){
+  try{
+    const r=await fetch(CLICKSIGN_API_BASE+'/api/envelopes/'+envId+'/archive',{method:'POST'});
+    const d=await r.json();
+    if(!r.ok){ showToast(d.error||'Falha ao arquivar','error'); return; }
+    showToast('Arquivamento iniciado');
+    setTimeout(csLoadEnvelopes,3000);
+  }catch(e){ showToast('Erro: '+e.message,'error'); }
+}
+
+function csFilterCard(c){
+  if(csState.filterUnit!=='all'&&c.unit?.id!==csState.filterUnit) return false;
+  if(csState.search){
+    const q=csState.search.toLowerCase();
+    const blob=[c.name,c.responsavel?.name,c.responsavel?.email,...(c.documents||[]).map(d=>d.filename)].filter(Boolean).join(' ').toLowerCase();
+    if(!blob.includes(q)) return false;
+  }
+  return true;
+}
+
+function buildKanbanClicksign(){
+  const p=csState.phases;
+  const fw=p.waiting_responsavel.filter(csFilterCard);
+  const fs=p.signed.filter(csFilterCard);
+  const fr=p.rejected.filter(csFilterCard);
+  const unitChips=csState.units.map(u=>{
+    const act=csState.filterUnit===u.id?'active':'';
+    return '<span class="cs-chip '+act+'" onclick="csSetFilter(\''+esc(u.id)+'\')">'+esc(u.name)+'</span>';
+  }).join('');
+
+  const currentUnit=csState.units.find(u=>u.id===(document.getElementById('csUnit')?.value||'coclauro'));
+  const authOpts=CS_AUTH_OPTIONS.map(m=>'<option value="'+m.value+'">'+esc(m.label)+'</option>').join('');
+  const unitOpts=csState.units.map(u=>'<option value="'+esc(u.id)+'"'+(u.active===false?' disabled':'')+'>'+esc(u.name)+(u.active===false?' (em breve)':'')+'</option>').join('');
+  const senderHint=currentUnit?.sender?'<span class="cs-form-hint">Remetente: <strong>'+esc(currentUnit.sender)+'</strong></span>':'';
+
+  const filesHtml=csState.formFiles.map((f,i)=>
+    '<div class="cs-mini-file"><span>&#128196;</span><div class="cs-mini-file-info"><span class="cs-mini-file-name">'+esc(f.name)+'</span><span class="cs-mini-file-size">'+(f.size/1024).toFixed(0)+' KB</span></div><span class="cs-mini-x" onclick="event.stopPropagation();csRemoveFile('+i+')">&times;</span></div>'
+  ).join('');
+
+  const parsingHtml=csState.parsing?'<div class="cs-parsing">&#128269; Lendo contrato SISED...</div>':'';
+  let autoFillHtml='';
+  if(csState.autoFill&&!csState.parsing){
+    if(csState.autoFill.erro){
+      autoFillHtml='<div class="cs-sised-hint" style="background:#fef3c7;border-color:#fcd34d;color:#92400e">&#9888; '+esc(csState.autoFill.erro)+'</div>';
+    }else{
+      autoFillHtml='<div class="cs-sised-hint">&#10024; Detectado SISED &mdash; <strong>'+esc(csState.autoFill.alunoNome||'')+'</strong>'
+        +(csState.autoFill.responsavelNome?' &middot; resp.: '+esc(csState.autoFill.responsavelNome):'')
+        +(csState.autoFill.emailFaltando?'<div class="cs-sised-warn">&#9888; E-mail nao vem no PDF — preencha manualmente abaixo.</div>':'')
+        +'</div>';
+    }
+  }
+
+  const formErrorHtml=csState.formError?'<div class="cs-form-error">'+esc(csState.formError)+'</div>':'';
+  const isLoading=csState.formStatus==='loading';
+  const sentBadge=csState.formStatus==='sent'?'<span class="cs-form-badge-sent">&#10004; Enviado!</span>':'';
+  const selectedAuth=document.getElementById('csAuth')?.value||'email';
+  const needsPhone=CS_AUTH_OPTIONS.find(m=>m.value===selectedAuth)?.requiresPhone;
+
+  const formHtml=`<form class="cs-form" onsubmit="csSendContract(event)">
+    <div class="cs-form-header"><span class="cs-form-badge">&#128221; Rascunho</span>${sentBadge}</div>
+    <div class="cs-form-field">
+      <label class="cs-form-label">Unidade</label>
+      <select class="cs-form-input" id="csUnit" onchange="if(currentPage==='contratos')renderPage()"${isLoading?' disabled':''}>${unitOpts}</select>
+      ${senderHint}
+    </div>
+    <div class="cs-form-field">
+      <label class="cs-form-label">Contratos (PDF)</label>
+      <div class="cs-mini-drop" onclick="document.getElementById('csFileInput').click()">
+        <input type="file" id="csFileInput" accept=".pdf,application/pdf" multiple style="display:none" onchange="csAddFiles(this.files)">
+        ${filesHtml}
+        <div class="cs-mini-drop-add">${csState.formFiles.length===0?'+ Clique ou arraste PDFs aqui':'+ Adicionar PDF ('+csState.formFiles.length+'/10)'}</div>
+      </div>
+      ${parsingHtml}${autoFillHtml}
+    </div>
+    <div class="cs-form-field">
+      <label class="cs-form-label">Nome completo</label>
+      <input class="cs-form-input" type="text" id="csName" placeholder="Ex.: Joao Pereira"${isLoading?' disabled':''}>
+    </div>
+    <div class="cs-form-field">
+      <label class="cs-form-label">E-mail</label>
+      <input class="cs-form-input" type="email" id="csEmail" placeholder="joao@gmail.com"${isLoading?' disabled':''}>
+    </div>
+    <div class="cs-form-field">
+      <label class="cs-form-label">Como vai assinar?</label>
+      <select class="cs-form-input" id="csAuth" onchange="if(currentPage==='contratos')renderPage()"${isLoading?' disabled':''}>${authOpts}</select>
+    </div>
+    ${needsPhone?'<div class="cs-form-field"><label class="cs-form-label">Telefone com DDD *</label><input class="cs-form-input" type="tel" id="csPhone" placeholder="71 99999-8888"'+(isLoading?' disabled':'')+'></div>':''}
+    ${formErrorHtml}
+    <button type="submit" class="cs-form-submit"${isLoading?' disabled':''}>${isLoading?'Enviando...':'Enviar para Assinatura &rarr;'}</button>
+    <p class="cs-form-foot">A escola assinara automaticamente apos o envio.</p>
+  </form>`;
+
+  function buildEnvCard(env,phase){
+    const uc=CS_UNIT_COLORS[env.unit?.id]||{bg:'#e2e8f0',color:'#334155'};
+    const docCount=(env.documents||[]).length;
+    const titleRaw=(env.name||'').replace(/^\[[^\]]+\]\s*/,'');
+    let unitTag=env.unit?'<span class="cs-card-unit" style="background:'+uc.bg+';color:'+uc.color+'">'+esc(env.unit.name)+'</span>':'';
+    let signerHtml='';
+    if(env.responsavel){
+      signerHtml='<div class="cs-card-signer"><div class="cs-card-avatar">'+csInitials(env.responsavel.name)+'</div><span class="cs-card-signer-text">'+esc(env.responsavel.name)+' &middot; '+esc(env.responsavel.email)+'</span></div>';
+    }
+    let metaHtml='<div class="cs-card-meta"><span>&#128206; '+docCount+' PDF'+(docCount>1?'s':'')+'</span><span>&#128197; '+csFormatDate(env.updated_at||env.created_at)+'</span></div>';
+    let progressHtml='';
+    if(phase!=='rejected'){
+      const sClass=env.sender_signed?'cs-sig-done':'cs-sig-wait';
+      const sIcon=env.sender_signed?'&#10004;':'&#9203;';
+      const rSigned=env.responsavel?.signed_at;
+      const rClass=rSigned?'cs-sig-done':(env.sender_signed?'cs-sig-wait':'cs-sig-none');
+      const rIcon=rSigned?'&#10004;':(env.sender_signed?'&#9203;':'&#9675;');
+      progressHtml='<div class="cs-progress"><span class="'+sClass+'">'+sIcon+' Escola</span><span class="'+rClass+'">'+rIcon+' Responsavel</span></div>';
+    }
+    let badgeHtml='';
+    if(phase==='rejected'){
+      badgeHtml='<div class="cs-card-badges"><span class="cs-badge" style="background:#fee2e2;color:#991b1b">&#10060; '+esc(env.status)+'</span></div>';
+    }
+    let archiveHtml='';
+    if(phase==='signed'){
+      const a=env.archive;
+      if(a?.status==='archived'){
+        const link=a.files?.[0]?.link;
+        archiveHtml='<div class="cs-card-badges"><span class="cs-badge" style="background:#dcfce7;color:#166534">&#128193; Salvo no Drive</span>'+(link?'<a href="'+esc(link)+'" target="_blank" class="cs-card-link">abrir &#8599;</a>':'')+'</div>';
+      }else if(a?.status==='pending'){
+        archiveHtml='<div class="cs-card-badges"><span class="cs-badge" style="background:#fef3c7;color:#92400e">&#128193; Arquivando...</span></div>';
+      }else if(a?.status==='failed'){
+        archiveHtml='<div class="cs-card-badges"><span class="cs-badge" style="background:#fee2e2;color:#991b1b">&#9888; Falha</span><span class="cs-card-link" onclick="event.stopPropagation();csArchiveEnvelope(\''+esc(env.id)+'\')">tentar novamente &#8635;</span></div>';
+      }else if(a?.status==='pending_config'){
+        archiveHtml='<div class="cs-card-badges"><span class="cs-badge" style="background:#e0e7ff;color:#3730a3">&#128193; Ag. pasta Drive</span></div>';
+      }else{
+        archiveHtml='<div class="cs-card-badges"><span class="cs-card-link" onclick="event.stopPropagation();csArchiveEnvelope(\''+esc(env.id)+'\')">&#128193; Salvar no Drive</span></div>';
+      }
+    }
+    return '<div class="cs-card">'+unitTag+'<div class="cs-card-title">'+esc(titleRaw)+'</div>'+signerHtml+metaHtml+progressHtml+badgeHtml+archiveHtml+'</div>';
+  }
+
+  const waitingCards=fw.map(e=>buildEnvCard(e,'waiting')).join('');
+  const signedCards=fs.map(e=>buildEnvCard(e,'signed')).join('');
+  const rejectedCards=fr.map(e=>buildEnvCard(e,'rejected')).join('');
+
+  return `<div class="cs-wrap">
+    <div class="cs-topbar">
+      <div class="cs-brand">
+        <span class="cs-brand-name">Grupo PED</span>
+        <span class="cs-brand-div">&times;</span>
+        <span class="cs-brand-sub">Clicksign</span>
+      </div>
+      <div class="cs-topbar-actions">
+        <input class="cs-search" placeholder="Buscar por signatario, e-mail ou contrato..." value="${esc(csState.search)}" oninput="csState.search=this.value;if(currentPage==='contratos')renderPage()">
+        <button class="cs-refresh" onclick="csLoadEnvelopes()" title="Atualizar">&#8635;</button>
+      </div>
+    </div>
+    <div class="cs-filters">
+      <span class="cs-filter-label">Unidade</span>
+      <span class="cs-chip ${csState.filterUnit==='all'?'active':''}" onclick="csSetFilter('all')">Todas</span>
+      ${unitChips}
+    </div>
+    <div class="cs-board">
+      <div class="cs-col">
+        <div class="cs-col-header" style="background:#F8FAFC">
+          <span class="cs-col-title"><span class="cs-col-dot" style="background:#94A3B8"></span>Novo Envio</span>
+          <span class="cs-col-count">+</span>
+        </div>
+        <div class="cs-col-body">${formHtml}</div>
+      </div>
+      <div class="cs-col">
+        <div class="cs-col-header" style="background:#EFF6FF">
+          <span class="cs-col-title"><span class="cs-col-dot" style="background:#2563EB"></span>Aguardando Responsavel</span>
+          <span class="cs-col-count">${fw.length}</span>
+        </div>
+        <div class="cs-col-body">
+          ${csState.loading&&fw.length===0?'<div class="cs-col-loading">Carregando...</div>':''}
+          ${waitingCards}
+          ${!csState.loading&&fw.length===0?'<div class="cs-col-empty">&mdash; vazio &mdash;</div>':''}
+        </div>
+      </div>
+      <div class="cs-col">
+        <div class="cs-col-header" style="background:#DCFCE7">
+          <span class="cs-col-title"><span class="cs-col-dot" style="background:#16A34A"></span>Assinado</span>
+          <span class="cs-col-count">${fs.length}</span>
+        </div>
+        <div class="cs-col-body">
+          ${csState.loading&&fs.length===0?'<div class="cs-col-loading">Carregando...</div>':''}
+          ${signedCards}
+          ${!csState.loading&&fs.length===0?'<div class="cs-col-empty">&mdash; vazio &mdash;</div>':''}
+        </div>
+      </div>
+      <div class="cs-col">
+        <div class="cs-col-header" style="background:#FEE2E2">
+          <span class="cs-col-title"><span class="cs-col-dot" style="background:#DC2626"></span>Recusado / Cancelado</span>
+          <span class="cs-col-count">${fr.length}</span>
+        </div>
+        <div class="cs-col-body">
+          ${csState.loading&&fr.length===0?'<div class="cs-col-loading">Carregando...</div>':''}
+          ${rejectedCards}
+          ${!csState.loading&&fr.length===0?'<div class="cs-col-empty">&mdash; vazio &mdash;</div>':''}
+        </div>
+      </div>
+    </div>
+    ${csState.error?'<div class="cs-error-banner">&#9888; '+esc(csState.error)+'</div>':''}
+  </div>`;
+}
+
+function csSetFilter(unitId){
+  csState.filterUnit=unitId;
+  if(currentPage==='contratos') renderPage();
+}
+
 // ─── BADGES ───────────────────────────────────────────────────────────
 function updateBadges(){
   Object.keys(MODULES).forEach(mod=>{
     const el = document.getElementById('badge-'+mod);
-    if(el){ const n=activeCards(mod).length; el.textContent=n||''; el.dataset.count=n; }
+    if(!el) return;
+    if(mod==='contratos'){
+      // Clicksign: badge = envelopes aguardando responsável
+      const n=(csState.phases.waiting_responsavel||[]).length;
+      el.textContent=n||''; el.dataset.count=n;
+    }else{
+      const n=activeCards(mod).length; el.textContent=n||''; el.dataset.count=n;
+    }
   });
   renderNotifBell();
 }
@@ -2410,12 +3161,7 @@ function seedData(){
     { id:uid(),modulo:'comercial',titulo:'Família Moreira — Ensino Médio',descricao:'Família procura escola com foco em vestibular para filha no 1º ano EM.',escola:'ped1',categoria:'Ensino Médio',prioridade:'media',fase:'proposta',responsavel:'u4',prazo:future(7),criadoEm:past(8),criadoPor:'u4',comentarios:[],historico:[{texto:'Lead criado',data:now(),usuario:'Beatriz Souza'},{texto:'Proposta de bolsa parcial enviada',data:now(),usuario:'Beatriz Souza'}],anexos:[] },
     { id:uid(),modulo:'comercial',titulo:'Família Ramos — Maternal I (gêmeos)',descricao:'Matrícula confirmada dos gêmeos João e Pedro para o Maternal I 2026.',escola:'ped2',categoria:'Maternal I',prioridade:'baixa',fase:'matriculado',responsavel:'u4',prazo:past(5),criadoEm:past(15),criadoPor:'u4',comentarios:[],historico:[{texto:'Lead criado',data:now(),usuario:'Beatriz Souza'},{texto:'Matrícula confirmada e contrato assinado',data:now(),usuario:'Ana Lima'}],anexos:[] },
 
-    // CONTRATOS
-    { id:uid(),modulo:'contratos',titulo:'Contrato de locação — sede PED 2',descricao:'Renovação anual do contrato de locação do imóvel da unidade PED 2. Vence em 60 dias.',escola:'ped2',categoria:'Locação',prioridade:'urgente',fase:'revisao',responsavel:'u5',prazo:future(15),criadoEm:past(10),criadoPor:'u1',comentarios:[{id:uid(),texto:'Solicitar revisão da cláusula 8 sobre reajuste.',usuario:'u1',data:now()}],historico:[{texto:'Contrato criado para revisão',data:now(),usuario:'Emerson Santos'}],anexos:[] },
-    { id:uid(),modulo:'contratos',titulo:'Fornecedor de merenda — PED 1 e PED 3',descricao:'Contrato anual com empresa NutriEscola para fornecimento de merenda.',escola:'ped1',categoria:'Fornecedor',prioridade:'alta',fase:'aprovado',responsavel:'u5',prazo:future(20),criadoEm:past(7),criadoPor:'u5',comentarios:[],historico:[{texto:'Contrato criado',data:now(),usuario:'Ricardo Nunes'},{texto:'Aprovado pela diretoria',data:now(),usuario:'Emerson Santos'}],anexos:[] },
-    { id:uid(),modulo:'contratos',titulo:'Prestação de serviço — plataforma EAD',descricao:'Contrato com EdTech Digital para acesso à plataforma de cursos complementares.',escola:'ped3',categoria:'Prestador de Serviço',prioridade:'media',fase:'assinatura',responsavel:'u1',prazo:future(5),criadoEm:past(12),criadoPor:'u1',comentarios:[],historico:[{texto:'Contrato criado',data:now(),usuario:'Emerson Santos'},{texto:'Aguardando assinatura digital do fornecedor',data:now(),usuario:'Ricardo Nunes'}],anexos:[] },
-    { id:uid(),modulo:'contratos',titulo:'Parceria — escola de idiomas CNA',descricao:'Parceria para oferecer inglês e espanhol dentro da grade curricular.',escola:'ped2',categoria:'Parceria',prioridade:'baixa',fase:'assinado',responsavel:'u1',prazo:past(30),criadoEm:past(45),criadoPor:'u1',comentarios:[],historico:[{texto:'Contrato criado',data:now(),usuario:'Emerson Santos'},{texto:'Contrato assinado e vigente',data:now(),usuario:'Emerson Santos'}],anexos:[] },
-    { id:uid(),modulo:'contratos',titulo:'Manutenção predial — PED 1',descricao:'Contrato com empresa de manutenção geral das instalações vencendo em breve.',escola:'ped1',categoria:'Prestador de Serviço',prioridade:'urgente',fase:'vencendo',responsavel:'u5',prazo:past(2),criadoEm:past(60),criadoPor:'u5',comentarios:[{id:uid(),texto:'URGENTE: Renovar ou contratar nova empresa.',usuario:'u1',data:now()}],historico:[{texto:'Contrato criado',data:now(),usuario:'Ricardo Nunes'},{texto:'Alerta de vencimento acionado',data:now(),usuario:'Sistema'}],anexos:[] },
+    // CONTRATOS — agora gerenciados via Clicksign (dados vêm da API, não de seed local)
   ];
   save();
 }
