@@ -1,0 +1,12 @@
+{
+  "name": "pipeped",
+  "version": "1.0.0",
+  "description": "PIPEPED — Sistema de Gestão Operacional do Grupo PED",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
