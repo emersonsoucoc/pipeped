@@ -5,9 +5,34 @@ const cors    = require('cors');
 const axios   = require('axios');
 const path    = require('path');
 const crypto  = require('crypto');
+const fs      = require('fs');
+const os      = require('os');
 
 let pdfParse;
 try { pdfParse = require('pdf-parse'); } catch { pdfParse = null; }
+
+let Tesseract;
+try { Tesseract = require('tesseract.js'); } catch { Tesseract = null; }
+
+let pdf2img;
+try { pdf2img = require('pdf-img-convert'); } catch { pdf2img = null; }
+
+/* ── OCR helper: converte PDF-imagem em texto via Tesseract ──────────────── */
+async function ocrPdfBuffer(buffer) {
+  if (!Tesseract || !pdf2img) return '';
+  try {
+    const images = await pdf2img.convert(buffer, { width: 2000, height: 2800, page_numbers: [1] });
+    if (!images || !images.length) return '';
+    const imgBuf = Buffer.isBuffer(images[0]) ? images[0] : Buffer.from(images[0]);
+    const { data: { text } } = await Tesseract.recognize(imgBuf, 'por', {
+      logger: () => {},
+    });
+    return text || '';
+  } catch (e) {
+    console.warn('OCR falhou:', e.message);
+    return '';
+  }
+}
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -73,8 +98,88 @@ async function csActivate(eid){ await clicksign.patch(`/envelopes/${eid}`,{data:
 async function csNotify(eid,sid){ await clicksign.post(`/envelopes/${eid}/signers/${sid}/notifications`,{data:{type:'notifications',attributes:{}}}); }
 function normPhone(r){ if(!r)return null; let d=String(r).replace(/\D/g,''); if(!d)return null; if(!d.startsWith('55')&&(d.length===10||d.length===11))d='55'+d; return '+'+d; }
 
-/* ── SISED parser ─────────────────────────────────────────────────────────── */
-function parseSised(text){ const r={alunoNome:null,alunoCpf:null,responsavelNome:null,responsavelCpf:null,responsavelTelefone:null,maeNome:null,maeCpf:null,maeTelefone:null,paiNome:null,paiCpf:null,paiTelefone:null,emailDetectado:null,_fonte:'sised'}; const c=text.replace(/\r/g,'').replace(/[ \t]+/g,' '); const a=c.match(/Aluno:\s*([^\n-]+?)\s*-\s*CPF:\s*([\d.-]+)/i); if(a){r.alunoNome=a[1].trim();r.alunoCpf=a[2].trim();} const m=c.match(/Mãe:\s*([^\n-]+?)\s*-\s*CPF da Mãe:\s*([\d.-]+)(?:\s*-\s*Telefone celular:\s*(\([\d\s)-]+[\d-]+))?/i); if(m){r.maeNome=m[1].trim();r.maeCpf=m[2].trim();if(m[3])r.maeTelefone=m[3].trim();} const p=c.match(/Pai:\s*([^\n-]+?)\s*-\s*CPF do Pai:\s*([\d.-]+)(?:\s*-\s*Telefone celular:\s*(\([\d\s)-]+[\d-]+))?/i); if(p){r.paiNome=p[1].trim();r.paiCpf=p[2].trim();if(p[3])r.paiTelefone=p[3].trim();} const rp=c.match(/Responsável Financeiro:\s*([^\n-]+?)\s*-\s*RG:\s*([^-\n]+?)\s*-\s*CPF:\s*([\d.-]+)(?:\s*-\s*Endereço residencial:\s*([^]*?))?(?:\s*-\s*Telefone celular:\s*(\([\d\s)-]+[\d-]+))/i); if(rp){r.responsavelNome=rp[1].trim();r.responsavelCpf=rp[3].trim();if(rp[5])r.responsavelTelefone=rp[5].trim();} if(!r.responsavelNome){if(r.maeNome){r.responsavelNome=r.maeNome;r.responsavelCpf=r.maeCpf;r.responsavelTelefone=r.maeTelefone;}else if(r.paiNome){r.responsavelNome=r.paiNome;r.responsavelCpf=r.paiCpf;r.responsavelTelefone=r.paiTelefone;}} const em=c.match(/[\w.+-]+@[\w-]+\.[\w.-]+/); if(em)r.emailDetectado=em[0]; const pr=[r.alunoNome,r.responsavelNome,r.responsavelCpf,r.responsavelTelefone]; r._confianca=pr.filter(Boolean).length/pr.length; return r; }
+/* ── SISED parser (suporta formato Material + Contrato) ──────────────────── */
+function parseSised(text){
+  const r={alunoNome:null,alunoCpf:null,responsavelNome:null,responsavelCpf:null,
+    responsavelTelefone:null,responsavelRg:null,maeNome:null,maeCpf:null,maeTelefone:null,
+    paiNome:null,paiCpf:null,paiTelefone:null,enderecoResponsavel:null,
+    emailDetectado:null,_fonte:'sised',_confianca:0};
+  const c=text.replace(/\r/g,'').replace(/[ \t]+/g,' ');
+
+  /* ─ Formato Material: "Aluno(a): NAME - Data de nascimento: ... - CPF: XXX" ─ */
+  const aMat=c.match(/Aluno\(?a?\)?:\s*([^\n]+?)\s*[-–]\s*(?:Data de nascimento|CPF)/i);
+  if(aMat) r.alunoNome=aMat[1].trim();
+  /* ─ Formato Contrato: "ALUNO: NAME, Residente..." ou "ALUNO: NAME, residente..." ─ */
+  if(!r.alunoNome){
+    const aCon=c.match(/ALUNO:\s*([A-ZÀ-Ú\s]+?)(?:,\s*[Rr]esidente)/);
+    if(aCon) r.alunoNome=aCon[1].trim();
+  }
+
+  /* ─ CPF do aluno ─ */
+  const acpf=c.match(/(?:ALUNO|Aluno)[^]*?CPF[:\s]*n?[ºo]?\s*([\d]{3}[.\s]?[\d]{3}[.\s]?[\d]{3}[-.\s]?[\d]{2})/i);
+  if(acpf) r.alunoCpf=acpf[1].trim();
+
+  /* ─ Mãe (formato Material) ─ */
+  const m=c.match(/M[ãa]e:\s*([^\n-]+?)\s*[-–]\s*CPF da M[ãa]e:\s*([\d.-]+)/i);
+  if(m){ r.maeNome=m[1].trim(); r.maeCpf=m[2].trim();
+    const mt=c.match(/M[ãa]e:[^]*?Telefone[^:]*:\s*\(?(\d[\d\s().-]+\d)/i);
+    if(mt) r.maeTelefone=mt[1].trim();
+  }
+
+  /* ─ Pai (formato Material) ─ */
+  const p=c.match(/Pai:\s*([^\n-]+?)\s*[-–]\s*CPF do Pai:\s*([\d.-]+)/i);
+  if(p){ r.paiNome=p[1].trim(); r.paiCpf=p[2].trim();
+    const pt=c.match(/Pai:[^]*?Telefone[^:]*:\s*\(?(\d[\d\s().-]+\d)/i);
+    if(pt) r.paiTelefone=pt[1].trim();
+  }
+
+  /* ─ Responsável Financeiro (formato Material: "Responsável Financeiro: NAME - RG: ...") ─ */
+  const rf=c.match(/Respons[áa]vel Financeiro:\s*([^\n-]+?)\s*[-–]\s*RG:\s*([^-\n]+?)\s*[-–]\s*CPF:\s*([\d.-]+)/i);
+  if(rf){ r.responsavelNome=rf[1].trim(); r.responsavelRg=rf[2].trim(); r.responsavelCpf=rf[3].trim();
+    const rft=c.match(/Respons[áa]vel Financeiro:[^]*?Telefone[^:]*:\s*\(?(\d[\d\s().-]+\d)/i);
+    if(rft) r.responsavelTelefone=rft[1].trim();
+    const rfe=c.match(/Respons[áa]vel Financeiro:[^]*?E-?mail:\s*([\w.+-]+@[\w-]+\.[\w.-]+)/i);
+    if(rfe) r.emailDetectado=rfe[1].trim();
+  }
+
+  /* ─ 1º CONTRATANTE (formato Contrato): "1º CONTRATANTE: NAME, residente..." ─ */
+  if(!r.responsavelNome){
+    const ct=c.match(/1[°ºo]\s*CONTRATANTE:\s*([A-ZÀ-Ú\s]+?)(?:,\s*[Rr]esidente)/);
+    if(ct) r.responsavelNome=ct[1].trim();
+    /* CPF do 1º contratante */
+    const ctcpf=c.match(/1[°ºo]\s*CONTRATANTE:[^]*?CPF[:\s]*n?[ºo]?\s*([\d]{3}[.\s]?[\d]{3}[.\s]?[\d]{3}[-.\s]?[\d]{2})/i);
+    if(ctcpf) r.responsavelCpf=ctcpf[1].trim();
+    /* Telefone do 1º contratante */
+    const ctt=c.match(/1[°ºo]\s*CONTRATANTE:[^]*?Telefone[s]?[:\s]*\(?(\d[\d\s().\/-]+\d)/i);
+    if(ctt) r.responsavelTelefone=ctt[1].trim();
+    /* Email do 1º contratante */
+    const cte=c.match(/1[°ºo]\s*CONTRATANTE:[^]*?e-?mail:\s*([\w.+-]+@[\w-]+\.[\w.-]+)/i);
+    if(cte) r.emailDetectado=cte[1].trim();
+  }
+
+  /* ─ Fallback responsável: mãe ou pai ─ */
+  if(!r.responsavelNome){
+    if(r.maeNome){ r.responsavelNome=r.maeNome; r.responsavelCpf=r.maeCpf; r.responsavelTelefone=r.maeTelefone; }
+    else if(r.paiNome){ r.responsavelNome=r.paiNome; r.responsavelCpf=r.paiCpf; r.responsavelTelefone=r.paiTelefone; }
+  }
+
+  /* ─ Email genérico (fallback se nenhum campo específico achou) ─ */
+  if(!r.emailDetectado){
+    const em=c.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+    if(em) r.emailDetectado=em[0];
+  }
+
+  /* ─ Limpeza final ─ */
+  if(r.emailDetectado) r.emailDetectado=r.emailDetectado.replace(/[.,;:]+$/,'');
+  ['responsavelTelefone','maeTelefone','paiTelefone'].forEach(k=>{
+    if(r[k]) r[k]=r[k].replace(/^\(?/,'(').replace(/\)\s*/,') ');
+  });
+
+  /* ─ Confiança ─ */
+  const fields=[r.alunoNome,r.responsavelNome,r.responsavelCpf,r.emailDetectado];
+  r._confianca=fields.filter(Boolean).length/fields.length;
+  return r;
+}
 
 /* ── Routes: Contratos / Clicksign ────────────────────────────────────────── */
 app.get('/api/units',(_,res)=>res.json({units:UNITS,default:DEFAULT_UNIT_ID}));
@@ -100,8 +205,32 @@ app.post('/api/send-contract', upload.array('contracts',10), async(req,res)=>{
 });
 
 app.post('/api/parse-sised', upload.single('contract'), async(req,res)=>{
-  if(!req.file)return res.status(400).json({error:'Nenhum PDF.'}); if(!pdfParse)return res.status(503).json({error:'pdf-parse indisponível'});
-  try{const p=await pdfParse(req.file.buffer); const d=parseSised(p.text||''); if(d._confianca<0.5)return res.json({ok:false,dados:d,sugestao:'Não parece SISED.'}); res.json({ok:true,dados:d});}catch(e){res.status(500).json({error:e.message});}
+  if(!req.file) return res.status(400).json({error:'Nenhum PDF.'});
+  try {
+    let text = '';
+    /* Tenta pdf-parse primeiro (PDFs com texto nativo) */
+    if (pdfParse) {
+      const p = await pdfParse(req.file.buffer);
+      text = (p.text || '').trim();
+    }
+    /* Se texto vazio ou muito curto → tenta OCR (PDFs escaneados/imagem) */
+    if (text.length < 50) {
+      console.log('pdf-parse retornou texto curto (' + text.length + ' chars), tentando OCR...');
+      const ocrText = await ocrPdfBuffer(req.file.buffer);
+      if (ocrText.trim().length > text.length) text = ocrText;
+    }
+    if (text.length < 10) {
+      return res.json({ ok: false, motivo: 'sem_texto',
+        dados: parseSised(''),
+        sugestao: 'PDF sem texto extraível e OCR indisponível. Preencha manualmente.' });
+    }
+    const d = parseSised(text);
+    if (d._confianca < 0.3) {
+      return res.json({ ok: false, motivo: 'pdf_nao_reconhecido', dados: d,
+        sugestao: 'PDF não parece ser do SISED, ou template mudou. Preenchimento manual.' });
+    }
+    res.json({ ok: true, dados: d });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/envelopes', async(_,res)=>{
