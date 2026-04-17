@@ -1053,6 +1053,11 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 .cs-form-submit:hover{background:#1d4ed8}
 .cs-form-submit:disabled{background:#93b4e0;cursor:not-allowed}
 .cs-form-foot{font-size:10px;color:var(--muted);text-align:center;margin:0;font-style:italic}
+.cs-suggest-box{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:50;max-height:200px;overflow-y:auto;margin-top:2px}
+.cs-suggest-item{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;transition:background .15s}
+.cs-suggest-item:hover{background:var(--hover)}
+.cs-suggest-name{font-weight:500;font-size:13px;color:var(--text)}
+.cs-suggest-email{font-size:11px;color:var(--muted);white-space:nowrap}
 .cs-error-banner{
   position:fixed;bottom:14px;right:14px;background:#fef2f2;border:1px solid #fecaca;
   color:var(--err);padding:9px 14px;border-radius:var(--r-sm);font-size:12px;
@@ -1653,6 +1658,58 @@ const csState = {
   parsing: false,
   pollInterval: null,
 };
+
+// ─── TIPOS DE DOCUMENTO (contrato) ───────────────────────────────────
+const CS_DOC_TYPES = [
+  { value:'mensalidade',       label:'Contrato de Mensalidade' },
+  { value:'material_didatico', label:'Material Didático' },
+  { value:'transporte',        label:'Transporte Escolar' },
+  { value:'alimentacao',       label:'Alimentação' },
+  { value:'outros',            label:'Outros' },
+];
+
+// ─── MEMÓRIA DE RESPONSÁVEIS (localStorage) ──────────────────────────
+const CS_MEMORY_KEY = 'ped_contract_contacts';
+function csLoadContacts(){ try{ return JSON.parse(localStorage.getItem(CS_MEMORY_KEY)||'[]'); }catch{ return []; } }
+function csSaveContact(name,email){
+  const contacts=csLoadContacts();
+  const key=name.trim().toLowerCase();
+  const idx=contacts.findIndex(c=>c.name.toLowerCase()===key);
+  if(idx>=0){ contacts[idx].email=email.trim(); contacts[idx].usedAt=Date.now(); }
+  else contacts.push({name:name.trim(),email:email.trim(),usedAt:Date.now()});
+  contacts.sort((a,b)=>b.usedAt-a.usedAt);
+  if(contacts.length>100) contacts.length=100;
+  localStorage.setItem(CS_MEMORY_KEY,JSON.stringify(contacts));
+}
+function csSearchContacts(query){
+  if(!query||query.length<2) return [];
+  const q=query.toLowerCase();
+  return csLoadContacts().filter(c=>c.name.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)).slice(0,5);
+}
+function csHandleNameInput(val){
+  const box=document.getElementById('csSuggestBox');
+  if(!box) return;
+  const results=csSearchContacts(val);
+  if(results.length===0){ box.style.display='none'; return; }
+  box.innerHTML=results.map((c,i)=>
+    '<div class="cs-suggest-item" onmousedown="csPickContact('+i+',event)">'+
+    '<span class="cs-suggest-name">'+esc(c.name)+'</span>'+
+    '<span class="cs-suggest-email">'+esc(c.email)+'</span></div>'
+  ).join('');
+  box.style.display='block';
+  box._contacts=results;
+}
+function csPickContact(idx,ev){
+  ev.preventDefault();
+  const box=document.getElementById('csSuggestBox');
+  if(!box||!box._contacts) return;
+  const c=box._contacts[idx];
+  const nameEl=document.getElementById('csName');
+  const emailEl=document.getElementById('csEmail');
+  if(nameEl) nameEl.value=c.name;
+  if(emailEl) emailEl.value=c.email;
+  box.style.display='none';
+}
 
 // ─── STATE ────────────────────────────────────────────────────────────
 let currentUser = null;
@@ -5299,11 +5356,14 @@ async function csSendContract(e){
   fd.append('email',emailEl.value.trim().toLowerCase());
   fd.append('auth_method','email');
   fd.append('unit_id',unitEl.value);
+  const docTypeEl=document.getElementById('csDocType');
+  if(docTypeEl) fd.append('doc_type',docTypeEl.value);
 
   try{
     const r=await fetch(CLICKSIGN_API_BASE+'/api/send-contract',{method:'POST',body:fd});
     const data=await r.json();
     if(!r.ok) throw new Error(data.error||'Erro ao enviar');
+    csSaveContact(nameEl.value.trim(), emailEl.value.trim());
     csState.formFiles=[];csState.autoFill=null;csState.formStatus='sent';
     showToast('Contrato enviado por e-mail!');
     addNotif('Contrato enviado','Enviado para '+nameEl.value.trim()+' ('+emailEl.value.trim()+')','create');
@@ -5378,6 +5438,12 @@ function buildKanbanClicksign(){
       ${senderHint}
     </div>
     <div class="cs-form-field">
+      <label class="cs-form-label">Tipo de Documento</label>
+      <select class="cs-form-input" id="csDocType"${isLoading?' disabled':''}>
+        ${CS_DOC_TYPES.map(d=>'<option value="'+d.value+'">'+esc(d.label)+'</option>').join('')}
+      </select>
+    </div>
+    <div class="cs-form-field">
       <label class="cs-form-label">Contratos (PDF)</label>
       <div class="cs-mini-drop" onclick="document.getElementById('csFileInput').click()">
         <input type="file" id="csFileInput" accept=".pdf,application/pdf" multiple style="display:none" onchange="csAddFiles(this.files)">
@@ -5386,9 +5452,12 @@ function buildKanbanClicksign(){
       </div>
       ${parsingHtml}${autoFillHtml}
     </div>
-    <div class="cs-form-field">
+    <div class="cs-form-field" style="position:relative">
       <label class="cs-form-label">Nome completo</label>
-      <input class="cs-form-input" type="text" id="csName" placeholder="Ex.: Joao Pereira"${isLoading?' disabled':''}>
+      <input class="cs-form-input" type="text" id="csName" placeholder="Ex.: Joao Pereira" autocomplete="off"
+        oninput="csHandleNameInput(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('csSuggestBox');if(b)b.style.display='none'},150)"
+        ${isLoading?' disabled':''}>
+      <div id="csSuggestBox" class="cs-suggest-box" style="display:none"></div>
     </div>
     <div class="cs-form-field">
       <label class="cs-form-label">E-mail</label>
