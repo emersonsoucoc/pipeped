@@ -1627,13 +1627,9 @@ const MODULES = {
 };
 
 // ─── CLICKSIGN CONFIG ────────────────────────────────────────────
-const CLICKSIGN_API_BASE = ''; // URL do backend Clicksign (Railway) — ex: https://sised-x-clicksign-production.up.railway.app
+const CLICKSIGN_API_BASE = 'https://sised-x-clicksign-production.up.railway.app';
 const CS_AUTH_OPTIONS = [
-  { value:'email',         label:'Token por E-mail',              requiresPhone:false },
-  { value:'sms',           label:'Token por SMS',                 requiresPhone:true  },
-  { value:'whatsapp',      label:'Token por WhatsApp',            requiresPhone:true  },
-  { value:'whatsapp_full', label:'Assinatura completa via WhatsApp', requiresPhone:true  },
-  { value:'selfie',        label:'Biometria Facial',              requiresPhone:false },
+  { value:'email', label:'Envio por E-mail', requiresPhone:false },
 ];
 const CS_UNIT_COLORS = {
   coclauro:    { bg:'#e0e7ff', color:'#3730a3' },
@@ -5259,10 +5255,9 @@ async function csParseSised(file){
     if(!data.ok||!data.dados){ csState.autoFill={erro:data.sugestao||'Template nao reconhecido como SISED.'}; return; }
     const d=data.dados;
     csState.autoFill={alunoNome:d.alunoNome,responsavelNome:d.responsavelNome,emailFaltando:!d.emailDetectado,confianca:d._confianca};
-    const nI=document.getElementById('csName'), eI=document.getElementById('csEmail'), pI=document.getElementById('csPhone');
+    const nI=document.getElementById('csName'), eI=document.getElementById('csEmail');
     if(nI&&!nI.value&&d.responsavelNome) nI.value=d.responsavelNome;
     if(eI&&!eI.value&&d.emailDetectado) eI.value=d.emailDetectado;
-    if(pI&&!pI.value&&d.responsavelTelefone) pI.value=d.responsavelTelefone;
   }catch(e){
     csState.autoFill={erro:'Erro ao ler PDF: '+e.message};
   }finally{
@@ -5292,30 +5287,26 @@ async function csSendContract(e){
   e.preventDefault();
   csState.formError='';
   const nameEl=document.getElementById('csName'), emailEl=document.getElementById('csEmail'),
-        phoneEl=document.getElementById('csPhone'), authEl=document.getElementById('csAuth'),
         unitEl=document.getElementById('csUnit');
   if(!csState.formFiles.length){ csState.formError='Selecione ao menos um PDF.'; renderPage(); return; }
-  if(!nameEl.value.trim()){ csState.formError='Nome completo.'; renderPage(); return; }
-  if(!emailEl.value.trim()){ csState.formError='E-mail.'; renderPage(); return; }
-  const method=CS_AUTH_OPTIONS.find(m=>m.value===authEl.value);
-  if(method&&method.requiresPhone&&!(phoneEl&&phoneEl.value.trim())){ csState.formError='Telefone obrigatorio.'; renderPage(); return; }
+  if(!nameEl.value.trim()){ csState.formError='Nome completo obrigatório.'; renderPage(); return; }
+  if(!emailEl.value.trim()){ csState.formError='E-mail obrigatório.'; renderPage(); return; }
 
   csState.formStatus='loading'; renderPage();
   const fd=new FormData();
   csState.formFiles.forEach(f=>fd.append('contracts',f));
   fd.append('name',nameEl.value.trim());
   fd.append('email',emailEl.value.trim().toLowerCase());
-  fd.append('auth_method',authEl.value);
+  fd.append('auth_method','email');
   fd.append('unit_id',unitEl.value);
-  if(phoneEl&&phoneEl.value.trim()) fd.append('phone',phoneEl.value.trim());
 
   try{
     const r=await fetch(CLICKSIGN_API_BASE+'/api/send-contract',{method:'POST',body:fd});
     const data=await r.json();
     if(!r.ok) throw new Error(data.error||'Erro ao enviar');
     csState.formFiles=[];csState.autoFill=null;csState.formStatus='sent';
-    showToast('Contrato enviado para assinatura!');
-    addNotif('Contrato enviado','Enviado para '+nameEl.value.trim(),'create');
+    showToast('Contrato enviado por e-mail!');
+    addNotif('Contrato enviado','Enviado para '+nameEl.value.trim()+' ('+emailEl.value.trim()+')','create');
     setTimeout(()=>{ csState.formStatus='idle'; if(currentPage==='contratos') renderPage(); },2500);
     csLoadEnvelopes();
   }catch(err){
@@ -5355,7 +5346,6 @@ function buildKanbanClicksign(){
   }).join('');
 
   const currentUnit=csState.units.find(u=>u.id===(document.getElementById('csUnit')?.value||'coclauro'));
-  const authOpts=CS_AUTH_OPTIONS.map(m=>'<option value="'+m.value+'">'+esc(m.label)+'</option>').join('');
   const unitOpts=csState.units.map(u=>'<option value="'+esc(u.id)+'"'+(u.active===false?' disabled':'')+'>'+esc(u.name)+(u.active===false?' (em breve)':'')+'</option>').join('');
   const senderHint=currentUnit?.sender?'<span class="cs-form-hint">Remetente: <strong>'+esc(currentUnit.sender)+'</strong></span>':'';
 
@@ -5379,8 +5369,6 @@ function buildKanbanClicksign(){
   const formErrorHtml=csState.formError?'<div class="cs-form-error">'+esc(csState.formError)+'</div>':'';
   const isLoading=csState.formStatus==='loading';
   const sentBadge=csState.formStatus==='sent'?'<span class="cs-form-badge-sent">&#10004; Enviado!</span>':'';
-  const selectedAuth=document.getElementById('csAuth')?.value||'email';
-  const needsPhone=CS_AUTH_OPTIONS.find(m=>m.value===selectedAuth)?.requiresPhone;
 
   const formHtml=`<form class="cs-form" onsubmit="csSendContract(event)">
     <div class="cs-form-header"><span class="cs-form-badge">&#128221; Rascunho</span>${sentBadge}</div>
@@ -5406,14 +5394,10 @@ function buildKanbanClicksign(){
       <label class="cs-form-label">E-mail</label>
       <input class="cs-form-input" type="email" id="csEmail" placeholder="joao@gmail.com"${isLoading?' disabled':''}>
     </div>
-    <div class="cs-form-field">
-      <label class="cs-form-label">Como vai assinar?</label>
-      <select class="cs-form-input" id="csAuth" onchange="if(currentPage==='contratos')renderPage()"${isLoading?' disabled':''}>${authOpts}</select>
-    </div>
-    ${needsPhone?'<div class="cs-form-field"><label class="cs-form-label">Telefone com DDD *</label><input class="cs-form-input" type="tel" id="csPhone" placeholder="71 99999-8888"'+(isLoading?' disabled':'')+'></div>':''}
+    <input type="hidden" id="csAuth" value="email">
     ${formErrorHtml}
-    <button type="submit" class="cs-form-submit"${isLoading?' disabled':''}>${isLoading?'Enviando...':'Enviar para Assinatura &rarr;'}</button>
-    <p class="cs-form-foot">A escola assinara automaticamente apos o envio.</p>
+    <button type="submit" class="cs-form-submit"${isLoading?' disabled':''}>${isLoading?'Enviando...':'Enviar por E-mail &rarr;'}</button>
+    <p class="cs-form-foot">O contrato sera enviado como anexo para o e-mail do responsavel.</p>
   </form>`;
 
   function buildEnvCard(env,phase){
