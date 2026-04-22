@@ -6455,15 +6455,55 @@ function buildInscricoesEditor(){
     </div>
 
     <div class="insc-editor-section">
-      <label class="insc-editor-label" style="margin-bottom:12px;">Campos do Formulário</label>
-      <div class="insc-field-list" id="fieldsList"></div>
+      <label class="insc-editor-label" style="margin-bottom:12px;">Campos do Formulário (${(form.fields||[]).length})</label>
+      <div class="insc-field-list">
+        ${(form.fields||[]).map((f,i)=>`
+        <div class="insc-field-row">
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-weight:600;">Label</label>
+            <input type="text" value="${esc(f.label||'')}" onchange="inscState.currentForm.fields[${i}].label=this.value" placeholder="Nome do campo">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-weight:600;">Key</label>
+            <input type="text" value="${esc(f.fieldKey||'')}" onchange="inscState.currentForm.fields[${i}].fieldKey=this.value" placeholder="campo_key">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-weight:600;">Tipo</label>
+            <select onchange="inscState.currentForm.fields[${i}].type=this.value">
+              ${fieldTypes.map(t=>`<option value="${t}" ${f.type===t?'selected':''}>${t}</option>`).join('')}
+            </select>
+          </div>
+          <div style="flex:0;min-width:80px;text-align:center;">
+            <label style="font-size:11px;color:var(--muted);font-weight:600;">Obrig.</label>
+            <input type="checkbox" ${f.required?'checked':''} onchange="inscState.currentForm.fields[${i}].required=this.checked" style="width:auto;margin-top:8px;">
+          </div>
+          <div style="flex:0;">
+            <button class="btn-insc-sm red" onclick="removeField(${i})" style="margin-top:16px;">✕</button>
+          </div>
+        </div>`).join('')}
+      </div>
       <button class="btn-insc-sm pink" onclick="addField()" style="margin-top:12px;">+ Adicionar Campo</button>
     </div>
 
     ${slotMode==='PER_OPTION'?`
     <div class="insc-editor-section">
-      <label class="insc-editor-label" style="margin-bottom:12px;">Opções de Vagas</label>
-      <div class="insc-option-list" id="optionsList"></div>
+      <label class="insc-editor-label" style="margin-bottom:12px;">Opções de Vagas (${(form.slotOptions||[]).length})</label>
+      <div class="insc-option-list">
+        ${(form.slotOptions||[]).map((o,i)=>`
+        <div class="insc-option-row">
+          <div style="flex:2;">
+            <label style="font-size:11px;color:var(--muted);font-weight:600;">Nome da Opção</label>
+            <input type="text" value="${esc(o.label||'')}" onchange="inscState.currentForm.slotOptions[${i}].label=this.value" placeholder="Ex: Turma A">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:11px;color:var(--muted);font-weight:600;">Vagas</label>
+            <input type="number" value="${o.maxSlots||10}" onchange="inscState.currentForm.slotOptions[${i}].maxSlots=parseInt(this.value)||0" placeholder="10">
+          </div>
+          <div style="flex:0;">
+            <button class="btn-insc-sm red" onclick="removeOption(${i})" style="margin-top:16px;">✕</button>
+          </div>
+        </div>`).join('')}
+      </div>
       <button class="btn-insc-sm pink" onclick="addOption()" style="margin-top:12px;">+ Adicionar Opção</button>
     </div>
     `:''}
@@ -6701,6 +6741,7 @@ function backToInscList(){
 }
 
 function updateSlotMode(mode){
+  syncEditorToState();
   inscState.currentForm = inscState.currentForm||{};
   inscState.currentForm.slotMode = mode;
   renderPage();
@@ -6711,14 +6752,41 @@ function updateConfirmationUI(){
   document.getElementById('confirmationUI').style.display = checked?'block':'none';
 }
 
+function syncEditorToState(){
+  const form = inscState.currentForm;
+  if(!form) return;
+  const t = document.getElementById('formTitle');
+  if(t) form.title = t.value;
+  const d = document.getElementById('formDesc');
+  if(d) form.description = d.value;
+  const s = document.getElementById('formSlug');
+  if(s) form.slug = s.value;
+  const o = document.getElementById('formOpensAt');
+  if(o) form.opensAt = o.value||null;
+  const c = document.getElementById('formClosesAt');
+  if(c) form.closesAt = c.value||null;
+  const ms = document.getElementById('formMaxSlots');
+  if(ms) form.maxSlots = parseInt(ms.value)||null;
+  const ttl = document.getElementById('formReservationTtl');
+  if(ttl) form.reservationTtlMinutes = parseInt(ttl.value)||30;
+  const rc = document.getElementById('formRequiresConfirmation');
+  if(rc) form.requiresConfirmation = rc.checked;
+  const cs = document.getElementById('formConfirmSubject');
+  if(cs) form.confirmationSubject = cs.value;
+  const cb = document.getElementById('formConfirmBody');
+  if(cb) form.confirmationBody = cb.value;
+}
+
 function addField(){
+  syncEditorToState();
   inscState.currentForm = inscState.currentForm||{};
   inscState.currentForm.fields = inscState.currentForm.fields||[];
-  inscState.currentForm.fields.push({label:'',fieldKey:'',type:'TEXT',required:false});
+  inscState.currentForm.fields.push({label:'',fieldKey:'',type:'TEXT',required:false,position:inscState.currentForm.fields.length});
   renderPage();
 }
 
 function addOption(){
+  syncEditorToState();
   inscState.currentForm = inscState.currentForm||{};
   inscState.currentForm.slotOptions = inscState.currentForm.slotOptions||[];
   inscState.currentForm.slotOptions.push({label:'',maxSlots:10});
@@ -6726,11 +6794,13 @@ function addOption(){
 }
 
 function removeField(idx){
+  syncEditorToState();
   inscState.currentForm.fields.splice(idx,1);
   renderPage();
 }
 
 function removeOption(idx){
+  syncEditorToState();
   inscState.currentForm.slotOptions.splice(idx,1);
   renderPage();
 }
