@@ -349,6 +349,28 @@ app.patch('/api/form-queue/:id', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// GET — lookup by protocol (public)
+app.get('/api/form-queue/protocolo/:proto', (req, res) => {
+  try {
+    const queue = loadQueue();
+    const item = queue.find(q => q.protocolo === req.params.proto);
+    if (!item) return res.status(404).json({ error: 'Protocolo não encontrado' });
+    // Return safe subset (no internal IDs)
+    res.json({
+      protocolo: item.protocolo,
+      modulo: item.modulo,
+      titulo: item.titulo,
+      categoria: item.categoria,
+      escola: item.escola,
+      status: item.status,
+      criadoEm: item.criadoEmFull || item.criadoEm,
+      solicitante: item.solicitante?.nome || '',
+      aprovadoEm: item.aprovadoEm || null,
+      rejeitadoEm: item.rejeitadoEm || null,
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 /* ── Static frontend ──────────────────────────────────────────────────────── */
 app.use(express.static(path.join(__dirname)));
 // Inscrição pública — /inscricao/:slug serve inscricao.html

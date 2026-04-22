@@ -201,6 +201,32 @@ a{color:var(--accent);text-decoration:none}
 .powered{text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,.3)}
 .powered a{color:rgba(255,255,255,.5)}
 
+/* Consulta protocolo */
+.lookup-link{text-align:center;margin-top:16px}
+.lookup-link a{color:rgba(255,255,255,.5);font-size:12px;text-decoration:none;transition:all var(--t)}
+.lookup-link a:hover{color:#fff}
+.lookup-panel{background:var(--white);border-radius:16px;padding:28px 32px;box-shadow:var(--sh-lg);margin-top:16px;display:none}
+.lookup-panel.show{display:block}
+.lookup-row{display:flex;gap:8px}
+.lookup-row input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;outline:none;transition:border var(--t)}
+.lookup-row input:focus{border-color:var(--accent)}
+.lookup-row button{padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;transition:background var(--t)}
+.lookup-row button:hover{background:var(--accent-h)}
+.lookup-result{margin-top:20px;display:none}
+.lookup-result.show{display:block}
+.lookup-result .lr-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.lookup-result .lr-proto{font-size:14px;font-weight:700;color:var(--accent);background:var(--accent-l);padding:4px 12px;border-radius:6px}
+.lookup-result .lr-status{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.lr-status.pendente{background:#FEF3C7;color:#92400E}
+.lr-status.aprovado{background:#D1FAE5;color:#065F46}
+.lr-status.rejeitado{background:#FEE2E2;color:#991B1B}
+.lookup-result .lr-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lookup-result .lr-item{font-size:13px}
+.lookup-result .lr-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);margin-bottom:2px}
+.lookup-result .lr-value{color:var(--text);font-weight:500}
+.lookup-error{margin-top:16px;text-align:center;color:var(--err);font-size:13px;display:none}
+.lookup-error.show{display:block}
+
 /* ─── RESPONSIVE ─────────────────────────────────────────────────── */
 @media(max-width:640px){
   body{padding:16px 12px 40px}
@@ -381,7 +407,33 @@ a{color:var(--accent);text-decoration:none}
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         Enviar outra solicitação
       </button>
+      <div style="margin-top:12px">
+        <a href="#" onclick="copyAndLookup(event)" style="color:var(--accent);font-size:12px;text-decoration:none">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" style="vertical-align:-1px"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Consultar este protocolo
+        </a>
+      </div>
     </div>
+  </div>
+
+  <!-- LOOKUP LINK -->
+  <div class="lookup-link">
+    <a href="#" onclick="toggleLookup(event)">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" style="vertical-align:-2px"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Consultar protocolo
+    </a>
+  </div>
+
+  <!-- LOOKUP PANEL -->
+  <div class="lookup-panel" id="lookupPanel">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text)">Consultar Solicitação</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Digite o número do protocolo para acompanhar o status</p>
+    <div class="lookup-row">
+      <input id="lookupInput" placeholder="Ex: PED-20260422-76YF" onkeydown="if(event.key==='Enter') lookupProtocol()">
+      <button onclick="lookupProtocol()">Buscar</button>
+    </div>
+    <div class="lookup-error" id="lookupError"></div>
+    <div class="lookup-result" id="lookupResult"></div>
   </div>
 
   <div class="powered">Powered by <a href="#">PIPEPED</a> — Grupo PED</div>
@@ -615,6 +667,70 @@ function resetForm(){
   document.getElementById('successScreen').classList.remove('show');
   // Manter dados pessoais preenchidos (nome, email, setor, escola)
   restoreUserData();
+}
+
+/* ─── CONSULTA DE PROTOCOLO ──────────────────────────────────────────── */
+function toggleLookup(e){
+  e.preventDefault();
+  const p = document.getElementById('lookupPanel');
+  p.classList.toggle('show');
+  if(p.classList.contains('show')) document.getElementById('lookupInput').focus();
+}
+
+function copyAndLookup(e){
+  e.preventDefault();
+  const proto = document.getElementById('protocol').textContent.trim();
+  document.getElementById('lookupInput').value = proto;
+  document.getElementById('lookupPanel').classList.add('show');
+  lookupProtocol();
+  document.getElementById('lookupPanel').scrollIntoView({behavior:'smooth'});
+}
+
+async function lookupProtocol(){
+  const proto = document.getElementById('lookupInput').value.trim().toUpperCase();
+  const errEl = document.getElementById('lookupError');
+  const resEl = document.getElementById('lookupResult');
+  errEl.classList.remove('show');
+  resEl.classList.remove('show');
+
+  if(!proto){ errEl.textContent='Digite o número do protocolo'; errEl.classList.add('show'); return; }
+
+  try {
+    const r = await fetch(API_BASE + '/api/form-queue/protocolo/' + encodeURIComponent(proto));
+    if(!r.ok){
+      if(r.status===404){ errEl.textContent='Protocolo não encontrado. Verifique o número e tente novamente.'; }
+      else { errEl.textContent='Erro ao consultar. Tente novamente.'; }
+      errEl.classList.add('show');
+      return;
+    }
+    const d = await r.json();
+    const statusLabels = { pendente:'Aguardando Análise', aprovado:'Aprovado', rejeitado:'Rejeitado' };
+    const statusClass = d.status || 'pendente';
+    const modLabel = MODULES[d.modulo]?.label || d.modulo;
+    // Find school name
+    const schoolObj = SCHOOLS.find(s=>s.id===d.escola);
+    const schoolName = schoolObj ? schoolObj.name : (d.escola||'—');
+
+    resEl.innerHTML = `
+      <div class="lr-header">
+        <span class="lr-proto">${esc(d.protocolo)}</span>
+        <span class="lr-status ${statusClass}">${statusLabels[statusClass]||statusClass}</span>
+      </div>
+      <div class="lr-grid">
+        <div class="lr-item"><div class="lr-label">Módulo</div><div class="lr-value">${esc(modLabel)}</div></div>
+        <div class="lr-item"><div class="lr-label">Categoria</div><div class="lr-value">${esc(d.categoria||'—')}</div></div>
+        <div class="lr-item"><div class="lr-label">Escola</div><div class="lr-value">${esc(schoolName)}</div></div>
+        <div class="lr-item"><div class="lr-label">Solicitante</div><div class="lr-value">${esc(d.solicitante||'—')}</div></div>
+        <div class="lr-item"><div class="lr-label">Título</div><div class="lr-value">${esc(d.titulo||'—')}</div></div>
+        <div class="lr-item"><div class="lr-label">Enviado em</div><div class="lr-value">${esc(d.criadoEm||'—')}</div></div>
+        ${d.aprovadoEm?`<div class="lr-item"><div class="lr-label">Aprovado em</div><div class="lr-value">${esc(d.aprovadoEm)}</div></div>`:''}
+        ${d.rejeitadoEm?`<div class="lr-item"><div class="lr-label">Rejeitado em</div><div class="lr-value">${esc(d.rejeitadoEm)}</div></div>`:''}
+      </div>`;
+    resEl.classList.add('show');
+  } catch(e){
+    errEl.textContent='Erro de conexão. Tente novamente.';
+    errEl.classList.add('show');
+  }
 }
 
 /* ─── RESTAURAR DADOS DO SOLICITANTE ─────────────────────────────────── */
