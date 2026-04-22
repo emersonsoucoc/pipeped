@@ -1288,23 +1288,37 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
           <textarea id="mDesc" placeholder="Descreva detalhes, contexto ou requisitos…"></textarea>
         </div>
 
-        <!-- Financial fields (compras) -->
+        <!-- Financial fields (compras/financeiro) -->
         <div id="financialFields" class="hidden">
           <div class="divider"></div>
-          <div class="section-title">Informações Financeiras</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-            <div class="field-group" style="margin:0">
-              <div class="field-label">Valor (R$)</div>
-              <input type="text" id="mValor" placeholder="0,00">
+          <div class="section-title" id="financialSectionTitle">Informações Financeiras</div>
+          <!-- Campos padrão financeiro (Compras) -->
+          <div id="financialStandard">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+              <div class="field-group" style="margin:0">
+                <div class="field-label">Valor (R$)</div>
+                <input type="text" id="mValor" placeholder="0,00">
+              </div>
+              <div class="field-group" style="margin:0">
+                <div class="field-label">Vencimento</div>
+                <input type="date" id="mVencimento">
+              </div>
             </div>
-            <div class="field-group" style="margin:0">
-              <div class="field-label">Vencimento</div>
-              <input type="date" id="mVencimento">
+            <div class="field-group">
+              <div class="field-label" id="lblFornecedor">Fornecedor</div>
+              <input type="text" id="mFornecedor" placeholder="Nome do fornecedor…">
             </div>
           </div>
-          <div class="field-group">
-            <div class="field-label">Fornecedor</div>
-            <input type="text" id="mFornecedor" placeholder="Nome do fornecedor…">
+          <!-- Campos específicos do módulo Financeiro -->
+          <div id="financialExtra" class="hidden">
+            <div class="field-group">
+              <div class="field-label">Nome do Aluno <span style="color:var(--err)">*</span></div>
+              <input type="text" id="mNomeAluno" placeholder="Conforme SISED">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Detalhamento <span style="color:var(--err)">*</span></div>
+              <textarea id="mDetalhamento" placeholder="Descreva a solicitação em detalhes…" rows="4" style="min-height:80px;font-size:13px"></textarea>
+            </div>
           </div>
         </div>
 
@@ -1877,6 +1891,8 @@ function apiToCard(t){
     valor: t.amount || '',
     fornecedor: t.supplier || '',
     vencimento: t.paymentDue ? t.paymentDue.split('T')[0] : '',
+    nomeAluno: t.module?.slug === 'financeiro' ? (t.supplier || '') : '',
+    detalhamento: t.module?.slug === 'financeiro' ? (t.documentNumber || '') : '',
     comentarios: (t.comments||[]).map(c=>({
       id: c.id,
       texto: c.content,
@@ -2823,7 +2839,8 @@ function buildCard(c){
     onclick="openCard('${c.id}')" style="${_canEdit?'':'cursor:default'}">
     ${sName?`<div class="card-school">${esc(sName)}</div>`:''}
     <div class="card-title">${esc(c.titulo||'Sem título')}</div>
-    ${c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
+    ${c.nomeAluno?`<div class="card-desc" style="font-size:11px;color:var(--muted)">Aluno: ${esc(c.nomeAluno)}</div>`:''}
+    ${!c.nomeAluno&&c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
     ${c.categoria?`<div class="card-tags"><span class="tag cat">${esc(c.categoria)}</span></div>`:''}
     <div class="card-meta-row">
       ${u?`<div class="avatar sm" style="background:${u.color}" title="${esc(u.name)}">${u.initials}</div>`:''}
@@ -2932,7 +2949,7 @@ function openCard(id, defaultMod, defaultFase){
 
 // Torna o modal somente-leitura ou editável
 function setModalReadOnly(readOnly){
-  const fields = ['mTitle','mDesc','mValor','mFornecedor','mVencimento','mEscola','mPrazo','mModulo','mFase','mResponsavel','mCategoria'];
+  const fields = ['mTitle','mDesc','mValor','mFornecedor','mVencimento','mEscola','mPrazo','mModulo','mFase','mResponsavel','mCategoria','mNomeAluno','mDetalhamento'];
   fields.forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.disabled = readOnly;
@@ -2965,7 +2982,12 @@ function clearModal(mod, fase){
   populateCategoriaSelect(mod);
   populateEscolaSelect();
   selPrioVal('media');
-  toggleFinancial(m.hasFinancial);
+  // Clear financeiro-specific fields
+  const nomeAlunoEl = document.getElementById('mNomeAluno');
+  const detalhamentoEl = document.getElementById('mDetalhamento');
+  if(nomeAlunoEl) nomeAlunoEl.value = '';
+  if(detalhamentoEl) detalhamentoEl.value = '';
+  toggleFinancial(m.hasFinancial, mod);
 }
 
 function fillModalWith(c){
@@ -2987,7 +3009,12 @@ function fillModalWith(c){
   document.getElementById('mCategoria').value = c.categoria||'';
   document.getElementById('mResponsavel').value = c.responsavel||'';
   selPrioVal(c.prioridade||'media');
-  toggleFinancial(MODULES[c.modulo]?.hasFinancial);
+  // Fill financeiro-specific fields
+  const nomeAlunoEl = document.getElementById('mNomeAluno');
+  const detalhamentoEl = document.getElementById('mDetalhamento');
+  if(nomeAlunoEl) nomeAlunoEl.value = c.nomeAluno || '';
+  if(detalhamentoEl) detalhamentoEl.value = c.detalhamento || '';
+  toggleFinancial(MODULES[c.modulo]?.hasFinancial, c.modulo);
   renderComments(c);
   renderHistory(c);
   renderAttachments(c);
@@ -3023,10 +3050,17 @@ function onModuloChange(){
   const mod = document.getElementById('mModulo').value;
   populateFaseSelect(mod);
   populateCategoriaSelect(mod);
-  toggleFinancial(MODULES[mod]?.hasFinancial);
+  toggleFinancial(MODULES[mod]?.hasFinancial, mod);
 }
-function toggleFinancial(show){
+function toggleFinancial(show, mod){
   document.getElementById('financialFields').classList.toggle('hidden',!show);
+  const isFinanceiro = mod === 'financeiro';
+  document.getElementById('financialStandard').classList.toggle('hidden', isFinanceiro);
+  document.getElementById('financialExtra').classList.toggle('hidden', !isFinanceiro);
+  document.getElementById('financialSectionTitle').textContent = isFinanceiro ? 'Dados da Solicitação' : 'Informações Financeiras';
+  // Adjust description label for financeiro
+  const descLabel = document.querySelector('#mDesc')?.previousElementSibling;
+  if(descLabel) descLabel.textContent = isFinanceiro ? 'Observações (opcional)' : 'Descrição';
 }
 
 function selPrio(el){
@@ -3333,10 +3367,20 @@ async function saveCard(){
         categoryId: apiCat?.id || undefined,
       };
       if(M?.hasFinancial){
-        const val = parseFloat(document.getElementById('mValor').value);
-        if(!isNaN(val)) body.amount = val;
-        body.supplier = document.getElementById('mFornecedor').value || undefined;
-        body.paymentDue = document.getElementById('mVencimento').value || undefined;
+        if(modulo === 'financeiro'){
+          // Financeiro module: Nome do Aluno + Detalhamento
+          const nomeAluno = document.getElementById('mNomeAluno').value.trim();
+          const detalhamento = document.getElementById('mDetalhamento').value.trim();
+          if(!nomeAluno){ showToast('Informe o Nome do Aluno','error'); return; }
+          if(!detalhamento){ showToast('Informe o Detalhamento','error'); return; }
+          body.supplier = nomeAluno;
+          body.documentNumber = detalhamento;
+        } else {
+          const val = parseFloat(document.getElementById('mValor').value);
+          if(!isNaN(val)) body.amount = val;
+          body.supplier = document.getElementById('mFornecedor').value || undefined;
+          body.paymentDue = document.getElementById('mVencimento').value || undefined;
+        }
       }
       // Remove undefined values
       Object.keys(body).forEach(k => body[k] === undefined && delete body[k]);
@@ -3365,10 +3409,19 @@ async function saveCard(){
         categoryId: apiCat?.id || null,
       };
       if(M?.hasFinancial){
-        const val = parseFloat(document.getElementById('mValor').value);
-        body.amount = isNaN(val) ? null : val;
-        body.supplier = document.getElementById('mFornecedor').value || null;
-        body.paymentDue = document.getElementById('mVencimento').value || null;
+        if(modulo === 'financeiro'){
+          const nomeAluno = document.getElementById('mNomeAluno').value.trim();
+          const detalhamento = document.getElementById('mDetalhamento').value.trim();
+          if(!nomeAluno){ showToast('Informe o Nome do Aluno','error'); return; }
+          if(!detalhamento){ showToast('Informe o Detalhamento','error'); return; }
+          body.supplier = nomeAluno;
+          body.documentNumber = detalhamento;
+        } else {
+          const val = parseFloat(document.getElementById('mValor').value);
+          body.amount = isNaN(val) ? null : val;
+          body.supplier = document.getElementById('mFornecedor').value || null;
+          body.paymentDue = document.getElementById('mVencimento').value || null;
+        }
       }
 
       // If phase changed, do a move
