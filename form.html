@@ -641,7 +641,7 @@ async function loadSchools(){
     if (!res.ok) throw new Error('HTTP ' + res.status);
     SCHOOLS = await res.json();
     sel.innerHTML = '<option value="">Selecione...</option>' +
-      SCHOOLS.map(s => `<option value="${s.id}">${esc(s.shortName || s.name)}</option>`).join('');
+      SCHOOLS.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
   } catch(e) {
     console.warn('Erro ao carregar escolas:', e);
     sel.innerHTML = '<option value="">Erro ao carregar escolas</option>';
