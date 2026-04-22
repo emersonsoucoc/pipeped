@@ -320,6 +320,18 @@ a{color:var(--accent);text-decoration:none}
         </div>
       </div>
 
+      <!-- Financeiro-specific fields -->
+      <div id="financeiroFields" style="display:none">
+        <div class="field">
+          <label>Nome do Aluno <span class="req">*</span></label>
+          <input type="text" id="fNomeAluno" placeholder="Conforme SISED">
+        </div>
+        <div class="field">
+          <label>Detalhamento <span class="req">*</span></label>
+          <textarea id="fDetalhamento" placeholder="Descreva a solicitação em detalhes..." rows="4"></textarea>
+        </div>
+      </div>
+
       <!-- Attachments -->
       <div class="field">
         <label>Anexos</label>
@@ -393,9 +405,9 @@ const MODULES = {
   comercial: { label:'Comercial', firstPhase:'lead', hasFinancial:false,
                categorias:['Maternal I','Maternal II','Infantil I','Infantil II','Fund. I','Fund. II','Ensino Médio'],
                titles:{ h:'Novo Lead Comercial', d:'Registre os dados do interessado em matrícula.' } },
-  financeiro:{ label:'Financeiro', firstPhase:'pendente', hasFinancial:true,
-               categorias:['Mensalidade','Fornecedor','Folha de Pagamento','Imposto','Manutenção','Material','Serviço','Outros'],
-               titles:{ h:'Nova Movimentação Financeira', d:'Registre a movimentação financeira. Informe valores, fornecedor e vencimento.' } },
+  financeiro:{ label:'Financeiro', firstPhase:'pendente', hasFinancial:true, isFinanceiroForm:true,
+               categorias:['Declarações','Solicitar Baixa','Atualização de Boleto','Atualização Contratual','Cancelamento de Matrícula','Cancelamento de Extracurricular','Cadastrar Nova Cobrança','Outros'],
+               titles:{ h:'Solicitação Financeira', d:'Preencha os dados abaixo para registrar sua solicitação ao setor financeiro.' } },
   contratos: { label:'Contratos', firstPhase:'novo_envio', hasFinancial:false,
                categorias:['Fornecedor','Prestador de Serviço','Locação','Parceria','Franquia','Outros'],
                titles:{ h:'Nova Solicitação de Contrato', d:'Descreva o contrato que precisa ser criado ou renovado.' } },
@@ -444,7 +456,17 @@ function selectModule(mod){
   sel.innerHTML = '<option value="">Selecione...</option>' +
     m.categorias.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
   // Financial fields
-  document.getElementById('financialFields').style.display = m.hasFinancial ? '' : 'none';
+  const isFinanceiro = mod === 'financeiro';
+  document.getElementById('financialFields').style.display = (m.hasFinancial && !isFinanceiro) ? '' : 'none';
+  document.getElementById('financeiroFields').style.display = isFinanceiro ? '' : 'none';
+  // Hide description & title fields for financeiro (detalhamento replaces them)
+  document.getElementById('fDescricao').closest('.field').style.display = isFinanceiro ? 'none' : '';
+  document.getElementById('fTitulo').closest('.field').style.display = isFinanceiro ? 'none' : '';
+  // Hide prioridade and prazo for financeiro
+  document.getElementById('prioGroup').closest('.field').parentElement.style.display = isFinanceiro ? 'none' : '';
+  // Update labels
+  document.getElementById('fEscola').closest('.field').querySelector('label').innerHTML = isFinanceiro ? 'Unidade <span class="req">*</span>' : 'Escola <span class="req">*</span>';
+  document.getElementById('fCategoria').closest('.field').querySelector('label').innerHTML = isFinanceiro ? 'Selecione a Opção <span class="req">*</span>' : 'Categoria <span class="req">*</span>';
 }
 
 /* ─── PRIORITY ───────────────────────────────────────────────────────── */
@@ -515,10 +537,16 @@ async function submitForm(){
   const nome = document.getElementById('fNome').value.trim();
   const email = document.getElementById('fEmail').value.trim();
 
-  if(!titulo){ showToast('Informe o título da solicitação','error'); return; }
-  if(!descricao){ showToast('Informe a descrição','error'); return; }
-  if(!escola){ showToast('Selecione a escola','error'); return; }
-  if(!categoria){ showToast('Selecione a categoria','error'); return; }
+  const isFinanceiro = selectedModule === 'financeiro';
+  const nomeAluno = document.getElementById('fNomeAluno').value.trim();
+  const detalhamento = document.getElementById('fDetalhamento').value.trim();
+
+  if(!isFinanceiro && !titulo){ showToast('Informe o título da solicitação','error'); return; }
+  if(!isFinanceiro && !descricao){ showToast('Informe a descrição','error'); return; }
+  if(!escola){ showToast('Selecione a escola/unidade','error'); return; }
+  if(!categoria){ showToast('Selecione a opção','error'); return; }
+  if(isFinanceiro && !nomeAluno){ showToast('Informe o Nome do Aluno','error'); return; }
+  if(isFinanceiro && !detalhamento){ showToast('Informe o Detalhamento','error'); return; }
   if(!nome){ showToast('Informe seu nome','error'); return; }
   if(!email){ showToast('Informe seu e-mail','error'); return; }
 
@@ -534,7 +562,13 @@ async function submitForm(){
     prazo: document.getElementById('fPrazo').value || '',
     solicitante: { nome, email, setor: document.getElementById('fSetor').value.trim() },
   };
-  if(mod.hasFinancial){
+  if(isFinanceiro){
+    payload.titulo = categoria + ' — ' + nomeAluno;
+    payload.descricao = detalhamento;
+    payload.fornecedor = nomeAluno;
+    payload.nomeAluno = nomeAluno;
+    payload.detalhamento = detalhamento;
+  } else if(mod.hasFinancial){
     payload.valor = document.getElementById('fValor').value || '';
     payload.fornecedor = document.getElementById('fFornecedor').value.trim() || '';
   }
@@ -567,6 +601,8 @@ function resetForm(){
   document.getElementById('fPrazo').value = '';
   document.getElementById('fValor').value = '';
   document.getElementById('fFornecedor').value = '';
+  document.getElementById('fNomeAluno').value = '';
+  document.getElementById('fDetalhamento').value = '';
   document.getElementById('fNome').value = '';
   document.getElementById('fEmail').value = '';
   document.getElementById('fSetor').value = '';
