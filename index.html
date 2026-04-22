@@ -1927,6 +1927,20 @@ async function loadFromAPI(){
       apiSchools.forEach(s => {
         SCHOOLS.push({ id: s.id, name: s.name });
       });
+      // Sync API schools into SETTINGS_SCHOOLS so the settings UI shows data
+      const existing = JSON.parse(localStorage.getItem('SETTINGS_SCHOOLS')||'[]');
+      const merged = apiSchools.map(s => {
+        const local = existing.find(x => x.id === s.id) || {};
+        return {
+          id: s.id,
+          name: s.name || local.name || '',
+          cnpj: local.cnpj || s.cnpj || '',
+          address: local.address || s.address || '',
+          phone: local.phone || s.phone || '',
+          director: local.director || s.director || '',
+        };
+      });
+      localStorage.setItem('SETTINGS_SCHOOLS', JSON.stringify(merged));
     }
 
     // Load boards for all modules
