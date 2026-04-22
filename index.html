@@ -3641,7 +3641,7 @@ function buildSettingsEscolas(){
       const usersCount = USERS.filter(u=>{const us=JSON.parse(localStorage.getItem('user_schools_'+u.id)||'null');return !us||us.includes(s.id)}).length;
       return `<div class="school-card">
         <div class="school-card-header">
-          <div class="school-card-title">${esc(s.name)}</div>
+          <div class="school-card-title">${esc(data.name||s.name)}</div>
           <div class="school-card-badge">${activeModules}/${Object.keys(MODULES).length} módulos</div>
         </div>
         <div class="school-card-info">
@@ -5274,6 +5274,9 @@ function saveSchoolForm(){
   if(editingSchoolId){
     const s=schools.find(x=>x.id===editingSchoolId);
     if(s) Object.assign(s,{name,cnpj,address,phone,director});
+    // Also update the in-memory SCHOOLS array so the UI reflects changes
+    const sm=SCHOOLS.find(x=>x.id===editingSchoolId);
+    if(sm) sm.name=name;
   } else {
     const id='ped'+uid();
     schools.push({id,name,cnpj,address,phone,director});
