@@ -1734,15 +1734,18 @@ function buildDashboard(){
 
   const visibleMods = getUserModules(currentUser);
   const modCounts = Object.keys(MODULES).filter(k=>visibleMods.includes(k)).map(k=>{
-    if(k==='contratos') return { mod:k, count:csTotal, active:csActive };
-    return { mod:k, count:vis.filter(c=>c.modulo===k).length, active:activeCards(k).length };
+    const localCount = vis.filter(c=>c.modulo===k).length;
+    const localActive = activeCards(k).length;
+    if(k==='contratos') return { mod:k, count:localCount+csTotal, active:localActive+csActive };
+    return { mod:k, count:localCount, active:localActive };
   });
   const maxCount  = Math.max(...modCounts.map(x=>x.count),1);
 
   // Donut chart data
   const donutData = Object.entries(MODULES).filter(([k])=>visibleMods.includes(k)).map(([k,m])=>{
-    if(k==='contratos') return { label:m.shortLabel, color:m.color, val:csTotal };
-    return { label:m.shortLabel, color:m.color, val:vis.filter(c=>c.modulo===k).length };
+    const localVal = vis.filter(c=>c.modulo===k).length;
+    if(k==='contratos') return { label:m.shortLabel, color:m.color, val:localVal+csTotal };
+    return { label:m.shortLabel, color:m.color, val:localVal };
   });
   const donutTotal = donutData.reduce((a,x)=>a+x.val,0)||1;
   let dashOffset = 0;
