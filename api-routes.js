@@ -818,7 +818,7 @@ module.exports = function registerApiRoutes(app) {
     try {
       const d = req.body;
       if (d.slotMode === 'PER_OPTION' && (!d.slotOptions || !d.slotOptions.length)) return res.status(400).json({ error: 'slotOptions obrigatório para PER_OPTION' });
-      if (d.slotMode === 'GLOBAL' && !d.maxSlots) return res.status(400).json({ error: 'maxSlots obrigatório para GLOBAL' });
+      if (d.slotMode === 'GLOBAL' && d.maxSlots != null && d.maxSlots < 0) return res.status(400).json({ error: 'maxSlots deve ser >= 0' });
       const exists = await prisma.form.findUnique({ where: { slug: d.slug } });
       if (exists) return res.status(400).json({ error: `Slug "${d.slug}" já em uso` });
 

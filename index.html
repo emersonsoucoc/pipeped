@@ -6534,12 +6534,13 @@ async function createForm(){
       method:'POST',
       body:JSON.stringify({
         title, description:desc,
-        slug:title.toLowerCase().replace(/\s+/g,'-'),
+        slug:title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''),
         status:'DRAFT',
         slotMode:'GLOBAL',
-        maxSlots:0,
+        maxSlots:null,
         reservationTtlMinutes:30,
         requiresConfirmation:false,
+        schoolId: currentUser?.schoolId || currentUser?.schools?.[0] || '',
       })
     });
     inscState.forms.push(res);
@@ -6740,20 +6741,23 @@ async function saveForm(){
   const desc = document.getElementById('formDesc').value.trim();
   if(!title){ showToast('Título obrigatório','error'); return; }
 
+  const slotMode = document.querySelector('input[name="slotMode"]:checked')?.value||'GLOBAL';
+  const maxSlotsRaw = document.getElementById('formMaxSlots')?.value;
   const payload = {
     title,
     description:desc,
-    slug:document.getElementById('formSlug').value||title.toLowerCase().replace(/\s+/g,'-'),
-    opensAt:document.getElementById('formOpensAt').value,
-    closesAt:document.getElementById('formClosesAt').value,
-    slotMode:document.querySelector('input[name="slotMode"]:checked').value||'GLOBAL',
-    maxSlots:parseInt(document.getElementById('formMaxSlots')?.value||'0')||0,
-    reservationTtlMinutes:parseInt(document.getElementById('formReservationTtl').value||'30')||30,
-    requiresConfirmation:document.getElementById('formRequiresConfirmation').checked,
-    confirmationSubject:document.getElementById('formConfirmSubject').value||'',
-    confirmationBody:document.getElementById('formConfirmBody').value||'',
+    slug:document.getElementById('formSlug').value||title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''),
+    opensAt:document.getElementById('formOpensAt').value||null,
+    closesAt:document.getElementById('formClosesAt').value||null,
+    slotMode,
+    maxSlots: slotMode==='GLOBAL' && maxSlotsRaw ? parseInt(maxSlotsRaw)||null : null,
+    reservationTtlMinutes:parseInt(document.getElementById('formReservationTtl')?.value||'30')||30,
+    requiresConfirmation:document.getElementById('formRequiresConfirmation')?.checked||false,
+    confirmationSubject:document.getElementById('formConfirmSubject')?.value||'',
+    confirmationBody:document.getElementById('formConfirmBody')?.value||'',
     fields:form.fields||[],
     slotOptions:form.slotOptions||[],
+    schoolId: currentUser?.schoolId || currentUser?.schools?.[0] || '',
   };
 
   try {
