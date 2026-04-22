@@ -1843,8 +1843,17 @@ const API_BASE = '/api';
 async function api(path, opts = {}){
   const headers = { 'Content-Type':'application/json', ...opts.headers };
   if(authToken) headers['Authorization'] = 'Bearer ' + authToken;
-  const res = await fetch(API_BASE + path, { ...opts, headers });
-  if(res.status === 401){ authToken=''; localStorage.removeItem('pipeped_token'); location.reload(); return; }
+  let res;
+  try {
+    res = await fetch(API_BASE + path, { ...opts, headers });
+  } catch(err){
+    throw new Error('Sem conexão com o servidor');
+  }
+  if(res.status === 401){
+    authToken=''; localStorage.removeItem('pipeped_token');
+    if(!path.includes('/auth/login')){ location.reload(); }
+    throw new Error('Sessão expirada');
+  }
   const data = await res.json();
   if(!res.ok) throw new Error(data.error || 'Erro na API');
   return data;
@@ -2136,6 +2145,7 @@ async function doLogin(){
       method: 'POST',
       body: JSON.stringify({ email, password: pass })
     });
+    if(!res || !res.token){ showToast('Resposta inválida do servidor','error'); return; }
     authToken = res.token;
     localStorage.setItem('pipeped_token', res.token);
     // Map API user to frontend user format
@@ -6868,6 +6878,7 @@ document.addEventListener('keydown',e=>{
   if(authToken){
     try {
       const me = await api('/auth/me');
+      if(!me || !me.id) throw new Error('Token inválido');
       const u = {
         id: me.id, name: me.name, email: me.email,
         role: me.role === 'ADMIN' ? 'admin' : me.role === 'MANAGER' ? 'gestor' : 'colaborador',
