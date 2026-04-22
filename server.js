@@ -287,6 +287,68 @@ app.all('/api/focusnfe/*', async (req, res) => {
   }
 });
 
+/* ── Form Queue (Formulário Público → Fila de Aprovação) ─────────────────── */
+const QUEUE_FILE = path.join(__dirname, 'form-queue.json');
+function loadQueue(){ try{ return JSON.parse(fs.readFileSync(QUEUE_FILE,'utf8')); }catch{ return []; } }
+function saveQueue(q){ fs.writeFileSync(QUEUE_FILE, JSON.stringify(q, null, 2)); }
+
+// POST — new submission from public form
+app.post('/api/form-queue', (req, res) => {
+  try {
+    const { modulo, titulo, descricao, escola, categoria, prioridade, prazo, solicitante, valor, fornecedor } = req.body;
+    if (!titulo || !descricao || !escola || !categoria || !solicitante?.nome || !solicitante?.email) {
+      return res.status(400).json({ error: 'Campos obrigatórios faltando' });
+    }
+    const id = 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    const d = new Date();
+    const protocolo = 'PED-' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') +
+      String(d.getDate()).padStart(2,'0') + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+    const entry = {
+      id, protocolo, modulo: modulo||'compras', titulo, descricao, escola, categoria,
+      prioridade: prioridade||'media', prazo: prazo||'',
+      solicitante: { nome: solicitante.nome, email: solicitante.email, setor: solicitante.setor||'' },
+      criadoEm: d.toISOString().split('T')[0],
+      criadoEmFull: d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+      status: 'pendente',
+      historico: [{ texto:'Solicitação enviada via formulário público', data: d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), usuario: solicitante.nome }],
+    };
+    if (valor) entry.valor = valor;
+    if (fornecedor) entry.fornecedor = fornecedor;
+    const queue = loadQueue();
+    queue.unshift(entry);
+    saveQueue(queue);
+    res.json({ ok: true, protocolo, id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET — list queue (for admin panel)
+app.get('/api/form-queue', (req, res) => {
+  try {
+    const queue = loadQueue();
+    const status = req.query.status; // pendente | aprovado | rejeitado
+    const filtered = status ? queue.filter(q => q.status === status) : queue;
+    res.json({ total: filtered.length, items: filtered });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// PATCH — approve or reject
+app.patch('/api/form-queue/:id', (req, res) => {
+  try {
+    const queue = loadQueue();
+    const idx = queue.findIndex(q => q.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'Não encontrado' });
+    const { status, aprovadoPor, rejeitadoPor } = req.body;
+    if (!['aprovado','rejeitado'].includes(status)) return res.status(400).json({ error: 'Status inválido' });
+    queue[idx].status = status;
+    const now = new Date();
+    const ts = now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    if (status === 'aprovado') { queue[idx].aprovadoPor = aprovadoPor||'Admin'; queue[idx].aprovadoEm = ts; }
+    if (status === 'rejeitado') { queue[idx].rejeitadoPor = rejeitadoPor||'Admin'; queue[idx].rejeitadoEm = ts; }
+    saveQueue(queue);
+    res.json({ ok: true, item: queue[idx] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 /* ── Static frontend ──────────────────────────────────────────────────────── */
 app.use(express.static(path.join(__dirname)));
 app.get(/^(?!\/api).*/,(_,res)=>res.sendFile(path.join(__dirname,'index.html')));
