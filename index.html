@@ -1063,6 +1063,105 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
   color:var(--err);padding:9px 14px;border-radius:var(--r-sm);font-size:12px;
   box-shadow:var(--sh-md);z-index:600;animation:fadeIn .2s ease;
 }
+
+/* ─── INSCRIÇÕES MODULE ───────────────────────────────────────────────── */
+.inscricoes-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.inscricoes-title{font-size:20px;font-weight:700;color:var(--text)}
+.btn-novo-form{
+  display:flex;align-items:center;gap:8px;padding:10px 16px;
+  background:#EC4899;color:white;border-radius:var(--r-sm);
+  font-weight:600;font-size:14px;transition:background var(--t);
+}
+.btn-novo-form:hover{background:#DB2777}
+.inscricoes-table{width:100%;border-collapse:collapse}
+.inscricoes-table th{
+  padding:12px;text-align:left;font-weight:600;font-size:12px;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:1px solid var(--border);background:var(--surface);
+}
+.inscricoes-table td{padding:12px;border-bottom:1px solid var(--border)}
+.inscricoes-table tr:hover{background:#F9FAFB}
+.insc-status-badge{
+  display:inline-block;padding:4px 10px;border-radius:4px;font-size:12px;
+  font-weight:600;white-space:nowrap;
+}
+.insc-status-draft{background:#F3F4F6;color:#6B7280}
+.insc-status-active{background:#D1FAE5;color:#065F46}
+.insc-status-paused{background:#FEF3C7;color:#92400E}
+.insc-status-closed{background:#FEE2E2;color:#991B1B}
+.insc-status-archived{background:#F3F4F6;color:#6B7280}
+.insc-actions{display:flex;gap:8px}
+.btn-insc-sm{
+  padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-sm);
+  font-size:12px;color:var(--accent);background:white;font-weight:500;
+  transition:all var(--t);cursor:pointer;
+}
+.btn-insc-sm:hover{border-color:var(--accent);background:var(--accent-l)}
+.btn-insc-sm.pink{color:#EC4899;border-color:#EC4899}
+.btn-insc-sm.pink:hover{background:#FCE7F3}
+
+.insc-editor{max-width:800px}
+.insc-editor-section{margin-bottom:24px;padding:16px;background:white;border-radius:var(--r);border:1px solid var(--border)}
+.insc-editor-label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.insc-editor-field{margin-bottom:16px}
+.insc-field-list{display:flex;flex-direction:column;gap:12px}
+.insc-field-row{
+  display:flex;gap:12px;align-items:flex-end;padding:12px;background:var(--surface);
+  border-radius:var(--r-sm);border:1px solid var(--border);
+}
+.insc-field-row > *{flex:1}
+.insc-field-row .btn-insc-sm{width:auto;padding:8px 12px;margin:0}
+.insc-field-actions{display:flex;gap:6px}
+.insc-option-list{display:flex;flex-direction:column;gap:12px}
+.insc-option-row{
+  display:flex;gap:12px;align-items:center;padding:12px;background:var(--surface);
+  border-radius:var(--r-sm);border:1px solid var(--border);
+}
+.insc-option-row > input{flex:1;min-width:0}
+.insc-option-row > *:last-child{width:auto}
+.insc-editor-buttons{display:flex;gap:12px;margin-top:24px}
+.btn-insc-primary{
+  padding:10px 20px;background:#EC4899;color:white;border-radius:var(--r-sm);
+  font-weight:600;font-size:14px;transition:background var(--t);
+}
+.btn-insc-primary:hover{background:#DB2777}
+.btn-insc-secondary{
+  padding:10px 20px;background:white;border:1px solid var(--border);color:var(--text);
+  border-radius:var(--r-sm);font-weight:600;font-size:14px;
+  transition:all var(--t);
+}
+.btn-insc-secondary:hover{border-color:var(--accent);color:var(--accent)}
+
+.insc-submissions{max-width:1200px}
+.insc-sub-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.insc-sub-title{font-size:18px;font-weight:700;color:var(--text)}
+.insc-sub-filters{display:flex;gap:12px;align-items:center}
+.insc-sub-filters select,
+.insc-sub-filters input{width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm)}
+.insc-sub-table{width:100%;border-collapse:collapse;font-size:13px}
+.insc-sub-table th{
+  padding:12px;text-align:left;font-weight:600;font-size:11px;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:1px solid var(--border);background:var(--surface);
+}
+.insc-sub-table td{padding:12px;border-bottom:1px solid var(--border)}
+.insc-sub-table tr:hover{background:#F9FAFB}
+.insc-sub-status{
+  display:inline-block;padding:4px 10px;border-radius:4px;font-size:11px;
+  font-weight:600;white-space:nowrap;
+}
+.insc-sub-reserved{background:#DBEAFE;color:#1E40AF}
+.insc-sub-pending{background:#FEF3C7;color:#92400E}
+.insc-sub-confirmed{background:#D1FAE5;color:#065F46}
+.insc-sub-waitlist{background:#FED7AA;color:#92400E}
+.insc-sub-canceled{background:#F3F4F6;color:#6B7280}
+.insc-sub-rejected{background:#FEE2E2;color:#991B1B}
+.insc-sub-expired{background:#F3F4F6;color:#6B7280}
+.insc-sub-actions{display:flex;gap:6px}
+.btn-insc-sm.blue{color:#3B82F6;border-color:#3B82F6}
+.btn-insc-sm.blue:hover{background:#EFF6FF}
+.btn-insc-sm.red{color:#EF4444;border-color:#EF4444}
+.btn-insc-sm.red:hover{background:#FEE2E2}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -1722,6 +1821,17 @@ let editCardId   = null;
 let dragCardId   = null;
 let selectedPrio = 'media';
 
+// ─── INSCRIÇÕES STATE ────────────────────────────────────────────────
+const inscState = {
+  forms: [],
+  currentForm: null,
+  submissions: [],
+  loading: false,
+  view: 'list', // list | editor | submissions
+  filter: { status: '', search: '' },
+  subFilter: { status: '', search: '' },
+};
+
 // ─── API CLIENT ──────────────────────────────────────────────────────
 let authToken = localStorage.getItem('pipeped_token')||'';
 let apiModules = []; // loaded from API
@@ -2089,6 +2199,7 @@ const MODULE_ICONS = {
   financeiro:'<line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
   contratos:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   nota_fiscal:'<path d="M4 2h10l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="17" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M17 15.5v1.5l1 .5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  inscricoes:'<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 14l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
 };
 
 function toggleNavGroup(groupId){
@@ -2159,6 +2270,12 @@ function buildSidebar(){
   });
 
   html += `
+    <a class="nav-item" data-page="inscricoes" onclick="navigate('inscricoes')">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24">${MODULE_ICONS.inscricoes}</svg>
+      <span class="nav-text">Inscrições</span>
+      <span class="nav-badge" id="badge-inscricoes">0</span>
+    </a>
+
     <div class="sb-section">Comunicação</div>
     <a class="nav-item" data-page="whatsapp" onclick="navigate('whatsapp')">
       <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -2189,6 +2306,10 @@ function populateSchoolFilter(){
 // ─── ROUTER ───────────────────────────────────────────────────────────
 function navigate(page){
   // ACL: bloqueia acesso a módulos não autorizados
+  if(page==='inscricoes' && currentUser?.role!=='admin'){
+    showToast('Você não tem acesso a este módulo','error');
+    page = 'dashboard';
+  }
   if(MODULES[page] && !canAccessModule(page)){
     showToast('Você não tem acesso a este módulo','error');
     page = 'dashboard';
@@ -2211,19 +2332,20 @@ function navigate(page){
     // Esconde botão "Novo" se Clicksign, Nota Fiscal (UI custom) ou sem permissão
     newBtn.style.display = (mod.isClicksign || page==='nota_fiscal' || !canCreateInModule(page)) ? 'none' : '';
   }
-  else { newBtn.style.display = page==='settings' || page==='whatsapp' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
+  else { newBtn.style.display = page==='settings' || page==='whatsapp' || page==='inscricoes' ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
   // Clicksign polling
   if(page==='contratos') csStartPolling(); else csStopPolling();
   renderPage();
   updateBadges();
 }
-const pageTitles = { dashboard:'Dashboard', settings:'Configurações', whatsapp:'WhatsApp' };
+const pageTitles = { dashboard:'Dashboard', settings:'Configurações', whatsapp:'WhatsApp', inscricoes:'Inscrições' };
 
 function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
   else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
   else if(currentPage==='nota_fiscal') { el.innerHTML = buildNotaFiscalPage(); }
+  else if(currentPage==='inscricoes') { el.innerHTML = buildInscricoesPage(); if(inscState.view==='list') loadInscricoes(); }
   else if(currentPage==='whatsapp') el.innerHTML = buildWhatsApp();
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
   else if(currentPage==='settings') el.innerHTML = buildSettings();
@@ -6239,6 +6361,426 @@ function seedData(){
     // CONTRATOS — agora gerenciados via Clicksign (dados vêm da API, não de seed local)
   ];
   save();
+}
+
+// ─── INSCRIÇÕES MODULE ────────────────────────────────────────────────
+function buildInscricoesPage(){
+  if(inscState.view==='editor') return buildInscricoesEditor();
+  if(inscState.view==='submissions') return buildInscricoesSubmissions();
+  return buildInscricoesList();
+}
+
+function buildInscricoesList(){
+  return `<div class="page-container">
+    <div class="inscricoes-header">
+      <h2 class="inscricoes-title">Formulários</h2>
+      <button class="btn-novo-form" onclick="openInscForm()">+ Novo Formulário</button>
+    </div>
+    <div id="inscForm" style="display:none;margin-bottom:24px;padding:16px;background:white;border-radius:var(--r);border:1px solid var(--border);">
+      <h3 style="margin-bottom:12px;font-weight:600;">Criar Formulário</h3>
+      <input type="text" id="newFormTitle" placeholder="Título" style="margin-bottom:8px;">
+      <textarea id="newFormDesc" placeholder="Descrição" style="margin-bottom:8px;"></textarea>
+      <button class="btn-insc-primary" onclick="createForm()" style="margin-right:8px;">Criar</button>
+      <button class="btn-insc-secondary" onclick="closeInscForm()">Cancelar</button>
+    </div>
+    <table class="inscricoes-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Status</th>
+          <th>Vagas</th>
+          <th>Inscrições</th>
+          <th>Criado em</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="inscFormsList"></tbody>
+    </table>
+  </div>`;
+}
+
+function buildInscricoesEditor(){
+  const form = inscState.currentForm||{};
+  const slotMode = form.slotMode||'GLOBAL';
+  const fieldTypes = ['TEXT','TEXTAREA','EMAIL','PHONE','CPF','DATE','NUMBER','SELECT','MULTISELECT','RADIO','CHECKBOX','FILE'];
+  return `<div class="page-container insc-editor">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <h2 class="inscricoes-title">${form.id?'Editar':'Novo'} Formulário</h2>
+      <button class="btn-insc-secondary" onclick="backToInscList()">← Voltar</button>
+    </div>
+
+    <div class="insc-editor-section">
+      <label class="insc-editor-label">Título</label>
+      <input type="text" id="formTitle" value="${esc(form.title||'')}" placeholder="Título do formulário" style="margin-bottom:16px;">
+
+      <label class="insc-editor-label">Descrição</label>
+      <textarea id="formDesc" placeholder="Descrição do formulário" style="margin-bottom:16px;">${esc(form.description||'')}</textarea>
+
+      <label class="insc-editor-label">Slug (URL amigável)</label>
+      <input type="text" id="formSlug" value="${esc(form.slug||'')}" placeholder="slug-do-formulario" style="margin-bottom:16px;">
+
+      <label class="insc-editor-label">Data de Abertura</label>
+      <input type="datetime-local" id="formOpensAt" value="${form.opensAt?form.opensAt.slice(0,16):''}" style="margin-bottom:16px;">
+
+      <label class="insc-editor-label">Data de Fechamento</label>
+      <input type="datetime-local" id="formClosesAt" value="${form.closesAt?form.closesAt.slice(0,16):''}" style="margin-bottom:16px;">
+    </div>
+
+    <div class="insc-editor-section">
+      <label class="insc-editor-label">Modo de Vagas</label>
+      <div style="display:flex;gap:16px;margin-bottom:16px;">
+        <label><input type="radio" name="slotMode" value="GLOBAL" ${slotMode==='GLOBAL'?'checked':''} onchange="updateSlotMode('GLOBAL')"> Global (mesmo limite para todos)</label>
+        <label><input type="radio" name="slotMode" value="PER_OPTION" ${slotMode==='PER_OPTION'?'checked':''} onchange="updateSlotMode('PER_OPTION')"> Por Opção</label>
+      </div>
+
+      ${slotMode==='GLOBAL'?`
+      <label class="insc-editor-label">Máximo de Inscrições</label>
+      <input type="number" id="formMaxSlots" value="${form.maxSlots||0}" placeholder="0 = ilimitado" style="margin-bottom:16px;">
+      `:''}
+
+      <label class="insc-editor-label">Expiração de Reserva (minutos)</label>
+      <input type="number" id="formReservationTtl" value="${form.reservationTtlMinutes||30}" placeholder="30" style="margin-bottom:16px;">
+
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;">
+        <input type="checkbox" id="formRequiresConfirmation" ${form.requiresConfirmation?'checked':''} onchange="updateConfirmationUI()">
+        <span style="font-weight:600;font-size:14px;">Requer Confirmação por Email</span>
+      </label>
+
+      <div id="confirmationUI" style="display:${form.requiresConfirmation?'block':'none'};margin-top:12px;">
+        <label class="insc-editor-label">Assunto do Confirme</label>
+        <input type="text" id="formConfirmSubject" value="${esc(form.confirmationSubject||'')}" placeholder="Confirme sua inscrição" style="margin-bottom:8px;">
+        <label class="insc-editor-label">Corpo do Confirme</label>
+        <textarea id="formConfirmBody" placeholder="Corpo do email de confirmação" style="margin-bottom:16px;">${esc(form.confirmationBody||'')}</textarea>
+      </div>
+    </div>
+
+    <div class="insc-editor-section">
+      <label class="insc-editor-label" style="margin-bottom:12px;">Campos do Formulário</label>
+      <div class="insc-field-list" id="fieldsList"></div>
+      <button class="btn-insc-sm pink" onclick="addField()" style="margin-top:12px;">+ Adicionar Campo</button>
+    </div>
+
+    ${slotMode==='PER_OPTION'?`
+    <div class="insc-editor-section">
+      <label class="insc-editor-label" style="margin-bottom:12px;">Opções de Vagas</label>
+      <div class="insc-option-list" id="optionsList"></div>
+      <button class="btn-insc-sm pink" onclick="addOption()" style="margin-top:12px;">+ Adicionar Opção</button>
+    </div>
+    `:''}
+
+    <div class="insc-editor-buttons">
+      <button class="btn-insc-primary" onclick="saveForm()">${form.id?'Atualizar':'Criar'} Formulário</button>
+      ${form.id&&form.status==='DRAFT'?`<button class="btn-insc-primary" onclick="publishForm()">Publicar</button>`:''}
+      <button class="btn-insc-secondary" onclick="backToInscList()">Cancelar</button>
+    </div>
+  </div>`;
+}
+
+function buildInscricoesSubmissions(){
+  const form = inscState.currentForm||{};
+  const subs = inscState.submissions||[];
+  const statuses = ['RESERVED','PENDING','CONFIRMED','WAITLIST','CANCELED','REJECTED','EXPIRED'];
+  return `<div class="page-container insc-submissions">
+    <div class="insc-sub-header">
+      <h2 class="insc-sub-title">${esc(form.title||'')}: Inscrições</h2>
+      <button class="btn-insc-secondary" onclick="backToInscList()">← Voltar</button>
+    </div>
+
+    <div class="insc-sub-filters" style="margin-bottom:20px;">
+      <select id="subStatusFilter" onchange="loadSubmissions(true)">
+        <option value="">Todos os Status</option>
+        ${statuses.map(s=>`<option value="${s}">${s}</option>`).join('')}
+      </select>
+      <input type="text" id="subSearchFilter" placeholder="Buscar nome, email, CPF..." onkeyup="loadSubmissions(true)">
+      <button class="btn-insc-sm" onclick="exportSubmissionsCSV()">📥 Exportar CSV</button>
+    </div>
+
+    <table class="insc-sub-table">
+      <thead>
+        <tr>
+          <th>Protocolo</th>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>CPF</th>
+          <th>Status</th>
+          <th>Opção</th>
+          <th>Data</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="subList"></tbody>
+    </table>
+  </div>`;
+}
+
+function openInscForm(){
+  document.getElementById('inscForm').style.display='block';
+  document.getElementById('newFormTitle').focus();
+}
+
+function closeInscForm(){
+  document.getElementById('inscForm').style.display='none';
+  document.getElementById('newFormTitle').value='';
+  document.getElementById('newFormDesc').value='';
+}
+
+async function createForm(){
+  const title = document.getElementById('newFormTitle').value.trim();
+  const desc = document.getElementById('newFormDesc').value.trim();
+  if(!title) { showToast('Título obrigatório','error'); return; }
+  try {
+    inscState.loading=true;
+    const res = await api('/forms',{
+      method:'POST',
+      body:JSON.stringify({
+        title, description:desc,
+        slug:title.toLowerCase().replace(/\s+/g,'-'),
+        status:'DRAFT',
+        slotMode:'GLOBAL',
+        maxSlots:0,
+        reservationTtlMinutes:30,
+        requiresConfirmation:false,
+      })
+    });
+    inscState.forms.push(res);
+    showToast('Formulário criado','ok');
+    closeInscForm();
+    loadInscricoes();
+  } catch(e){
+    showToast('Erro: '+e.message,'error');
+  } finally { inscState.loading=false; }
+}
+
+async function loadInscricoes(){
+  try {
+    inscState.loading=true;
+    const res = await api('/forms');
+    inscState.forms = res.data||res||[];
+    renderInscricoesList();
+  } catch(e){
+    showToast('Erro ao carregar: '+e.message,'error');
+  } finally { inscState.loading=false; }
+}
+
+function renderInscricoesList(){
+  const tbody = document.getElementById('inscFormsList');
+  if(!tbody) return;
+  tbody.innerHTML = inscState.forms.map(f=>`
+    <tr>
+      <td><strong>${esc(f.title)}</strong></td>
+      <td><span class="insc-status-badge insc-status-${(f.status||'draft').toLowerCase()}">${f.status||'DRAFT'}</span></td>
+      <td>${f._count?.submissions||0}${f.maxSlots?'/'+f.maxSlots:''}</td>
+      <td>${f._count?.submissions||0}</td>
+      <td>${fmtDate(f.createdAt)}</td>
+      <td class="insc-actions">
+        <button class="btn-insc-sm" onclick="editForm('${f.id}')">Editar</button>
+        <button class="btn-insc-sm blue" onclick="viewSubmissions('${f.id}')">Ver</button>
+        ${f.status==='DRAFT'?`<button class="btn-insc-sm pink" onclick="publishFormAction('${f.id}')">Publicar</button>`:''}
+        <button class="btn-insc-sm" onclick="copyFormLink('${f.slug}')">Link</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function editForm(formId){
+  const form = inscState.forms.find(f=>f.id===formId);
+  if(!form) { showToast('Formulário não encontrado','error'); return; }
+  inscState.currentForm = form;
+  inscState.view = 'editor';
+  renderPage();
+}
+
+async function viewSubmissions(formId){
+  const form = inscState.forms.find(f=>f.id===formId);
+  if(!form) { showToast('Formulário não encontrado','error'); return; }
+  inscState.currentForm = form;
+  inscState.view = 'submissions';
+  await loadSubmissions();
+  renderPage();
+}
+
+async function loadSubmissions(refilter){
+  const formId = inscState.currentForm?.id;
+  if(!formId) return;
+  try {
+    const res = await api(`/submissions/form/${formId}`);
+    let subs = res.data||res||[];
+    const statusFilter = document.getElementById('subStatusFilter')?.value||'';
+    const searchFilter = document.getElementById('subSearchFilter')?.value||'';
+    if(statusFilter) subs = subs.filter(s=>s.status===statusFilter);
+    if(searchFilter){
+      const q = searchFilter.toLowerCase();
+      subs = subs.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.email||'').toLowerCase().includes(q)||(s.cpf||'').includes(q));
+    }
+    inscState.submissions = subs;
+    renderSubmissionsList();
+  } catch(e){
+    showToast('Erro: '+e.message,'error');
+  }
+}
+
+function renderSubmissionsList(){
+  const tbody = document.getElementById('subList');
+  if(!tbody) return;
+  tbody.innerHTML = inscState.submissions.map(s=>`
+    <tr>
+      <td><code style="font-size:11px;color:var(--muted);">${esc(s.protocol||s.id)}</code></td>
+      <td>${esc(s.name||'')}</td>
+      <td>${esc(s.email||'')}</td>
+      <td>${esc(s.cpf||'')}</td>
+      <td><span class="insc-sub-status insc-sub-${(s.status||'reserved').toLowerCase()}">${s.status||'RESERVED'}</span></td>
+      <td>${esc(s.slotOption||'-')}</td>
+      <td>${fmtDate(s.createdAt)}</td>
+      <td class="insc-sub-actions">
+        ${['RESERVED','PENDING'].includes(s.status)?`<button class="btn-insc-sm blue" onclick="confirmSubmission('${s.protocol||s.id}')">Confirmar</button>`:''}
+        ${['RESERVED','PENDING','CONFIRMED'].includes(s.status)?`<button class="btn-insc-sm red" onclick="cancelSubmission('${s.id}')">Cancelar</button>`:''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function confirmSubmission(submissionId){
+  try {
+    await api(`/submissions/confirm/${submissionId}`,{method:'POST'});
+    showToast('Inscrição confirmada','ok');
+    await loadSubmissions();
+  } catch(e){
+    showToast('Erro: '+e.message,'error');
+  }
+}
+
+async function cancelSubmission(submissionId){
+  if(!confirm('Cancelar esta inscrição?')) return;
+  try {
+    await api(`/submissions/${submissionId}/cancel`,{method:'PATCH'});
+    showToast('Inscrição cancelada','ok');
+    await loadSubmissions();
+  } catch(e){
+    showToast('Erro: '+e.message,'error');
+  }
+}
+
+function exportSubmissionsCSV(){
+  if(!inscState.submissions.length){ showToast('Nenhuma inscrição para exportar','warn'); return; }
+  const headers = ['Protocolo','Nome','Email','CPF','Status','Opção','Data'];
+  const rows = inscState.submissions.map(s=>[
+    s.protocol||s.id,s.name||'',s.email||'',s.cpf||'',s.status||'',s.slotOption||'',s.createdAt||''
+  ]);
+  const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `inscricoes-${inscState.currentForm?.slug||'export'}-${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+}
+
+function copyFormLink(slug){
+  const url = window.location.origin + '/inscricao/' + slug;
+  navigator.clipboard.writeText(url);
+  showToast('Link copiado: '+url,'ok');
+}
+
+async function publishFormAction(formId){
+  if(!confirm('Publicar este formulário?')) return;
+  try {
+    await api(`/forms/${formId}/publish`,{method:'POST'});
+    showToast('Formulário publicado','ok');
+    await loadInscricoes();
+  } catch(e){
+    showToast('Erro: '+e.message,'error');
+  }
+}
+
+function backToInscList(){
+  inscState.view = 'list';
+  inscState.currentForm = null;
+  inscState.submissions = [];
+  renderPage();
+  loadInscricoes();
+}
+
+function updateSlotMode(mode){
+  inscState.currentForm = inscState.currentForm||{};
+  inscState.currentForm.slotMode = mode;
+  renderPage();
+}
+
+function updateConfirmationUI(){
+  const checked = document.getElementById('formRequiresConfirmation').checked;
+  document.getElementById('confirmationUI').style.display = checked?'block':'none';
+}
+
+function addField(){
+  inscState.currentForm = inscState.currentForm||{};
+  inscState.currentForm.fields = inscState.currentForm.fields||[];
+  inscState.currentForm.fields.push({label:'',fieldKey:'',type:'TEXT',required:false});
+  renderPage();
+}
+
+function addOption(){
+  inscState.currentForm = inscState.currentForm||{};
+  inscState.currentForm.slotOptions = inscState.currentForm.slotOptions||[];
+  inscState.currentForm.slotOptions.push({label:'',maxSlots:10});
+  renderPage();
+}
+
+function removeField(idx){
+  inscState.currentForm.fields.splice(idx,1);
+  renderPage();
+}
+
+function removeOption(idx){
+  inscState.currentForm.slotOptions.splice(idx,1);
+  renderPage();
+}
+
+async function saveForm(){
+  const form = inscState.currentForm||{};
+  const title = document.getElementById('formTitle').value.trim();
+  const desc = document.getElementById('formDesc').value.trim();
+  if(!title){ showToast('Título obrigatório','error'); return; }
+
+  const payload = {
+    title,
+    description:desc,
+    slug:document.getElementById('formSlug').value||title.toLowerCase().replace(/\s+/g,'-'),
+    opensAt:document.getElementById('formOpensAt').value,
+    closesAt:document.getElementById('formClosesAt').value,
+    slotMode:document.querySelector('input[name="slotMode"]:checked').value||'GLOBAL',
+    maxSlots:parseInt(document.getElementById('formMaxSlots')?.value||'0')||0,
+    reservationTtlMinutes:parseInt(document.getElementById('formReservationTtl').value||'30')||30,
+    requiresConfirmation:document.getElementById('formRequiresConfirmation').checked,
+    confirmationSubject:document.getElementById('formConfirmSubject').value||'',
+    confirmationBody:document.getElementById('formConfirmBody').value||'',
+    fields:form.fields||[],
+    slotOptions:form.slotOptions||[],
+  };
+
+  try {
+    if(form.id){
+      await api(`/forms/${form.id}`,{method:'PATCH',body:JSON.stringify(payload)});
+    } else {
+      const res = await api('/forms',{method:'POST',body:JSON.stringify(payload)});
+      form.id = res.id;
+    }
+    showToast('Formulário salvo','ok');
+    backToInscList();
+  } catch(e){
+    showToast('Erro: '+e.message,'error');
+  }
+}
+
+async function publishForm(){
+  const formId = inscState.currentForm?.id;
+  if(!formId){ showToast('Nenhum formulário selecionado','error'); return; }
+  if(!confirm('Publicar este formulário?')) return;
+  try {
+    await api(`/forms/${formId}/publish`,{method:'POST'});
+    showToast('Formulário publicado','ok');
+    backToInscList();
+  } catch(e){
+    showToast('Erro: '+e.message,'error');
+  }
 }
 
 // ─── KEYBOARD ─────────────────────────────────────────────────────────
