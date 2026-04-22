@@ -1094,6 +1094,10 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
           <input type="date" id="mPrazo">
         </div>
         <div class="meta-field">
+          <div class="meta-label">Protocolo</div>
+          <div class="meta-val text-sm" id="mProtocolo" style="font-family:monospace;font-weight:700;color:#6366F1">—</div>
+        </div>
+        <div class="meta-field">
           <div class="meta-label">Criado em</div>
           <div class="meta-val text-muted text-sm" id="mCriadoEm">—</div>
         </div>
@@ -1508,11 +1512,24 @@ function load() {
   const n = localStorage.getItem('pipeped_notifs');
   if (c) allCards = JSON.parse(c);
   if (n) notifications = JSON.parse(n);
+  // Retroativo: gerar protocolo para cards existentes sem protocolo
+  let changed = false;
+  allCards.forEach((card,i)=>{
+    if(!card.protocolo){
+      card.protocolo = 'PED-' + (i+1).toString().padStart(6,'0');
+      changed = true;
+    }
+  });
+  if(changed) save();
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6) }
+function gerarProtocolo(){
+  const n = (allCards.filter(c=>c.protocolo).length + 1).toString().padStart(6,'0');
+  return 'PED-' + n;
+}
 function now(){
   const d = new Date();
   return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -1615,7 +1632,7 @@ function getCards(mod){
     // 4) Filtro de busca textual
     if(filterSearch){
       const q=filterSearch.toLowerCase();
-      return c.titulo.toLowerCase().includes(q)||c.descricao.toLowerCase().includes(q)||(c.responsavel&&userName(c.responsavel).toLowerCase().includes(q));
+      return c.titulo.toLowerCase().includes(q)||c.descricao.toLowerCase().includes(q)||(c.responsavel&&userName(c.responsavel).toLowerCase().includes(q))||(c.protocolo&&c.protocolo.toLowerCase().includes(q));
     }
     return true;
   });
@@ -1956,6 +1973,7 @@ function buildCard(c){
   return `<div class="card" id="card-${c.id}" data-id="${c.id}" data-prio="${c.prioridade}"
     ${_canEdit?'draggable="true" ondragstart="onDragStart(event,\''+c.id+'\')" ondragend="onDragEnd(event)"':'draggable="false"'}
     onclick="openCard('${c.id}')" style="${_canEdit?'':'cursor:default'}">
+    ${c.protocolo?`<div style="font-size:10px;color:var(--muted);font-weight:600;font-family:monospace;margin-bottom:2px">${esc(c.protocolo)}</div>`:''}
     <div class="card-title">${esc(c.titulo||'Sem título')}</div>
     ${c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
     ${c.modulo==='financeiro'&&c.supplier?`<div class="card-desc" style="color:#6366F1;font-weight:500">Aluno: ${esc(c.supplier)}</div>`:''}
@@ -2075,6 +2093,7 @@ function clearModal(mod, fase){
   document.getElementById('mVencimento').value='';
   document.getElementById('mEscola').value='';
   document.getElementById('mPrazo').value='';
+  document.getElementById('mProtocolo').textContent='—';
   document.getElementById('mCriadoEm').textContent='—';
   document.getElementById('mCriadoPor').textContent='—';
   document.getElementById('commentsList').innerHTML='';
@@ -2100,6 +2119,7 @@ function fillModalWith(c){
   populateEscolaSelect();
   document.getElementById('mEscola').value = c.escola||'';
   document.getElementById('mPrazo').value  = c.prazo||'';
+  document.getElementById('mProtocolo').textContent = c.protocolo||'—';
   document.getElementById('mCriadoEm').textContent = fmtDate(c.criadoEm)||'—';
   document.getElementById('mCriadoPor').textContent = userName(c.criadoPor)||'—';
   populateModuloSelect();
@@ -2236,12 +2256,13 @@ function saveCard(){
       try{ NotifEngine.execute('card_enter_phase', card, { fase }); }catch(e){ console.warn('NotifEngine error:', e); }
     }
   } else {
-    card = { id:uid(), criadoEm:today(), criadoPor:currentUser?.id||'u1', comentarios:[], historico:[], anexos:[] };
+    card = { id:uid(), protocolo:gerarProtocolo(), criadoEm:today(), criadoPor:currentUser?.id||'u1', comentarios:[], historico:[], anexos:[] };
     card.historico.push({ texto:`Card criado por ${currentUser?.name}`, data:now(), usuario:currentUser?.name });
     allCards.unshift(card);
     editCardId = card.id;
     document.getElementById('modalHeaderTitle').textContent = 'Editar Card';
     document.getElementById('modalDeleteBtn').style.display = '';
+    document.getElementById('mProtocolo').textContent = card.protocolo;
     document.getElementById('mCriadoEm').textContent = fmtDate(today());
     document.getElementById('mCriadoPor').textContent = userName(currentUser?.id);
   }
