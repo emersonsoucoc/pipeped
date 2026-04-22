@@ -351,6 +351,9 @@ app.patch('/api/form-queue/:id', (req, res) => {
 
 /* ── Static frontend ──────────────────────────────────────────────────────── */
 app.use(express.static(path.join(__dirname)));
+// Inscrição pública — /inscricao/:slug serve inscricao.html
+app.get('/inscricao/:slug', (_,res) => res.sendFile(path.join(__dirname,'inscricao.html')));
+app.get('/consultar-inscricao', (_,res) => res.sendFile(path.join(__dirname,'inscricao.html')));
 app.get(/^(?!\/api).*/,(_,res)=>res.sendFile(path.join(__dirname,'index.html')));
 
 app.listen(PORT,'0.0.0.0',()=>{

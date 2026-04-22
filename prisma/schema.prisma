@@ -66,6 +66,7 @@ model School {
   tasks            Task[]
   leads            Lead[]
   whatsappAccounts WhatsappAccount[]
+  forms            Form[]
 
   @@map("schools")
 }
@@ -90,6 +91,7 @@ model User {
   leadsAssigned Lead[]         @relation("AssignedLeads")
   comments      Comment[]
   notifications Notification[]
+  formsCreated  Form[]         @relation("FormsCreated")
 
   @@map("users")
 }
@@ -361,4 +363,218 @@ model AutomationRule {
   createdAt DateTime @default(now())
 
   @@map("automation_rules")
+}
+
+//////////////////////
+// FORMULÁRIOS & INSCRIÇÕES
+//////////////////////
+
+enum FormStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  CLOSED
+  ARCHIVED
+}
+
+enum FieldType {
+  TEXT
+  TEXTAREA
+  EMAIL
+  PHONE
+  CPF
+  DATE
+  NUMBER
+  SELECT
+  MULTISELECT
+  RADIO
+  CHECKBOX
+  FILE
+}
+
+enum SubmissionStatus {
+  RESERVED
+  PENDING
+  CONFIRMED
+  WAITLIST
+  CANCELED
+  REJECTED
+  EXPIRED
+}
+
+enum SlotMode {
+  GLOBAL
+  PER_OPTION
+}
+
+model Form {
+  id          String     @id @default(uuid())
+  title       String
+  slug        String     @unique
+  description String?
+  coverImage  String?
+
+  status      FormStatus @default(DRAFT)
+  isPublic    Boolean    @default(true)
+
+  opensAt     DateTime?
+  closesAt    DateTime?
+
+  slotMode    SlotMode   @default(GLOBAL)
+  maxSlots    Int?
+
+  reservationTtlMinutes Int  @default(0)
+  requiresConfirmation  Boolean @default(false)
+
+  confirmationSubject String?
+  confirmationBody    String?
+
+  currentVersion Int    @default(0)
+
+  schoolId    String
+  school      School     @relation(fields: [schoolId], references: [id])
+
+  createdById String
+  createdBy   User       @relation("FormsCreated", fields: [createdById], references: [id])
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  fields      FormField[]
+  slotOptions FormSlotOption[]
+  submissions Submission[]
+  versions    FormVersion[]
+
+  @@index([schoolId])
+  @@index([status])
+  @@index([slug])
+  @@map("forms")
+}
+
+model FormField {
+  id          String    @id @default(uuid())
+  formId      String
+  form        Form      @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  label       String
+  fieldKey    String
+  type        FieldType
+  placeholder String?
+  helpText    String?
+
+  required    Boolean   @default(false)
+  position    Int       @default(0)
+  config      Json?
+  isSlotField Boolean   @default(false)
+
+  values      SubmissionValue[]
+
+  @@unique([formId, fieldKey])
+  @@index([formId])
+  @@map("form_fields")
+}
+
+model FormSlotOption {
+  id       String @id @default(uuid())
+  formId   String
+  form     Form   @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  label    String
+  maxSlots Int
+  filled   Int    @default(0)
+
+  submissions Submission[]
+
+  @@unique([formId, label])
+  @@index([formId])
+  @@map("form_slot_options")
+}
+
+model FormVersion {
+  id          String   @id @default(uuid())
+  formId      String
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  version     Int
+  snapshot    Json
+  publishedAt DateTime @default(now())
+  publishedBy String?
+
+  submissions Submission[]
+
+  @@unique([formId, version])
+  @@index([formId])
+  @@map("form_versions")
+}
+
+model Submission {
+  id          String           @id @default(uuid())
+  formId      String
+  form        Form             @relation(fields: [formId], references: [id])
+
+  formVersionId String?
+  formVersion   FormVersion? @relation(fields: [formVersionId], references: [id])
+
+  protocol    String           @unique
+  status      SubmissionStatus @default(PENDING)
+
+  name        String
+  email       String
+  phone       String?
+  cpf         String?
+
+  ipAddress   String?
+  userAgent   String?
+
+  slotOptionId String?
+  slotOption   FormSlotOption? @relation(fields: [slotOptionId], references: [id])
+
+  reservedUntil DateTime?
+  confirmedAt   DateTime?
+  canceledAt    DateTime?
+  expiredAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  values       SubmissionValue[]
+  logs         SubmissionLog[]
+
+  @@index([formId])
+  @@index([status])
+  @@index([protocol])
+  @@index([email])
+  @@index([cpf])
+  @@index([createdAt(sort: Desc)])
+  @@index([reservedUntil])
+  @@map("submissions")
+}
+
+model SubmissionValue {
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  fieldId      String
+  field        FormField  @relation(fields: [fieldId], references: [id])
+
+  value        String
+  fileUrl      String?
+
+  @@unique([submissionId, fieldId])
+  @@index([submissionId])
+  @@map("submission_values")
+}
+
+model SubmissionLog {
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  action       String
+  details      Json?
+  createdAt    DateTime   @default(now())
+
+  @@index([submissionId])
+  @@index([createdAt(sort: Desc)])
+  @@map("submission_logs")
 }

@@ -703,5 +703,333 @@ module.exports = function registerApiRoutes(app) {
     } catch (e) { res.status(500).json({ error: e.message }); }
   });
 
-  console.log('   API PIPEPED: ✅ rotas registradas');
+  // ═══════════════════════════════════════════════════════════════════
+  // FORMS (Formulários & Inscrições)
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ─── Helpers ─────────────────────────────────────────────────
+  function isValidCPF(cpf) {
+    const c = cpf.replace(/\D/g, '');
+    if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+    let s = 0; for (let i = 0; i < 9; i++) s += +c[i] * (10 - i);
+    let d = 11 - (s % 11); if (d >= 10) d = 0; if (+c[9] !== d) return false;
+    s = 0; for (let i = 0; i < 10; i++) s += +c[i] * (11 - i);
+    d = 11 - (s % 11); if (d >= 10) d = 0; return +c[10] === d;
+  }
+
+  async function generateProtocol(tx, form) {
+    const year = new Date().getFullYear();
+    const prefix = form.slug.toUpperCase().replace(/-/g, '').substring(0, 12);
+    const last = await tx.submission.findFirst({
+      where: { formId: form.id }, orderBy: { createdAt: 'desc' }, select: { protocol: true },
+    });
+    let seq = 1;
+    if (last?.protocol) { const p = last.protocol.split('-'); const n = parseInt(p[p.length - 1], 10); if (!isNaN(n)) seq = n + 1; }
+    return `${prefix}-${year}-${String(seq).padStart(5, '0')}`;
+  }
+
+  // ─── GET /api/forms (admin — listar) ────────────────────────
+  app.get('/api/forms', authMiddleware, async (req, res) => {
+    try {
+      const { schoolId, status, page = '1', limit = '20' } = req.query;
+      const where = {};
+      if (schoolId) where.schoolId = schoolId;
+      if (status) where.status = status;
+      const p = parseInt(page), l = parseInt(limit);
+      const [forms, total] = await prisma.$transaction([
+        prisma.form.findMany({
+          where, include: { school: { select: { id: true, name: true, shortName: true } }, _count: { select: { submissions: true, versions: true } } },
+          orderBy: { createdAt: 'desc' }, skip: (p - 1) * l, take: l,
+        }),
+        prisma.form.count({ where }),
+      ]);
+      res.json({ data: forms, total, page: p, limit: l });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── GET /api/forms/public/:slug (público) ──────────────────
+  app.get('/api/forms/public/:slug', async (req, res) => {
+    try {
+      const form = await prisma.form.findUnique({
+        where: { slug: req.params.slug },
+        include: { school: { select: { id: true, name: true, shortName: true } }, slotOptions: true },
+      });
+      if (!form) return res.status(404).json({ error: 'Formulário não encontrado' });
+      const now = new Date();
+      if (form.status !== 'ACTIVE') return res.status(400).json({ error: 'Formulário não está aberto' });
+      if (form.opensAt && now < form.opensAt) return res.status(400).json({ error: 'Inscrições ainda não abertas' });
+      if (form.closesAt && now > form.closesAt) return res.status(400).json({ error: 'Inscrições encerradas' });
+
+      const version = await prisma.formVersion.findUnique({
+        where: { formId_version: { formId: form.id, version: form.currentVersion } },
+      });
+      if (!version) return res.status(400).json({ error: 'Formulário ainda não publicado' });
+
+      // Vagas
+      let slotsInfo;
+      if (form.slotMode === 'GLOBAL') {
+        const filled = await prisma.submission.count({ where: { formId: form.id, status: { in: ['RESERVED','PENDING','CONFIRMED'] } } });
+        slotsInfo = { mode: 'GLOBAL', total: form.maxSlots, filled, available: Math.max(0, (form.maxSlots || 0) - filled) };
+      } else {
+        slotsInfo = { mode: 'PER_OPTION', options: form.slotOptions.map(o => ({ id: o.id, label: o.label, total: o.maxSlots, filled: o.filled, available: Math.max(0, o.maxSlots - o.filled) })) };
+      }
+
+      const snap = version.snapshot;
+      res.json({
+        id: form.id, title: form.title, slug: form.slug, description: form.description, coverImage: form.coverImage,
+        school: form.school, requiresConfirmation: form.requiresConfirmation, reservationTtlMinutes: form.reservationTtlMinutes,
+        version: version.version, versionId: version.id, fields: snap.fields || [], slotOptions: snap.slotOptions || [], slotsInfo,
+      });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── GET /api/forms/:id (admin) ─────────────────────────────
+  app.get('/api/forms/:id', authMiddleware, async (req, res) => {
+    try {
+      const form = await prisma.form.findUnique({
+        where: { id: req.params.id },
+        include: {
+          fields: { orderBy: { position: 'asc' } }, slotOptions: true,
+          school: { select: { id: true, name: true, shortName: true } },
+          versions: { orderBy: { version: 'desc' }, take: 5 },
+          _count: { select: { submissions: true } },
+        },
+      });
+      if (!form) return res.status(404).json({ error: 'Não encontrado' });
+      res.json(form);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── GET /api/forms/:id/slots (público — vagas) ─────────────
+  app.get('/api/forms/:id/slots', async (req, res) => {
+    try {
+      const form = await prisma.form.findUnique({ where: { id: req.params.id }, include: { slotOptions: true } });
+      if (!form) return res.status(404).json({ error: 'Não encontrado' });
+      if (form.slotMode === 'GLOBAL') {
+        const filled = await prisma.submission.count({ where: { formId: form.id, status: { in: ['RESERVED','PENDING','CONFIRMED'] } } });
+        return res.json({ mode: 'GLOBAL', total: form.maxSlots, filled, available: Math.max(0, (form.maxSlots || 0) - filled) });
+      }
+      res.json({ mode: 'PER_OPTION', options: form.slotOptions.map(o => ({ id: o.id, label: o.label, total: o.maxSlots, filled: o.filled, available: Math.max(0, o.maxSlots - o.filled) })) });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── POST /api/forms (admin — criar) ────────────────────────
+  app.post('/api/forms', authMiddleware, managerOrAdmin, async (req, res) => {
+    try {
+      const d = req.body;
+      if (d.slotMode === 'PER_OPTION' && (!d.slotOptions || !d.slotOptions.length)) return res.status(400).json({ error: 'slotOptions obrigatório para PER_OPTION' });
+      if (d.slotMode === 'GLOBAL' && !d.maxSlots) return res.status(400).json({ error: 'maxSlots obrigatório para GLOBAL' });
+      const exists = await prisma.form.findUnique({ where: { slug: d.slug } });
+      if (exists) return res.status(400).json({ error: `Slug "${d.slug}" já em uso` });
+
+      const form = await prisma.form.create({
+        data: {
+          title: d.title, slug: d.slug, description: d.description, coverImage: d.coverImage,
+          status: 'DRAFT', isPublic: d.isPublic !== false, opensAt: d.opensAt ? new Date(d.opensAt) : null, closesAt: d.closesAt ? new Date(d.closesAt) : null,
+          slotMode: d.slotMode || 'GLOBAL', maxSlots: d.maxSlots, reservationTtlMinutes: d.reservationTtlMinutes || 0,
+          requiresConfirmation: d.requiresConfirmation || false, confirmationSubject: d.confirmationSubject, confirmationBody: d.confirmationBody,
+          currentVersion: 0, schoolId: d.schoolId, createdById: req.user.sub,
+          fields: { create: (d.fields || []).map(f => ({ label: f.label, fieldKey: f.fieldKey, type: f.type, placeholder: f.placeholder, helpText: f.helpText, required: !!f.required, position: f.position || 0, config: f.config || undefined, isSlotField: !!f.isSlotField })) },
+          slotOptions: d.slotOptions ? { create: d.slotOptions.map(s => ({ label: s.label, maxSlots: s.maxSlots })) } : undefined,
+        },
+        include: { fields: { orderBy: { position: 'asc' } }, slotOptions: true, school: { select: { id: true, name: true, shortName: true } } },
+      });
+      res.status(201).json(form);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── POST /api/forms/:id/publish (admin — publica versão) ───
+  app.post('/api/forms/:id/publish', authMiddleware, managerOrAdmin, async (req, res) => {
+    try {
+      const form = await prisma.form.findUnique({ where: { id: req.params.id }, include: { fields: { orderBy: { position: 'asc' } }, slotOptions: true } });
+      if (!form) return res.status(404).json({ error: 'Não encontrado' });
+      if (!form.fields.length) return res.status(400).json({ error: 'Formulário sem campos' });
+      const next = form.currentVersion + 1;
+      const snapshot = {
+        title: form.title, description: form.description, slotMode: form.slotMode, maxSlots: form.maxSlots,
+        reservationTtlMinutes: form.reservationTtlMinutes, requiresConfirmation: form.requiresConfirmation,
+        fields: form.fields.map(f => ({ id: f.id, label: f.label, fieldKey: f.fieldKey, type: f.type, placeholder: f.placeholder, helpText: f.helpText, required: f.required, position: f.position, config: f.config, isSlotField: f.isSlotField })),
+        slotOptions: form.slotOptions.map(s => ({ id: s.id, label: s.label, maxSlots: s.maxSlots })),
+      };
+      const result = await prisma.$transaction(async tx => {
+        const version = await tx.formVersion.create({ data: { formId: form.id, version: next, snapshot, publishedBy: req.user.sub } });
+        const updated = await tx.form.update({ where: { id: form.id }, data: { currentVersion: next, status: 'ACTIVE' } });
+        return { form: updated, version };
+      });
+      res.json(result);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── PATCH /api/forms/:id/status (admin) ────────────────────
+  app.patch('/api/forms/:id/status', authMiddleware, managerOrAdmin, async (req, res) => {
+    try {
+      const updated = await prisma.form.update({ where: { id: req.params.id }, data: { status: req.body.status } });
+      res.json(updated);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SUBMISSIONS (Inscrições — pipeline)
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ─── POST /api/submissions (público — nova inscrição) ───────
+  app.post('/api/submissions', async (req, res) => {
+    try {
+      const d = req.body;
+      if (!d.formSlug || !d.name || !d.email) return res.status(400).json({ error: 'formSlug, name e email são obrigatórios' });
+
+      // 1. Carregar form + versão
+      const form = await prisma.form.findUnique({ where: { slug: d.formSlug }, include: { slotOptions: true, school: { select: { id: true, name: true } } } });
+      if (!form) return res.status(404).json({ error: 'Formulário não encontrado' });
+      const version = await prisma.formVersion.findUnique({ where: { formId_version: { formId: form.id, version: form.currentVersion } } });
+      if (!version) return res.status(400).json({ error: 'Formulário não publicado' });
+
+      // 2. Elegibilidade
+      const now = new Date();
+      if (form.status !== 'ACTIVE') return res.status(400).json({ error: 'Formulário não está aberto' });
+      if (form.opensAt && now < form.opensAt) return res.status(400).json({ error: 'Inscrições ainda não abertas' });
+      if (form.closesAt && now > form.closesAt) return res.status(400).json({ error: 'Inscrições encerradas' });
+
+      // 3. Validação dos campos obrigatórios (contra snapshot)
+      const snapFields = version.snapshot.fields || [];
+      const submitted = new Set((d.values || []).map(v => v.fieldKey));
+      const missing = snapFields.filter(f => f.required && !submitted.has(f.fieldKey)).map(f => f.label);
+      if (missing.length) return res.status(400).json({ error: `Campos obrigatórios: ${missing.join(', ')}` });
+
+      // Validação de CPF e e-mail
+      if (d.cpf && !isValidCPF(d.cpf)) return res.status(400).json({ error: 'CPF inválido' });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return res.status(400).json({ error: 'E-mail inválido' });
+
+      // 4 + 5. Reserva atômica + Persistência (transação)
+      const isReservation = form.requiresConfirmation && form.reservationTtlMinutes > 0;
+      const initialStatus = isReservation ? 'RESERVED' : 'CONFIRMED';
+      const reservedUntil = isReservation ? new Date(Date.now() + form.reservationTtlMinutes * 60000) : null;
+
+      const submission = await prisma.$transaction(async tx => {
+        // Reservar vaga
+        if (form.slotMode === 'GLOBAL') {
+          const count = await tx.submission.count({ where: { formId: form.id, status: { in: ['RESERVED','PENDING','CONFIRMED'] } } });
+          if (form.maxSlots && count >= form.maxSlots) {
+            throw Object.assign(new Error('Vagas esgotadas para este formulário'), { statusCode: 409 });
+          }
+        } else if (form.slotMode === 'PER_OPTION') {
+          if (!d.slotOptionId) throw Object.assign(new Error('Selecione uma modalidade/categoria'), { statusCode: 400 });
+          const result = await tx.$executeRaw`UPDATE form_slot_options SET filled = filled + 1 WHERE id = ${d.slotOptionId} AND form_id = ${form.id} AND filled < max_slots`;
+          if (result === 0) {
+            const opt = await tx.formSlotOption.findUnique({ where: { id: d.slotOptionId } });
+            const label = opt ? opt.label : 'selecionada';
+            throw Object.assign(new Error(`Puxa, a vaga para "${label}" acabou de ser preenchida. Por favor, escolha outra opção.`), { statusCode: 409 });
+          }
+        }
+
+        const protocol = await generateProtocol(tx, form);
+        const fieldMap = new Map(snapFields.map(f => [f.fieldKey, f.id]));
+
+        const created = await tx.submission.create({
+          data: {
+            formId: form.id, formVersionId: version.id, protocol, status: initialStatus,
+            name: d.name, email: d.email, phone: d.phone || null, cpf: d.cpf || null,
+            slotOptionId: d.slotOptionId || null, ipAddress: req.ip || req.socket?.remoteAddress,
+            userAgent: req.headers['user-agent'], reservedUntil, confirmedAt: isReservation ? null : now,
+            values: {
+              create: (d.values || []).filter(v => fieldMap.has(v.fieldKey)).map(v => ({ fieldId: fieldMap.get(v.fieldKey), value: String(v.value), fileUrl: v.fileUrl || null })),
+            },
+          },
+          include: { slotOption: true },
+        });
+
+        // Log
+        await tx.submissionLog.create({ data: { submissionId: created.id, action: 'created', details: { ip: req.ip, slotOptionId: d.slotOptionId } } });
+
+        return created;
+      });
+
+      // 6. E-mail (async, não bloqueia)
+      try {
+        const subj = form.confirmationSubject || `Inscrição confirmada — ${form.title}`;
+        let body = form.confirmationBody || `Olá {{nome}},\n\nSua inscrição foi confirmada!\nProtocolo: {{protocolo}}\n\nAtenciosamente,\n{{escola}}`;
+        body = body.replace(/\{\{nome\}\}/g, submission.name).replace(/\{\{protocolo\}\}/g, submission.protocol)
+          .replace(/\{\{formulario\}\}/g, form.title).replace(/\{\{escola\}\}/g, form.school?.name || 'Grupo PED');
+        await prisma.emailLog.create({ data: { to: submission.email, subject: subj, content: body, status: 'queued' } });
+        await prisma.submissionLog.create({ data: { submissionId: submission.id, action: 'email_queued', details: { to: submission.email } } });
+      } catch (emailErr) {
+        console.error('Email falhou:', emailErr.message);
+        await prisma.submissionLog.create({ data: { submissionId: submission.id, action: 'email_failed', details: { error: emailErr.message } } }).catch(() => {});
+      }
+
+      res.status(201).json({
+        id: submission.id, protocol: submission.protocol, status: submission.status,
+        name: submission.name, email: submission.email, slotOption: submission.slotOption?.label,
+        reservedUntil: submission.reservedUntil, createdAt: submission.createdAt,
+      });
+    } catch (e) {
+      const code = e.statusCode || 500;
+      res.status(code).json({ error: e.message });
+    }
+  });
+
+  // ─── GET /api/submissions/protocol/:protocol (público) ──────
+  app.get('/api/submissions/protocol/:protocol', async (req, res) => {
+    try {
+      const sub = await prisma.submission.findUnique({
+        where: { protocol: req.params.protocol },
+        include: {
+          form: { select: { id: true, title: true, slug: true } },
+          formVersion: { select: { version: true, snapshot: true } },
+          values: { include: { field: { select: { label: true, type: true, fieldKey: true } } } },
+          slotOption: { select: { label: true } },
+        },
+      });
+      if (!sub) return res.status(404).json({ error: 'Inscrição não encontrada' });
+      res.json(sub);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── POST /api/submissions/confirm/:protocol (público) ──────
+  app.post('/api/submissions/confirm/:protocol', async (req, res) => {
+    try {
+      const sub = await prisma.submission.findUnique({ where: { protocol: req.params.protocol } });
+      if (!sub) return res.status(404).json({ error: 'Inscrição não encontrada' });
+      if (sub.status !== 'RESERVED') return res.status(400).json({ error: `Status "${sub.status}" não pode ser confirmado` });
+      if (sub.reservedUntil && new Date() > sub.reservedUntil) return res.status(400).json({ error: 'Reserva expirada' });
+      const updated = await prisma.submission.update({ where: { id: sub.id }, data: { status: 'CONFIRMED', confirmedAt: new Date(), reservedUntil: null } });
+      await prisma.submissionLog.create({ data: { submissionId: sub.id, action: 'confirmed' } });
+      res.json(updated);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── GET /api/submissions/form/:formId (admin) ──────────────
+  app.get('/api/submissions/form/:formId', authMiddleware, async (req, res) => {
+    try {
+      const { status, page = '1', limit = '50' } = req.query;
+      const where = { formId: req.params.formId };
+      if (status) where.status = status;
+      const p = parseInt(page), l = parseInt(limit);
+      const [subs, total] = await prisma.$transaction([
+        prisma.submission.findMany({
+          where, include: { slotOption: { select: { label: true } }, formVersion: { select: { version: true } }, _count: { select: { values: true } } },
+          orderBy: { createdAt: 'desc' }, skip: (p - 1) * l, take: l,
+        }),
+        prisma.submission.count({ where }),
+      ]);
+      res.json({ data: subs, total, page: p, limit: l });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── PATCH /api/submissions/:id/cancel (admin) ──────────────
+  app.patch('/api/submissions/:id/cancel', authMiddleware, async (req, res) => {
+    try {
+      const sub = await prisma.submission.findUnique({ where: { id: req.params.id } });
+      if (!sub) return res.status(404).json({ error: 'Não encontrada' });
+      if (sub.status === 'CANCELED') return res.status(400).json({ error: 'Já cancelada' });
+      const updated = await prisma.$transaction(async tx => {
+        if (sub.slotOptionId) await tx.$executeRaw`UPDATE form_slot_options SET filled = GREATEST(filled - 1, 0) WHERE id = ${sub.slotOptionId}`;
+        return tx.submission.update({ where: { id: sub.id }, data: { status: 'CANCELED', canceledAt: new Date(), reservedUntil: null } });
+      });
+      await prisma.submissionLog.create({ data: { submissionId: sub.id, action: 'canceled', details: { reason: req.body.reason } } });
+      res.json(updated);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  console.log('   API PIPEPED: ✅ rotas registradas (+ Forms & Submissions)');
 };

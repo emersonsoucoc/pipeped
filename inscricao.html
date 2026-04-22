@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscrição PIPEPED</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #0F172A;
+            --accent: #6366F1;
+            --accent-hover: #4F46E5;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --light-bg: #F9FAFB;
+            --border: #E5E7EB;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --white: #FFFFFF;
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--navy) 0%, #1E293B 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .consultation-mode .header,
+        .consultation-mode .form-card {
+            display: none;
+        }
+
+        .consultation-mode .consultation-form {
+            display: block;
+        }
+
+        .form-card {
+            display: none;
+        }
+
+        .form-card.active {
+            display: block;
+        }
+
+        .consultation-form {
+            display: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 560px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            color: var(--white);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .school-name {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .form-description {
+            font-size: 14px;
+            opacity: 0.85;
+            line-height: 1.5;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .progress-container {
+            margin-bottom: 28px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--light-bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .form-step {
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .required-mark {
+            color: var(--error);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        select,
+        textarea {
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: var(--white);
+            color: var(--text-primary);
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        input[type="file"] {
+            padding: 8px 12px;
+            border: 1.5px dashed var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="file"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-item,
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1.5px solid var(--border);
+        }
+
+        .radio-item:hover,
+        .checkbox-item:hover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .radio-item label,
+        .checkbox-item label {
+            cursor: pointer;
+            margin: 0;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .slot-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .slot-card {
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        }
+
+        .slot-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slot-card input[type="radio"]:checked + .slot-label {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .slot-card input[type="radio"]:checked {
+            border-color: var(--accent);
+        }
+
+        .slot-card.selected {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .slot-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .slot-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .slot-badge.available {
+            background: rgba(16, 185, 129, 0.15);
+            color: #059669;
+        }
+
+        .slot-badge.limited {
+            background: rgba(245, 158, 11, 0.15);
+            color: #D97706;
+        }
+
+        .slot-badge.unavailable {
+            background: rgba(239, 68, 68, 0.15);
+            color: #DC2626;
+        }
+
+        .slot-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-color: var(--border);
+        }
+
+        .slot-card.disabled:hover {
+            border-color: var(--border);
+            box-shadow: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            justify-content: space-between;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: var(--white);
+            flex: 1;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--light-bg);
+            color: var(--text-primary);
+            border: 1.5px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .btn-tertiary {
+            background: transparent;
+            color: var(--accent);
+            border: 1.5px solid var(--accent);
+        }
+
+        .btn-tertiary:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .banner {
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 14px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .banner-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            color: #DC2626;
+        }
+
+        .banner-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1.5px solid rgba(245, 158, 11, 0.3);
+            color: #D97706;
+        }
+
+        .banner-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1.5px solid rgba(16, 185, 129, 0.3);
+            color: #059669;
+        }
+
+        .banner-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .banner-content {
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        .banner-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .success-screen {
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 8px;
+        }
+
+        .success-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .protocol-box {
+            background: var(--light-bg);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .protocol-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .protocol-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            margin-bottom: 12px;
+        }
+
+        .protocol-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-copy {
+            flex: 1;
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-copy:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-copy.copied {
+            background: var(--success);
+        }
+
+        .summary-section {
+            text-align: left;
+            background: var(--light-bg);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .summary-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .consultation-wrapper {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .consultation-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .consultation-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .consultation-input-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .consultation-input-group input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .consultation-link {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .consultation-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .consultation-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: var(--error);
+            margin-top: 6px;
+        }
+
+        .form-group.error input,
+        .form-group.error select,
+        .form-group.error textarea {
+            border-color: var(--error);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .card,
+            .consultation-wrapper {
+                padding: 24px;
+                border-radius: 16px;
+            }
+
+            .form-title {
+                font-size: 22px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-secondary {
+                width: 100%;
+            }
+
+            .consultation-input-group {
+                flex-direction: column;
+            }
+
+            .consultation-input-group input {
+                min-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header" id="header">
+            <div class="school-name" id="schoolName">Carregando...</div>
+            <div class="form-title" id="formTitle">Inscrição</div>
+            <div class="form-description" id="formDescription">Por favor, preencha o formulário abaixo</div>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="form-card card active" id="formCard">
+            <!-- Notifications Banner -->
+            <div id="notificationBanner"></div>
+
+            <!-- Progress Bar -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-info">
+                    <span id="progressText">Etapa 1 de 1</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Form Steps -->
+            <div id="formStepsContainer"></div>
+
+            <!-- Navigation Buttons -->
+            <div class="button-group" id="buttonGroup">
+                <button class="btn-secondary" id="prevBtn" style="display: none;">← Anterior</button>
+                <button class="btn-primary" id="nextBtn">Próximo →</button>
+            </div>
+
+            <!-- Consultation Link -->
+            <div class="consultation-link" id="consultationLink"></div>
+        </div>
+
+        <!-- Consultation Form -->
+        <div class="consultation-form" id="consultationForm">
+            <div class="consultation-wrapper">
+                <div class="consultation-title">Consultar Inscrição</div>
+                <div class="consultation-subtitle">Digite seu número de protocolo para consultar o status</div>
+                <div class="consultation-input-group">
+                    <input
+                        type="text"
+                        id="protocolInput"
+                        placeholder="Número de protocolo"
+                        autocomplete="off"
+                    >
+                    <button class="btn-primary" id="consultBtn">Consultar</button>
+                </div>
+                <div id="consultationError" class="error-message"></div>
+                <div class="consultation-link">
+                    <a id="backToForm">← Voltar ao formulário</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // STATE MANAGEMENT
+        // ============================================================================
+        const state = {
+            slug: null,
+            formData: {},
+            currentStep: 0,
+            formDefinition: null,
+            slots: {},
+            submitting: false,
+            conflictedField: null,
+            pollingInterval: null,
+            apiBaseUrl: window.location.origin,
+        };
+
+        // ============================================================================
+        // UTILITY FUNCTIONS
+        // ============================================================================
+        function extractSlug() {
+            const pathMatch = window.location.pathname.match(/\/inscricao\/([^/]+)/);
+            return pathMatch ? pathMatch[1] : new URLSearchParams(window.location.search).get('slug');
+        }
+
+        function showNotification(message, type = 'error', closable = true) {
+            const banner = document.getElementById('notificationBanner');
+            const icons = { error: '⚠️', warning: '⚡', success: '✓' };
+            const bannerClass = `banner banner-${type}`;
+
+            let html = `
+                <div class="${bannerClass}">
+                    <div class="banner-icon">${icons[type]}</div>
+                    <div class="banner-content">${message}</div>
+            `;
+
+            if (closable) {
+                html += `<button class="banner-close">×</button>`;
+            }
+
+            html += `</div>`;
+            banner.innerHTML = html;
+
+            if (closable) {
+                banner.querySelector('.banner-close').addEventListener('click', () => {
+                    banner.innerHTML = '';
+                });
+            }
+        }
+
+        function showConflictBanner(fieldLabel) {
+            showNotification(
+                `Puxa, a vaga para ${fieldLabel} acabou de ser preenchida. Por favor, escolha outra opção.`,
+                'warning',
+                false
+            );
+        }
+
+        function clearNotifications() {
+            document.getElementById('notificationBanner').innerHTML = '';
+        }
+
+        // CPF Validation (Brazilian algorithm)
+        function validateCPF(cpf) {
+            cpf = cpf.replace(/\D/g, '');
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+            let sum = 0, remainder;
+            for (let i = 1; i <= 9; i++) {
+                sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+
+            sum = 0;
+            for (let i = 1; i <= 10; i++) {
+                sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            return remainder === parseInt(cpf.substring(10, 11));
+        }
+
+        // Input Masks
+        function maskCPF(value) {
+            return value.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        function maskPhone(value) {
+            return value.replace(/\D/g, '').slice(0, 11).replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        }
+
+        // Draft Persistence
+        function saveDraft() {
+            sessionStorage.setItem(`form_${state.slug}`, JSON.stringify(state.formData));
+        }
+
+        function loadDraft() {
+            const draft = sessionStorage.getItem(`form_${state.slug}`);
+            if (draft) {
+                state.formData = JSON.parse(draft);
+                populateFormFromDraft();
+            }
+        }
+
+        function populateFormFromDraft() {
+            Object.keys(state.formData).forEach(fieldId => {
+                const input = document.querySelector(`[data-field-id="${fieldId}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = state.formData[fieldId] === true;
+                    } else if (input.type === 'radio') {
+                        const radio = document.querySelector(`[data-field-id="${fieldId}"][value="${state.formData[fieldId]}"]`);
+                        if (radio) radio.checked = true;
+                    } else {
+                        input.value = state.formData[fieldId];
+                    }
+                }
+            });
+        }
+
+        // ============================================================================
+        // API CALLS
+        // ============================================================================
+        async function fetchFormDefinition() {
+            try {
+                const response = await fetch(`${state.apiBaseUrl}/api/forms/public/${state.slug}`);
+                if (!response.ok) throw new Error('Formulário não encontrado');
+
+                const data = await response.json();
+                state.formDefinition = data;
+                return data;
+            } catch (error) {
+                showNotification('Erro ao carregar formulário. Tente novamente.', 'error');
+                console.error(error);
+                return null;
+            }
+        }
+
+        async function fetchSlots() {
+            try {
+                const response = await fetch(`${state.apiBaseUrl}/api/forms/${state.formDefinition.id}/slots`);
+                if (!response.ok) throw new Error('Erro ao buscar vagas');
+
+                const data = await response.json();
+                state.slots = data.slots || {};
+                return data;
+            } catch (error) {
+                console.error('Erro ao buscar slots:', error);
+                return null;
+            }
+        }
+
+        async function submitForm() {
+            state.submitting = true;
+            document.getElementById('nextBtn').disabled = true;
+            const nextBtn = document.getElementById('nextBtn');
+            const originalText = nextBtn.innerHTML;
+            nextBtn.innerHTML = '<span class="loading-spinner"></span> Enviando...';
+
+            try {
+                const response = await fetch(`${state.apiBaseUrl}/api/submissions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formId: state.formDefinition.id,
+                        data: state.formData,
+                    }),
+                });
+
+                if (response.status === 409) {
+                    const error = await response.json();
+                    showConflictBanner(error.fieldLabel || 'escolhida');
+                    state.submitting = false;
+                    document.getElementById('nextBtn').disabled = false;
+                    document.getElementById('nextBtn').innerHTML = originalText;
+                    return;
+                }
+
+                if (!response.ok) throw new Error('Erro ao enviar formulário');
+
+                const data = await response.json();
+                clearNotifications();
+                sessionStorage.removeItem(`form_${state.slug}`);
+                showSuccessScreen(data.protocol, data.summary);
+            } catch (error) {
+                showNotification('Erro ao enviar formulário. Tente novamente.', 'error');
+                console.error(error);
+                state.submitting = false;
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('nextBtn').innerHTML = originalText;
+            }
+        }
+
+        async function consultProtocol(protocol) {
+            try {
+                const response = await fetch(`${state.apiBaseUrl}/api/submissions/protocol/${protocol}`);
+                if (!response.ok) throw new Error('Protocolo não encontrado');
+
+                const data = await response.json();
+                showConsultationResult(data);
+            } catch (error) {
+                document.getElementById('consultationError').textContent = 'Protocolo não encontrado';
+                console.error(error);
+            }
+        }
+
+        // ============================================================================
+        // FORM RENDERING
+        // ============================================================================
+        function renderFormSteps() {
+            const fields = state.formDefinition.fields || [];
+            const stepsPerPage = 3;
+            const totalSteps = Math.ceil(fields.length / stepsPerPage);
+
+            const container = document.getElementById('formStepsContainer');
+            container.innerHTML = '';
+
+            for (let step = 0; step < totalSteps; step++) {
+                const stepFields = fields.slice(step * stepsPerPage, (step + 1) * stepsPerPage);
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'form-step';
+                stepDiv.id = `step-${step}`;
+                if (step === 0) stepDiv.classList.add('active');
+
+                stepDiv.innerHTML = stepFields.map(field => renderField(field)).join('');
+                container.appendChild(stepDiv);
+            }
+
+            updateProgress();
+            updateButtonState();
+            loadDraft();
+        }
+
+        function renderField(field) {
+            const required = field.required ? '<span class="required-mark">*</span>' : '';
+            const baseGroup = `<div class="form-group" id="group-${field.id}">
+                <label for="${field.id}">${field.label}${required}</label>`;
+
+            let fieldHtml = '';
+
+            switch (field.type) {
+                case 'TEXT':
+                case 'EMAIL':
+                    fieldHtml = `<input type="${field.type === 'EMAIL' ? 'email' : 'text'}" id="${field.id}" data-field-id="${field.id}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''} />`;
+                    break;
+
+                case 'CPF':
+                    fieldHtml = `<input type="text" id="${field.id}" data-field-id="${field.id}" placeholder="000.000.000-00" maxlength="14" />`;
+                    break;
+
+                case 'PHONE':
+                    fieldHtml = `<input type="tel" id="${field.id}" data-field-id="${field.id}" placeholder="(00) 00000-0000" maxlength="15" />`;
+                    break;
+
+                case 'DATE':
+                    fieldHtml = `<input type="date" id="${field.id}" data-field-id="${field.id}" ${field.required ? 'required' : ''} />`;
+                    break;
+
+                case 'TEXTAREA':
+                    fieldHtml = `<textarea id="${field.id}" data-field-id="${field.id}" placeholder="${field.placeholder || ''}" rows="4" ${field.required ? 'required' : ''}></textarea>`;
+                    break;
+
+                case 'FILE':
+                    fieldHtml = `<input type="file" id="${field.id}" data-field-id="${field.id}" ${field.required ? 'required' : ''} />`;
+                    break;
+
+                case 'SELECT':
+                    fieldHtml = `<select id="${field.id}" data-field-id="${field.id}" ${field.required ? 'required' : ''}>
+                        <option value="">Selecione uma opção</option>
+                        ${(field.options || []).map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                    </select>`;
+                    break;
+
+                case 'RADIO':
+                    if (field.isSlotField) {
+                        fieldHtml = renderSlotRadio(field);
+                    } else {
+                        fieldHtml = `<div class="radio-group">
+                            ${(field.options || []).map(opt => `
+                                <div class="radio-item">
+                                    <input type="radio" id="${field.id}-${opt.value}" name="${field.id}" value="${opt.value}" data-field-id="${field.id}" ${field.required ? 'required' : ''} />
+                                    <label for="${field.id}-${opt.value}">${opt.label}</label>
+                                </div>
+                            `).join('')}
+                        </div>`;
+                    }
+                    break;
+
+                case 'CHECKBOX':
+                    fieldHtml = `<div class="checkbox-group">
+                        ${(field.options || []).map(opt => `
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="${field.id}-${opt.value}" name="${field.id}" value="${opt.value}" data-field-id="${field.id}" />
+                                <label for="${field.id}-${opt.value}">${opt.label}</label>
+                            </div>
+                        `).join('')}
+                    </div>`;
+                    break;
+            }
+
+            return baseGroup + fieldHtml + '</div>';
+        }
+
+        function renderSlotRadio(field) {
+            const options = field.options || [];
+            return `<div class="slot-options">
+                ${options.map(opt => {
+                    const count = state.slots[opt.value] || 0;
+                    let badge = '';
+                    if (count > 2) {
+                        badge = `<span class="slot-badge available">${count} vagas</span>`;
+                    } else if (count > 0) {
+                        badge = `<span class="slot-badge limited">Últimas ${count}!</span>`;
+                    } else {
+                        badge = `<span class="slot-badge unavailable">Esgotado</span>`;
+                    }
+                    const disabled = count === 0 ? 'disabled' : '';
+                    return `
+                        <label class="slot-card ${count === 0 ? 'disabled' : ''}" >
+                            <input type="radio" name="${field.id}" value="${opt.value}" data-field-id="${field.id}" ${disabled} />
+                            <span class="slot-label">
+                                <span>${opt.label}</span>
+                                ${badge}
+                            </span>
+                        </label>
+                    `;
+                }).join('')}
+            </div>`;
+        }
+
+        // ============================================================================
+        // FORM NAVIGATION
+        // ============================================================================
+        function updateProgress() {
+            const steps = document.querySelectorAll('.form-step');
+            const totalSteps = steps.length;
+            const currentStep = state.currentStep;
+            const percent = totalSteps > 1 ? Math.round(((currentStep + 1) / totalSteps) * 100) : 100;
+
+            document.getElementById('progressText').textContent = `Etapa ${currentStep + 1} de ${totalSteps}`;
+            document.getElementById('progressPercent').textContent = `${percent}%`;
+            document.getElementById('progressFill').style.width = `${percent}%`;
+        }
+
+        function updateButtonState() {
+            const steps = document.querySelectorAll('.form-step');
+            const totalSteps = steps.length;
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.style.display = state.currentStep === 0 ? 'none' : 'flex';
+
+            if (state.currentStep === totalSteps - 1) {
+                nextBtn.innerHTML = 'Enviar Inscrição';
+            } else {
+                nextBtn.innerHTML = 'Próximo →';
+            }
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.form-step').forEach((el, idx) => {
+                el.classList.toggle('active', idx === step);
+            });
+            state.currentStep = step;
+            updateProgress();
+            updateButtonState();
+            window.scrollTo(0, 0);
+        }
+
+        function validateCurrentStep() {
+            const step = document.getElementById(`step-${state.currentStep}`);
+            const inputs = step.querySelectorAll('input[required], select[required], textarea[required]');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                const group = input.closest('.form-group');
+                const value = input.type === 'checkbox' ? input.checked : input.value.trim();
+
+                if (!value) {
+                    group.classList.add('error');
+                    isValid = false;
+                } else {
+                    group.classList.remove('error');
+
+                    if (input.type === 'email') {
+                        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
+                        if (!isValidEmail) {
+                            group.classList.add('error');
+                            isValid = false;
+                        }
+                    }
+
+                    if (input.getAttribute('data-field-id')) {
+                        const fieldId = input.getAttribute('data-field-id');
+                        const field = state.formDefinition.fields.find(f => f.id === fieldId);
+                        if (field && field.type === 'CPF') {
+                            if (!validateCPF(input.value)) {
+                                group.classList.add('error');
+                                isValid = false;
+                            }
+                        }
+                    }
+                }
+            });
+
+            return isValid;
+        }
+
+        function captureFormData() {
+            const step = document.getElementById(`step-${state.currentStep}`);
+            const inputs = step.querySelectorAll('[data-field-id]');
+
+            inputs.forEach(input => {
+                const fieldId = input.getAttribute('data-field-id');
+                if (input.type === 'checkbox') {
+                    state.formData[fieldId] = input.checked;
+                } else if (input.type === 'radio') {
+                    if (input.checked) {
+                        state.formData[fieldId] = input.value;
+                    }
+                } else {
+                    state.formData[fieldId] = input.value;
+                }
+            });
+
+            saveDraft();
+        }
+
+        // ============================================================================
+        // SUCCESS & CONSULTATION
+        // ============================================================================
+        function showSuccessScreen(protocol, summary) {
+            document.getElementById('formCard').innerHTML = `
+                <div class="success-screen">
+                    <div class="success-icon">✓</div>
+                    <div class="success-title">Inscrição Realizada!</div>
+                    <div class="success-subtitle">Sua inscrição foi registrada com sucesso</div>
+
+                    <div class="protocol-box">
+                        <div class="protocol-label">Número de Protocolo</div>
+                        <div class="protocol-number">${protocol}</div>
+                        <div class="protocol-actions">
+                            <button class="btn-copy" data-protocol="${protocol}">Copiar Protocolo</button>
+                        </div>
+                    </div>
+
+                    ${summary ? `
+                        <div class="summary-section">
+                            ${Object.entries(summary).map(([key, value]) => `
+                                <div class="summary-item">
+                                    <span class="summary-label">${key}</span>
+                                    <span class="summary-value">${value}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="button-group">
+                        <button class="btn-secondary" onclick="window.location.reload()">Fazer Nova Inscrição</button>
+                    </div>
+                </div>
+            `;
+
+            document.querySelector('[data-protocol]').addEventListener('click', function() {
+                navigator.clipboard.writeText(this.getAttribute('data-protocol'));
+                this.classList.add('copied');
+                this.textContent = 'Copiado!';
+                setTimeout(() => {
+                    this.classList.remove('copied');
+                    this.textContent = 'Copiar Protocolo';
+                }, 2000);
+            });
+        }
+
+        function showConsultationMode() {
+            document.body.classList.add('consultation-mode');
+        }
+
+        function showConsultationResult(data) {
+            // In a real app, show detailed information about the submission
+            alert(`Status da Inscrição:\nProtocolo: ${data.protocol}\nData: ${data.date}\nStatus: ${data.status}`);
+        }
+
+        // ============================================================================
+        // POLLING
+        // ============================================================================
+        function startSlotPolling() {
+            if (state.pollingInterval) clearInterval(state.pollingInterval);
+
+            state.pollingInterval = setInterval(async () => {
+                const oldSlots = JSON.stringify(state.slots);
+                await fetchSlots();
+                const newSlots = JSON.stringify(state.slots);
+
+                if (oldSlots !== newSlots) {
+                    // Re-render slot cards with new counts
+                    const slotFields = state.formDefinition.fields.filter(f => f.isSlotField);
+                    slotFields.forEach(field => {
+                        const container = document.getElementById(`group-${field.id}`);
+                        if (container) {
+                            container.querySelector('.slot-options').replaceWith(
+                                (() => {
+                                    const div = document.createElement('div');
+                                    div.innerHTML = renderSlotRadio(field).split('<div class="slot-options">')[1].split('</div>')[0];
+                                    div.className = 'slot-options';
+                                    return div;
+                                })()
+                            );
+                        }
+                    });
+
+                    // Check if user's selected slot is now unavailable
+                    const selectedSlots = Object.entries(state.formData).filter(([key, val]) => {
+                        const field = state.formDefinition.fields.find(f => f.id === key);
+                        return field && field.isSlotField && val;
+                    });
+
+                    selectedSlots.forEach(([fieldId, value]) => {
+                        if (state.slots[value] === 0 && state.conflictedField !== fieldId) {
+                            const field = state.formDefinition.fields.find(f => f.id === fieldId);
+                            if (field) {
+                                state.conflictedField = fieldId;
+                                showConflictBanner(field.label);
+                            }
+                        }
+                    });
+                }
+            }, 30000); // 30 seconds
+        }
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        async function init() {
+            state.slug = extractSlug();
+            if (!state.slug) {
+                showNotification('Slug não fornecido', 'error');
+                return;
+            }
+
+            const formDef = await fetchFormDefinition();
+            if (!formDef) return;
+
+            // Update header
+            document.getElementById('schoolName').textContent = formDef.schoolName || 'Inscrição';
+            document.getElementById('formTitle').textContent = formDef.title || 'Formulário';
+            document.getElementById('formDescription').textContent = formDef.description || '';
+
+            // Fetch slots
+            await fetchSlots();
+
+            // Render form
+            renderFormSteps();
+
+            // Add event listeners
+            document.getElementById('nextBtn').addEventListener('click', async () => {
+                if (!validateCurrentStep()) return;
+
+                captureFormData();
+
+                const totalSteps = document.querySelectorAll('.form-step').length;
+                if (state.currentStep < totalSteps - 1) {
+                    showStep(state.currentStep + 1);
+                } else {
+                    await submitForm();
+                }
+            });
+
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                if (state.currentStep > 0) {
+                    captureFormData();
+                    showStep(state.currentStep - 1);
+                }
+            });
+
+            // Input listeners for masking
+            document.addEventListener('input', (e) => {
+                if (e.target.id) {
+                    const field = state.formDefinition.fields.find(f => f.id === e.target.id);
+                    if (field && field.type === 'CPF') {
+                        e.target.value = maskCPF(e.target.value);
+                    } else if (field && field.type === 'PHONE') {
+                        e.target.value = maskPhone(e.target.value);
+                    }
+                }
+            });
+
+            // Consultation link
+            const consultationLink = document.getElementById('consultationLink');
+            consultationLink.innerHTML = '<a id="consultLinkBtn">Já se inscreveu? Consultar inscrição</a>';
+            document.getElementById('consultLinkBtn').addEventListener('click', showConsultationMode);
+
+            // Consultation form
+            document.getElementById('consultBtn').addEventListener('click', () => {
+                const protocol = document.getElementById('protocolInput').value.trim();
+                if (!protocol) {
+                    document.getElementById('consultationError').textContent = 'Digite um protocolo válido';
+                    return;
+                }
+                consultProtocol(protocol);
+            });
+
+            document.getElementById('backToForm').addEventListener('click', () => {
+                document.body.classList.remove('consultation-mode');
+                document.getElementById('protocolInput').value = '';
+                document.getElementById('consultationError').textContent = '';
+            });
+
+            // Start polling
+            startSlotPolling();
+        }
+
+        // Start initialization
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
