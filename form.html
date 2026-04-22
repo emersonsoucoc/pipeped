@@ -247,6 +247,12 @@ a{color:var(--accent);text-decoration:none}
         </div>
         Comercial
       </button>
+      <button class="module-opt" data-mod="financeiro" onclick="selectModule('financeiro')">
+        <div class="module-dot">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        Financeiro
+      </button>
       <button class="module-opt" data-mod="contratos" onclick="selectModule('contratos')">
         <div class="module-dot">
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
@@ -387,6 +393,9 @@ const MODULES = {
   comercial: { label:'Comercial', firstPhase:'lead', hasFinancial:false,
                categorias:['Maternal I','Maternal II','Infantil I','Infantil II','Fund. I','Fund. II','Ensino Médio'],
                titles:{ h:'Novo Lead Comercial', d:'Registre os dados do interessado em matrícula.' } },
+  financeiro:{ label:'Financeiro', firstPhase:'pendente', hasFinancial:true,
+               categorias:['Mensalidade','Fornecedor','Folha de Pagamento','Imposto','Manutenção','Material','Serviço','Outros'],
+               titles:{ h:'Nova Movimentação Financeira', d:'Registre a movimentação financeira. Informe valores, fornecedor e vencimento.' } },
   contratos: { label:'Contratos', firstPhase:'novo_envio', hasFinancial:false,
                categorias:['Fornecedor','Prestador de Serviço','Locação','Parceria','Franquia','Outros'],
                titles:{ h:'Nova Solicitação de Contrato', d:'Descreva o contrato que precisa ser criado ou renovado.' } },
