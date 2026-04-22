@@ -1024,6 +1024,20 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
           </div>
         </div>
 
+        <!-- Financeiro-specific fields (Nome do Aluno, Detalhamento) -->
+        <div id="financeiroFields" class="hidden">
+          <div class="divider"></div>
+          <div class="section-title">Dados da Solicitação</div>
+          <div class="field-group">
+            <div class="field-label">Nome do Aluno</div>
+            <input type="text" id="mNomeAluno" placeholder="Nome completo do aluno…">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Detalhamento</div>
+            <textarea id="mDetalhamento" placeholder="Descreva os detalhes da solicitação…" rows="3" style="min-height:60px;font-size:13px"></textarea>
+          </div>
+        </div>
+
         <!-- Comments -->
         <div class="divider"></div>
         <div class="section-title">Comentários</div>
@@ -1280,11 +1294,11 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 'use strict';
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
-  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos'] },
+  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','financeiro','contratos'] },
   { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial'] },
   { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B', schools:['ped1','ped2','ped3'], modulos:['ti'] },
   { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444', schools:['ped1','ped2','ped3'], modulos:['comercial'] },
-  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos'] },
+  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','financeiro','contratos'] },
 ];
 
 let SCHOOLS = [
@@ -1333,6 +1347,20 @@ const MODULES = {
       perdido:     { label:'Perdido',         color:'#EF4444', bg:'#FEF2F2' },
     },
     lastPhase:'matriculado',
+  },
+  financeiro: {
+    label:'Financeiro', shortLabel:'Financeiro', btnLabel:'Nova Solicitação',
+    color:'#EF4444', colorLight:'#FEF2F2', hasFinancial:true,
+    categorias:['Declarações','Solicitar Baixa','Atualização de Boleto','Atualização Contratual','Cancelamento de Matrícula','Cancelamento de Extracurricular','Cadastrar Nova Cobrança','Outros'],
+    fases:{
+      pendente:    { label:'Pendente',    color:'#94A3B8', bg:'#F1F5F9' },
+      a_vencer:    { label:'A Vencer',    color:'#F59E0B', bg:'#FFFBEB' },
+      em_analise:  { label:'Em Análise',  color:'#3B82F6', bg:'#EFF6FF' },
+      aprovado:    { label:'Aprovado',    color:'#8B5CF6', bg:'#F5F3FF' },
+      pago:        { label:'Pago',        color:'#10B981', bg:'#ECFDF5' },
+      vencido:     { label:'Vencido',     color:'#EF4444', bg:'#FEF2F2' },
+    },
+    lastPhase:'pago',
   },
   contratos: {
     label:'Contratos', shortLabel:'Contratos', btnLabel:'Novo Contrato',
@@ -1639,6 +1667,7 @@ const MODULE_ICONS = {
   compras:'<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8"/><path d="M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   ti:'<rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   comercial:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  financeiro:'<line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
   contratos:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
 };
 
@@ -1929,6 +1958,7 @@ function buildCard(c){
     onclick="openCard('${c.id}')" style="${_canEdit?'':'cursor:default'}">
     <div class="card-title">${esc(c.titulo||'Sem título')}</div>
     ${c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
+    ${c.modulo==='financeiro'&&c.supplier?`<div class="card-desc" style="color:#6366F1;font-weight:500">Aluno: ${esc(c.supplier)}</div>`:''}
     <div class="card-tags">
       ${c.escola?`<span class="tag school">${esc(schoolName(c.escola))}</span>`:''}
       ${c.categoria?`<span class="tag cat">${esc(c.categoria)}</span>`:''}
@@ -2058,7 +2088,7 @@ function clearModal(mod, fase){
   populateCategoriaSelect(mod);
   populateEscolaSelect();
   selPrioVal('media');
-  toggleFinancial(m.hasFinancial);
+  toggleFinancial(m.hasFinancial, mod);
 }
 
 function fillModalWith(c){
@@ -2080,7 +2110,12 @@ function fillModalWith(c){
   document.getElementById('mCategoria').value = c.categoria||'';
   document.getElementById('mResponsavel').value = c.responsavel||'';
   selPrioVal(c.prioridade||'media');
-  toggleFinancial(MODULES[c.modulo]?.hasFinancial);
+  toggleFinancial(MODULES[c.modulo]?.hasFinancial, c.modulo);
+  // Preencher campos do financeiro se aplicável
+  if(c.modulo === 'financeiro'){
+    document.getElementById('mNomeAluno').value = c.supplier||'';
+    document.getElementById('mDetalhamento').value = c.documentNumber||'';
+  }
   renderComments(c);
   renderHistory(c);
 }
@@ -2115,10 +2150,12 @@ function onModuloChange(){
   const mod = document.getElementById('mModulo').value;
   populateFaseSelect(mod);
   populateCategoriaSelect(mod);
-  toggleFinancial(MODULES[mod]?.hasFinancial);
+  toggleFinancial(MODULES[mod]?.hasFinancial, mod);
 }
-function toggleFinancial(show){
-  document.getElementById('financialFields').classList.toggle('hidden',!show);
+function toggleFinancial(show, mod){
+  const isFinanceiro = mod === 'financeiro';
+  document.getElementById('financialFields').classList.toggle('hidden', !show || isFinanceiro);
+  document.getElementById('financeiroFields').classList.toggle('hidden', !isFinanceiro);
 }
 
 function selPrio(el){
@@ -2218,7 +2255,10 @@ function saveCard(){
   card.escola       = document.getElementById('mEscola').value;
   card.categoria    = document.getElementById('mCategoria').value;
   card.prazo        = document.getElementById('mPrazo').value;
-  if(MODULES[modulo]?.hasFinancial){
+  if(modulo === 'financeiro'){
+    card.supplier       = document.getElementById('mNomeAluno').value.trim();
+    card.documentNumber = document.getElementById('mDetalhamento').value.trim();
+  } else if(MODULES[modulo]?.hasFinancial){
     card.valor      = document.getElementById('mValor').value;
     card.fornecedor = document.getElementById('mFornecedor').value;
     card.vencimento = document.getElementById('mVencimento').value;
