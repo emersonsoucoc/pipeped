@@ -747,6 +747,18 @@ module.exports = function registerApiRoutes(app) {
     } catch (e) { res.status(500).json({ error: e.message }); }
   });
 
+  // ─── GET /api/public/schools (público — sem auth) ───────────
+  app.get('/api/public/schools', async (req, res) => {
+    try {
+      const schools = await prisma.school.findMany({
+        where: { active: true },
+        select: { id: true, name: true, shortName: true },
+        orderBy: { name: 'asc' },
+      });
+      res.json(schools);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
   // ─── GET /api/forms/public/:slug (público) ──────────────────
   app.get('/api/forms/public/:slug', async (req, res) => {
     try {

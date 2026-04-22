@@ -282,10 +282,7 @@ a{color:var(--accent);text-decoration:none}
         <div class="field">
           <label>Escola <span class="req">*</span></label>
           <select id="fEscola">
-            <option value="">Selecione...</option>
-            <option value="ped1">PED 1 — Centro</option>
-            <option value="ped2">PED 2 — Norte</option>
-            <option value="ped3">PED 3 — Sul</option>
+            <option value="">Carregando escolas...</option>
           </select>
         </div>
         <div class="field">
@@ -415,11 +412,7 @@ const MODULES = {
                titles:{ h:'Nova Solicitação de Contrato', d:'Descreva o contrato que precisa ser criado ou renovado.' } },
 };
 
-const SCHOOLS = [
-  { id:'ped1', name:'PED 1 — Centro' },
-  { id:'ped2', name:'PED 2 — Norte'  },
-  { id:'ped3', name:'PED 3 — Sul'    },
-];
+let SCHOOLS = [];
 
 /* ─── API CONFIG ─────────────────────────────────────────────────────── */
 const API_BASE = '';
@@ -616,7 +609,23 @@ function resetForm(){
   document.getElementById('successScreen').classList.remove('show');
 }
 
+/* ─── LOAD SCHOOLS FROM API ──────────────────────────────────────────── */
+async function loadSchools(){
+  const sel = document.getElementById('fEscola');
+  try {
+    const res = await fetch(API_BASE + '/api/public/schools');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    SCHOOLS = await res.json();
+    sel.innerHTML = '<option value="">Selecione...</option>' +
+      SCHOOLS.map(s => `<option value="${s.id}">${esc(s.shortName || s.name)}</option>`).join('');
+  } catch(e) {
+    console.warn('Erro ao carregar escolas:', e);
+    sel.innerHTML = '<option value="">Erro ao carregar escolas</option>';
+  }
+}
+
 /* ─── INIT ───────────────────────────────────────────────────────────── */
+loadSchools();
 selectModule('compras');
 
 // Set min date to today
