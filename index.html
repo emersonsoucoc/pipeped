@@ -951,7 +951,7 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
     </div>
     <div class="login-field">
       <label class="login-label">Senha</label>
-      <input type="password" id="loginPass" placeholder="••••••••" value="admin123">
+      <input type="password" id="loginPass" placeholder="••••••••" value="Ped@2026">
     </div>
     <button class="btn-primary" onclick="doLogin()">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1330,7 +1330,9 @@ async function api(path, opts = {}){
   }
   if(res.status === 401){
     authToken=''; localStorage.removeItem('pipeped_token');
-    if(!path.includes('/auth/login')){ location.reload(); }
+    if(path.includes('/auth/login')){
+      throw new Error('Credenciais inválidas');
+    }
     throw new Error('Sessão expirada');
   }
   const data = await res.json();
@@ -1603,39 +1605,51 @@ async function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
   if(!email || !pass){ showToast('Informe email e senha','error'); return; }
+
+  // 1) Tenta login via API
+  let apiOk = false;
   try {
     const res = await api('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password: pass })
     });
-    if(!res || !res.token){ showToast('Resposta inválida do servidor','error'); return; }
-    authToken = res.token;
-    localStorage.setItem('pipeped_token', res.token);
-    const apiU = res.user;
-    const u = {
-      id: apiU.id, name: apiU.name, email: apiU.email,
-      role: apiU.role === 'ADMIN' ? 'admin' : apiU.role === 'MANAGER' ? 'gestor' : 'colaborador',
-      initials: apiU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
-      dept: '', color: '#6366F1',
-      schools: [apiU.schoolId],
-      modulos: apiU.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
-      schoolId: apiU.schoolId,
-    };
-    if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
-    // Load schools from API
-    try {
-      const apiSchools = await api('/schools');
-      if(apiSchools && apiSchools.length){
-        SCHOOLS.length = 0;
-        apiSchools.forEach(s => SCHOOLS.push({ id: s.id, name: s.name }));
-      }
-    } catch(e){}
-    loginAs(u);
+    if(res && res.token){
+      apiOk = true;
+      authToken = res.token;
+      localStorage.setItem('pipeped_token', res.token);
+      const apiU = res.user;
+      const u = {
+        id: apiU.id, name: apiU.name, email: apiU.email,
+        role: apiU.role === 'ADMIN' ? 'admin' : apiU.role === 'MANAGER' ? 'gestor' : 'colaborador',
+        initials: apiU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+        dept: '', color: '#6366F1',
+        schools: [apiU.schoolId],
+        modulos: apiU.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
+        schoolId: apiU.schoolId,
+      };
+      if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
+      try {
+        const apiSchools = await api('/schools');
+        if(apiSchools && apiSchools.length){
+          SCHOOLS.length = 0;
+          apiSchools.forEach(s => SCHOOLS.push({ id: s.id, name: s.name }));
+        }
+      } catch(e){}
+      loginAs(u);
+      return;
+    }
   } catch(e){
-    // Fallback to local login
-    const u = USERS.find(x=>x.email===email);
-    if(u){ loginAs(u); }
-    else { showToast(e.message || 'Credenciais inválidas','error'); }
+    // API falhou — tenta fallback local abaixo
+  }
+
+  // 2) Fallback: login local (quando API indisponível ou credenciais divergem)
+  if(!apiOk){
+    const u = USERS.find(x => x.email === email);
+    if(u){
+      loginAs(u);
+    } else {
+      showToast('Credenciais inválidas','error');
+    }
   }
 }
 function quickLogin(role){
@@ -4350,30 +4364,45 @@ document.addEventListener('keydown',e=>{
   // Auto-login with saved token
   if(authToken){
     try {
-      const me = await api('/auth/me');
-      if(me && me.id){
-        const u = {
-          id: me.id, name: me.name, email: me.email,
-          role: me.role === 'ADMIN' ? 'admin' : me.role === 'MANAGER' ? 'gestor' : 'colaborador',
-          initials: me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
-          dept: '', color: '#6366F1',
-          schools: [me.schoolId],
-          modulos: me.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
-          schoolId: me.schoolId,
-        };
-        if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
-        try {
-          const apiSchools = await api('/schools');
-          if(apiSchools && apiSchools.length){
-            SCHOOLS.length = 0;
-            apiSchools.forEach(s => SCHOOLS.push({ id: s.id, name: s.name }));
-          }
-        } catch(e){}
-        loginAs(u);
+      const resp = await fetch(API_BASE + '/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + authToken }
+      });
+      if(resp.ok){
+        const me = await resp.json();
+        if(me && me.id){
+          const u = {
+            id: me.id, name: me.name, email: me.email,
+            role: me.role === 'ADMIN' ? 'admin' : me.role === 'MANAGER' ? 'gestor' : 'colaborador',
+            initials: me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+            dept: '', color: '#6366F1',
+            schools: [me.schoolId],
+            modulos: me.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
+            schoolId: me.schoolId,
+          };
+          if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
+          try {
+            const sResp = await fetch(API_BASE + '/schools', {
+              headers: { 'Authorization': 'Bearer ' + authToken }
+            });
+            if(sResp.ok){
+              const apiSchools = await sResp.json();
+              if(apiSchools && apiSchools.length){
+                SCHOOLS.length = 0;
+                apiSchools.forEach(s => SCHOOLS.push({ id: s.id, name: s.name }));
+              }
+            }
+          } catch(e){}
+          loginAs(u);
+        } else {
+          authToken = ''; localStorage.removeItem('pipeped_token');
+        }
+      } else {
+        // Token inválido/expirado — limpa e mostra tela de login
+        authToken = ''; localStorage.removeItem('pipeped_token');
       }
     } catch(e){
-      authToken = '';
-      localStorage.removeItem('pipeped_token');
+      // API indisponível — limpa token, mostra login
+      authToken = ''; localStorage.removeItem('pipeped_token');
     }
   }
   setTimeout(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 3000);
