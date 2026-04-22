@@ -2319,8 +2319,17 @@ function markRead(id){ const n=notifications.find(x=>x.id===id); if(n) n.read=tr
 function markAllNotifReadBell(){ notifications.forEach(n=>n.read=true); save(); renderNotifBell(); renderNotifList(); }
 function clearNotifs(){ notifications=[]; save(); document.getElementById('notifList').innerHTML='<div style="padding:24px;text-align:center;color:var(--faint);font-size:13px">Limpas.</div>'; renderNotifBell(); }
 
+// ─── PIPEPED API HELPER ─────────────────────────────────────────────
+const PIPEPED_API = 'https://pipeped-web-production.up.railway.app';
+function api(path, opts={}){
+  const token = currentUser?.token || localStorage.getItem('pipeped_token') || '';
+  const headers = Object.assign({}, opts.headers||{});
+  if(token) headers['Authorization'] = 'Bearer '+token;
+  return fetch(PIPEPED_API+'/api'+path, Object.assign({}, opts, {headers}));
+}
+
 // ─── APPROVAL QUEUE ──────────────────────────────────────────────────
-const FORM_API = 'https://sised-x-clicksign-production.up.railway.app/api/form-queue';
+const FORM_API = PIPEPED_API+'/api/form-queue';
 let _queueCache = []; // local cache of queue data
 
 async function fetchQueue(){
@@ -2558,7 +2567,7 @@ function getAuditLog(){ return JSON.parse(localStorage.getItem('AUDIT_LOG')||'[]
 async function initSettingsData(){
   // Carregar escolas do banco via API
   try {
-    const resp = await api('/schools');
+    const resp = await fetch(PIPEPED_API+'/api/public/schools');
     if(resp.ok){
       const data = await resp.json();
       const mapped = data.map(s=>({id:s.id, name:s.name, shortName:s.shortName||'', cnpj:s.cnpj||'', address:s.address||'', phone:s.phone||'', email:s.email||'', director:''}));
@@ -3143,9 +3152,9 @@ async function saveSchoolForm(){
   try {
     let resp;
     if(editingSchoolId){
-      resp = await api('/schools/'+editingSchoolId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      resp = await fetch(PIPEPED_API+'/api/public/schools/'+editingSchoolId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     } else {
-      resp = await api('/schools',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      resp = await fetch(PIPEPED_API+'/api/public/schools',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     }
     if(!resp.ok){ const e=await resp.json(); throw new Error(e.error||'Erro ao salvar'); }
     const saved = await resp.json();
@@ -3181,7 +3190,7 @@ async function deleteSchool(schoolId){
   if(!confirm(msg)) return;
   try {
     // Desativar no banco (soft delete via PUT active:false)
-    await api('/schools/'+schoolId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:false})});
+    await fetch(PIPEPED_API+'/api/public/schools/'+schoolId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:false})});
   } catch(e){ console.warn('Erro ao desativar escola no banco:', e); }
   // Remover do array em memória
   SCHOOLS = SCHOOLS.filter(s=>s.id!==schoolId);

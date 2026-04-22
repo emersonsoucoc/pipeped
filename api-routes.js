@@ -752,10 +752,26 @@ module.exports = function registerApiRoutes(app) {
     try {
       const schools = await prisma.school.findMany({
         where: { active: true },
-        select: { id: true, name: true, shortName: true },
+        select: { id: true, name: true, shortName: true, cnpj: true, address: true, phone: true, email: true },
         orderBy: { name: 'asc' },
       });
       res.json(schools);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── POST /api/public/schools (criar escola — admin panel) ──
+  app.post('/api/public/schools', async (req, res) => {
+    try {
+      const school = await prisma.school.create({ data: req.body });
+      res.status(201).json(school);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ─── PUT /api/public/schools/:id (editar escola — admin panel)
+  app.put('/api/public/schools/:id', async (req, res) => {
+    try {
+      const school = await prisma.school.update({ where: { id: req.params.id }, data: req.body });
+      res.json(school);
     } catch (e) { res.status(500).json({ error: e.message }); }
   });
 
