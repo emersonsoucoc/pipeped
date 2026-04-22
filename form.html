@@ -415,7 +415,7 @@ const MODULES = {
 let SCHOOLS = [];
 
 /* ─── API CONFIG ─────────────────────────────────────────────────────── */
-const API_BASE = '';
+const API_BASE = 'https://pipeped-web-production.up.railway.app';
 
 /* ─── STATE ──────────────────────────────────────────────────────────── */
 let selectedModule = 'compras';
@@ -577,6 +577,15 @@ async function submitForm(){
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Erro ao enviar');
 
+    // Salvar dados do solicitante no localStorage para próximos envios
+    try {
+      localStorage.setItem('pipeped_user', JSON.stringify({
+        nome, email,
+        setor: document.getElementById('fSetor').value.trim(),
+        escola,
+      }));
+    } catch(e){}
+
     // Show success
     document.getElementById('formBody').style.display = 'none';
     document.getElementById('successScreen').classList.add('show');
@@ -590,23 +599,38 @@ async function submitForm(){
 
 /* ─── RESET ──────────────────────────────────────────────────────────── */
 function resetForm(){
+  // Limpar campos da solicitação
   document.getElementById('fTitulo').value = '';
   document.getElementById('fDescricao').value = '';
-  document.getElementById('fEscola').value = '';
   document.getElementById('fPrazo').value = '';
   document.getElementById('fValor').value = '';
   document.getElementById('fFornecedor').value = '';
   document.getElementById('fNomeAluno').value = '';
   document.getElementById('fDetalhamento').value = '';
-  document.getElementById('fNome').value = '';
-  document.getElementById('fEmail').value = '';
-  document.getElementById('fSetor').value = '';
   attachedFiles = [];
   renderFiles();
   setPrio('media');
   selectModule('compras');
   document.getElementById('formBody').style.display = '';
   document.getElementById('successScreen').classList.remove('show');
+  // Manter dados pessoais preenchidos (nome, email, setor, escola)
+  restoreUserData();
+}
+
+/* ─── RESTAURAR DADOS DO SOLICITANTE ─────────────────────────────────── */
+function restoreUserData(){
+  try {
+    const saved = JSON.parse(localStorage.getItem('pipeped_user') || '{}');
+    if(saved.nome)  document.getElementById('fNome').value = saved.nome;
+    if(saved.email) document.getElementById('fEmail').value = saved.email;
+    if(saved.setor) document.getElementById('fSetor').value = saved.setor;
+    if(saved.escola){
+      const sel = document.getElementById('fEscola');
+      if(sel.querySelector(`option[value="${saved.escola}"]`)){
+        sel.value = saved.escola;
+      }
+    }
+  } catch(e){}
 }
 
 /* ─── LOAD SCHOOLS FROM API ──────────────────────────────────────────── */
@@ -622,6 +646,8 @@ async function loadSchools(){
     console.warn('Erro ao carregar escolas:', e);
     sel.innerHTML = '<option value="">Erro ao carregar escolas</option>';
   }
+  // Restaurar dados salvos do solicitante (depois que as escolas carregaram)
+  restoreUserData();
 }
 
 /* ─── INIT ───────────────────────────────────────────────────────────── */
