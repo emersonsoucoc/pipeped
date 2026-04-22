@@ -244,89 +244,7 @@ svg{display:block;flex-shrink:0}
 .activity-text strong{font-weight:600}
 .activity-time{font-size:11px;color:var(--faint);white-space:nowrap}
 
-/* ─── APPROVAL QUEUE ─────────────────────────────────────────────── */
-.approval-wrap{padding:24px;max-width:1100px}
-.approval-wrap h2{font-size:20px;font-weight:700;margin-bottom:4px}
-.approval-wrap .approval-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
-.approval-stats{display:flex;gap:12px;margin-bottom:20px}
-.approval-stat{
-  padding:10px 18px;background:var(--white);border:1px solid var(--border);
-  border-radius:var(--r);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;
-}
-.approval-stat strong{font-size:20px;font-weight:700;color:var(--text)}
-.approval-filters{display:flex;gap:10px;margin-bottom:16px}
-.approval-filters select,.approval-filters input{
-  padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);
-  font-size:13px;color:var(--text);background:var(--white);max-width:180px;
-}
-.approval-card{
-  background:var(--white);border:1px solid var(--border);border-radius:var(--r);
-  padding:20px;margin-bottom:12px;box-shadow:var(--sh);
-  transition:box-shadow var(--t);
-}
-.approval-card:hover{box-shadow:var(--sh-md)}
-.approval-card-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
-.approval-mod-dot{
-  width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.approval-card-info{flex:1;min-width:0}
-.approval-card-info h3{font-size:15px;font-weight:600;margin-bottom:2px}
-.approval-card-info .meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px}
-.approval-card-info .meta span{display:inline-flex;align-items:center;gap:3px}
-.approval-card-desc{font-size:13px;color:var(--ink);line-height:1.6;margin-bottom:12px;
-  padding:10px 14px;background:var(--surface);border-radius:var(--r-sm);
-}
-.approval-card-solicitante{font-size:12px;color:var(--muted);margin-bottom:12px;
-  display:flex;align-items:center;gap:6px;
-}
-.approval-card-solicitante strong{color:var(--text);font-weight:500}
-.approval-actions{display:flex;gap:8px;justify-content:flex-end}
-.btn-approve{
-  display:inline-flex;align-items:center;gap:5px;padding:8px 18px;
-  background:var(--ok);color:#fff;border:none;border-radius:var(--r-sm);
-  font-size:13px;font-weight:600;cursor:pointer;transition:all var(--t);
-}
-.btn-approve:hover{background:#059669;transform:translateY(-1px)}
-.btn-reject{
-  display:inline-flex;align-items:center;gap:5px;padding:8px 18px;
-  background:var(--white);color:var(--err);border:1.5px solid var(--err);border-radius:var(--r-sm);
-  font-size:13px;font-weight:500;cursor:pointer;transition:all var(--t);
-}
-.btn-reject:hover{background:#FEF2F2}
-.btn-view-detail{
-  display:inline-flex;align-items:center;gap:5px;padding:8px 14px;
-  background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:var(--r-sm);
-  font-size:12px;font-weight:500;cursor:pointer;transition:all var(--t);
-}
-.btn-view-detail:hover{color:var(--text);border-color:var(--faint)}
-.approval-empty{
-  text-align:center;padding:60px 20px;color:var(--muted);
-}
-.approval-empty svg{margin:0 auto 12px;opacity:.3}
-.approval-empty h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px}
-.approval-prio{
-  display:inline-block;padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:600;
-}
-.approval-prio.urgente{background:#FEF2F2;color:#DC2626}
-.approval-prio.alta{background:#FFF7ED;color:#C2410C}
-.approval-prio.media{background:#FFFBEB;color:#B45309}
-.approval-prio.baixa{background:#F0FDF4;color:#15803D}
-.approval-protocol{font-size:11px;color:var(--accent);font-weight:600;letter-spacing:.3px}
-.approval-link-bar{
-  display:flex;align-items:center;gap:10px;padding:12px 16px;
-  background:var(--accent-l);border-radius:var(--r-sm);margin-bottom:20px;
-  font-size:12px;color:var(--accent);
-}
-.approval-link-bar code{
-  flex:1;font-family:monospace;font-size:12px;color:var(--text);
-  background:var(--white);padding:6px 10px;border-radius:4px;border:1px solid var(--border);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.btn-copy-link{
-  padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:4px;
-  font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;
-}
-.btn-copy-link:hover{background:var(--accent-h)}
+/* (Approval Queue CSS removed — cards go directly to modules) */
 
 /* ─── KANBAN ──────────────────────────────────────────────────────── */
 .kanban-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden}
@@ -360,6 +278,42 @@ svg{display:block;flex-shrink:0}
   background:rgba(0,0,0,.08);padding:1px 7px;border-radius:9999px;
   font-size:11px;font-weight:700;color:var(--muted);
 }
+.col-cfg{
+  opacity:0;width:22px;height:22px;border-radius:6px;border:none;
+  background:transparent;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--t);flex-shrink:0;
+}
+.col-header:hover .col-cfg{opacity:1}
+.col-cfg:hover{background:rgba(0,0,0,.08);color:var(--text)}
+
+/* ─── PHASE EDITOR MODAL ──────────────────────────────────────── */
+.phase-editor-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;
+  display:none;align-items:center;justify-content:center;
+}
+.phase-editor-overlay.active{display:flex;animation:fadeIn .15s}
+.phase-editor-box{
+  background:var(--white);border-radius:var(--r);padding:24px;
+  width:380px;max-width:90vw;box-shadow:var(--sh-lg);
+}
+.phase-editor-box h3{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.phase-editor-box .form-group{margin-bottom:14px}
+.phase-editor-box label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.phase-editor-box input[type="text"]{
+  width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-sm);
+  font-size:14px;color:var(--text);background:var(--white);
+}
+.phase-editor-box input[type="color"]{
+  width:48px;height:36px;border:1px solid var(--border);border-radius:var(--r-sm);
+  cursor:pointer;padding:2px;
+}
+.phase-editor-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.phase-editor-actions button{padding:8px 18px;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all var(--t)}
+.phase-editor-actions .btn-cancel{background:var(--surface);color:var(--muted)}
+.phase-editor-actions .btn-cancel:hover{background:var(--border)}
+.phase-editor-actions .btn-save{background:var(--accent);color:#fff}
+.phase-editor-actions .btn-save:hover{background:var(--accent-h)}
 .col-cards{padding:10px;display:flex;flex-direction:column;gap:8px;min-height:60px;flex:1}
 .col-add{
   display:flex;align-items:center;gap:6px;padding:8px 14px;
@@ -951,7 +905,7 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
     </div>
     <div class="login-field">
       <label class="login-label">Senha</label>
-      <input type="password" id="loginPass" placeholder="••••••••" value="Ped@2026">
+      <input type="password" id="loginPass" placeholder="••••••••" value="admin123">
     </div>
     <button class="btn-primary" onclick="doLogin()">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1050,35 +1004,23 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
           <textarea id="mDesc" placeholder="Descreva detalhes, contexto ou requisitos…"></textarea>
         </div>
 
-        <!-- Financial fields (compras/financeiro) -->
+        <!-- Financial fields (compras) -->
         <div id="financialFields" class="hidden">
           <div class="divider"></div>
-          <div class="section-title" id="financialSectionTitle">Informações Financeiras</div>
-          <div id="financialStandard">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-              <div class="field-group" style="margin:0">
-                <div class="field-label">Valor (R$)</div>
-                <input type="text" id="mValor" placeholder="0,00">
-              </div>
-              <div class="field-group" style="margin:0">
-                <div class="field-label">Vencimento</div>
-                <input type="date" id="mVencimento">
-              </div>
+          <div class="section-title">Informações Financeiras</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div class="field-group" style="margin:0">
+              <div class="field-label">Valor (R$)</div>
+              <input type="text" id="mValor" placeholder="0,00">
             </div>
-            <div class="field-group">
-              <div class="field-label">Fornecedor</div>
-              <input type="text" id="mFornecedor" placeholder="Nome do fornecedor…">
+            <div class="field-group" style="margin:0">
+              <div class="field-label">Vencimento</div>
+              <input type="date" id="mVencimento">
             </div>
           </div>
-          <div id="financialExtra" class="hidden">
-            <div class="field-group">
-              <div class="field-label">Nome do Aluno <span style="color:var(--err)">*</span></div>
-              <input type="text" id="mNomeAluno" placeholder="Conforme SISED">
-            </div>
-            <div class="field-group">
-              <div class="field-label">Detalhamento <span style="color:var(--err)">*</span></div>
-              <textarea id="mDetalhamento" placeholder="Descreva a solicitação em detalhes…" rows="4" style="min-height:80px;font-size:13px"></textarea>
-            </div>
+          <div class="field-group">
+            <div class="field-label">Fornecedor</div>
+            <input type="text" id="mFornecedor" placeholder="Nome do fornecedor…">
           </div>
         </div>
 
@@ -1309,44 +1251,40 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
   </div>
 </div>
 
+<!-- ─── PHASE EDITOR MODAL ────────────────────────────────────────── -->
+<div class="phase-editor-overlay" id="phaseEditorOverlay" onclick="if(event.target===this)closePhaseEditor()">
+  <div class="phase-editor-box">
+    <h3 id="phaseEditorTitle">Editar Fase</h3>
+    <div class="form-group">
+      <label>Nome da fase</label>
+      <input type="text" id="phaseEditorName" placeholder="Ex: Em Análise">
+    </div>
+    <div class="form-group">
+      <label>Cor</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="color" id="phaseEditorColor" value="#3B82F6">
+        <span id="phaseEditorColorHex" style="font-size:12px;color:var(--muted)">#3B82F6</span>
+      </div>
+    </div>
+    <div class="phase-editor-actions">
+      <button class="btn-cancel" onclick="closePhaseEditor()">Cancelar</button>
+      <button class="btn-save" onclick="savePhaseEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── TOAST ─────────────────────────────────────────────────────── -->
 <div id="toastContainer"></div>
 
 <script>
 'use strict';
-
-// ─── API CLIENT ──────────────────────────────────────────────────────
-let authToken = localStorage.getItem('pipeped_token')||'';
-const API_BASE = '/api';
-
-async function api(path, opts = {}){
-  const headers = { 'Content-Type':'application/json', ...opts.headers };
-  if(authToken) headers['Authorization'] = 'Bearer ' + authToken;
-  let res;
-  try {
-    res = await fetch(API_BASE + path, { ...opts, headers });
-  } catch(err){
-    throw new Error('Sem conexão com o servidor');
-  }
-  if(res.status === 401){
-    authToken=''; localStorage.removeItem('pipeped_token');
-    if(path.includes('/auth/login')){
-      throw new Error('Credenciais inválidas');
-    }
-    throw new Error('Sessão expirada');
-  }
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || 'Erro na API');
-  return data;
-}
-
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
-  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','financeiro','contratos'] },
+  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos'] },
   { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial'] },
   { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B', schools:['ped1','ped2','ped3'], modulos:['ti'] },
   { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444', schools:['ped1','ped2','ped3'], modulos:['comercial'] },
-  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','financeiro','contratos'] },
+  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos'] },
 ];
 
 let SCHOOLS = [
@@ -1396,20 +1334,6 @@ const MODULES = {
     },
     lastPhase:'matriculado',
   },
-  financeiro: {
-    label:'Financeiro', shortLabel:'Financeiro', btnLabel:'Nova Solicitação',
-    color:'#EF4444', colorLight:'#FEF2F2', hasFinancial:true,
-    categorias:['Declarações','Solicitar Baixa','Atualização de Boleto','Atualização Contratual','Cancelamento de Matrícula','Cancelamento de Extracurricular','Cadastrar Nova Cobrança','Outros'],
-    fases:{
-      pendente:    { label:'Pendente',     color:'#94A3B8', bg:'#F1F5F9' },
-      a_vencer:    { label:'A Vencer',     color:'#F59E0B', bg:'#FFFBEB' },
-      em_analise:  { label:'Em Análise',   color:'#3B82F6', bg:'#EFF6FF' },
-      aprovado:    { label:'Aprovado',     color:'#8B5CF6', bg:'#F5F3FF' },
-      pago:        { label:'Pago',         color:'#10B981', bg:'#ECFDF5' },
-      vencido:     { label:'Vencido',      color:'#EF4444', bg:'#FEF2F2' },
-    },
-    lastPhase:'pago',
-  },
   contratos: {
     label:'Contratos', shortLabel:'Contratos', btnLabel:'Novo Contrato',
     color:'#8B5CF6', colorLight:'#F5F3FF', hasFinancial:false,
@@ -1424,6 +1348,88 @@ const MODULES = {
     lastPhase:'assinado',
   },
 };
+
+// ─── PHASE CUSTOMIZATION (persist to localStorage) ──────────────
+function loadCustomPhases(){
+  const saved = localStorage.getItem('pipeped_custom_phases');
+  if(!saved) return;
+  try {
+    const custom = JSON.parse(saved);
+    Object.keys(custom).forEach(mod=>{
+      if(!MODULES[mod]) return;
+      Object.keys(custom[mod]).forEach(faseKey=>{
+        if(!MODULES[mod].fases[faseKey]) return;
+        const c = custom[mod][faseKey];
+        if(c.label) MODULES[mod].fases[faseKey].label = c.label;
+        if(c.color) MODULES[mod].fases[faseKey].color = c.color;
+        if(c.bg)    MODULES[mod].fases[faseKey].bg    = c.bg;
+      });
+    });
+  } catch(e){ console.warn('Erro ao carregar fases customizadas:', e); }
+}
+function saveCustomPhases(){
+  const custom = {};
+  Object.keys(MODULES).forEach(mod=>{
+    custom[mod] = {};
+    Object.keys(MODULES[mod].fases).forEach(faseKey=>{
+      const f = MODULES[mod].fases[faseKey];
+      custom[mod][faseKey] = { label:f.label, color:f.color, bg:f.bg };
+    });
+  });
+  localStorage.setItem('pipeped_custom_phases', JSON.stringify(custom));
+}
+// Load custom phases immediately
+loadCustomPhases();
+
+let _phaseEditMod = '';
+let _phaseEditKey = '';
+
+function openPhaseEditor(mod, faseKey){
+  _phaseEditMod = mod;
+  _phaseEditKey = faseKey;
+  const fase = MODULES[mod]?.fases[faseKey];
+  if(!fase) return;
+  document.getElementById('phaseEditorTitle').textContent = 'Editar Fase — ' + fase.label;
+  document.getElementById('phaseEditorName').value = fase.label;
+  document.getElementById('phaseEditorColor').value = fase.color;
+  document.getElementById('phaseEditorColorHex').textContent = fase.color;
+  document.getElementById('phaseEditorColor').oninput = function(){
+    document.getElementById('phaseEditorColorHex').textContent = this.value;
+  };
+  document.getElementById('phaseEditorOverlay').classList.add('active');
+  setTimeout(()=>document.getElementById('phaseEditorName').focus(), 100);
+}
+
+function closePhaseEditor(){
+  document.getElementById('phaseEditorOverlay').classList.remove('active');
+  _phaseEditMod = '';
+  _phaseEditKey = '';
+}
+
+function savePhaseEdit(){
+  if(!_phaseEditMod || !_phaseEditKey) return;
+  const fase = MODULES[_phaseEditMod]?.fases[_phaseEditKey];
+  if(!fase) return;
+
+  const newLabel = document.getElementById('phaseEditorName').value.trim();
+  const newColor = document.getElementById('phaseEditorColor').value;
+
+  if(!newLabel){ showToast('O nome da fase não pode ficar vazio','error'); return; }
+
+  const oldLabel = fase.label;
+  fase.label = newLabel;
+  fase.color = newColor;
+  // Generate a lighter bg from the color
+  fase.bg = newColor + '18';
+
+  saveCustomPhases();
+  closePhaseEditor();
+  renderPage();
+  updateBadges();
+  buildSidebar();
+  logAudit('phase_rename', _phaseEditMod, `"${oldLabel}" → "${newLabel}"`);
+  showToast('Fase atualizada com sucesso!');
+}
 
 // ─── CLICKSIGN CONFIG ────────────────────────────────────────────
 const CLICKSIGN_API_BASE = 'https://sised-x-clicksign-production.up.railway.app';
@@ -1601,64 +1607,16 @@ function showToast(msg, type='success'){
 }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────
-async function doLogin(){
+function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
-  if(!email || !pass){ showToast('Informe email e senha','error'); return; }
-
-  // 1) Tenta login via API
-  let apiOk = false;
-  try {
-    const res = await api('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password: pass })
-    });
-    if(res && res.token){
-      apiOk = true;
-      authToken = res.token;
-      localStorage.setItem('pipeped_token', res.token);
-      const apiU = res.user;
-      const u = {
-        id: apiU.id, name: apiU.name, email: apiU.email,
-        role: apiU.role === 'ADMIN' ? 'admin' : apiU.role === 'MANAGER' ? 'gestor' : 'colaborador',
-        initials: apiU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
-        dept: '', color: '#6366F1',
-        schools: [apiU.schoolId],
-        modulos: apiU.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
-        schoolId: apiU.schoolId,
-      };
-      if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
-      try {
-        const apiSchools = await api('/schools');
-        if(apiSchools && apiSchools.length){
-          SCHOOLS.length = 0;
-          apiSchools.forEach(s => SCHOOLS.push({ id: s.id, name: s.name }));
-        }
-      } catch(e){}
-      loginAs(u);
-      return;
-    }
-  } catch(e){
-    // API falhou — tenta fallback local abaixo
-  }
-
-  // 2) Fallback: login local (quando API indisponível ou credenciais divergem)
-  if(!apiOk){
-    const u = USERS.find(x => x.email === email);
-    if(u){
-      loginAs(u);
-    } else {
-      showToast('Credenciais inválidas','error');
-    }
-  }
+  const u = USERS.find(x=>x.email===email);
+  if(!u || !pass){ showToast('Credenciais inválidas','error'); return; }
+  loginAs(u);
 }
 function quickLogin(role){
-  const map = { admin:'emerson@grupoped.com.br', gestor:'ana@grupoped.com.br', colaborador:'carlos@grupoped.com.br' };
-  const email = map[role];
-  if(!email) return;
-  document.getElementById('loginEmail').value = email;
-  document.getElementById('loginPass').value = 'Ped@2026';
-  doLogin();
+  const u = USERS.find(x=>x.role===role);
+  if(u) loginAs(u);
 }
 function loginAs(u){
   currentUser = u;
@@ -1681,7 +1639,6 @@ const MODULE_ICONS = {
   compras:'<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8"/><path d="M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   ti:'<rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   comercial:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
-  financeiro:'<line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
   contratos:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
 };
 
@@ -1704,17 +1661,7 @@ function buildSidebar(){
       <span class="nav-badge" id="badge-${k}">0</span>
     </a>`;
   });
-  // Approval queue (admin/gestor only)
-  if(currentUser && (currentUser.role==='admin'||currentUser.role==='gestor')){
-    const pendingCount = getPendingQueue().filter(q=>q.status==='pendente').length;
-    html += `
-    <div class="sb-section">Aprovações</div>
-    <a class="nav-item" data-page="aprovacoes" onclick="navigate('aprovacoes')">
-      <svg class="nav-icon" fill="none" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="nav-text">Fila de Aprovação</span>
-      <span class="nav-badge" id="badge-aprovacoes">${pendingCount||''}</span>
-    </a>`;
-  }
+  // (Approval queue removed — form submissions go directly to modules)
   html += `
     <div class="sb-section">Sistema</div>
     <a class="nav-item" data-page="settings" onclick="navigate('settings')">
@@ -1756,20 +1703,19 @@ function navigate(page){
     // Esconde botão "Novo" se Clicksign (form inline) ou sem permissão
     newBtn.style.display = (mod.isClicksign || !canCreateInModule(page)) ? 'none' : '';
   }
-  else { newBtn.style.display = (page==='settings'||page==='aprovacoes') ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
+  else { newBtn.style.display = (page==='settings') ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
   // Clicksign polling
   if(page==='contratos') csStartPolling(); else csStopPolling();
   renderPage();
   updateBadges();
 }
-const pageTitles = { dashboard:'Dashboard', settings:'Configurações', aprovacoes:'Fila de Aprovação' };
+const pageTitles = { dashboard:'Dashboard', settings:'Configurações' };
 
 function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
   else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
-  else if(currentPage==='aprovacoes') el.innerHTML = buildApprovalQueue();
   else if(currentPage==='settings') el.innerHTML = buildSettings();
 }
 
@@ -1952,6 +1898,9 @@ function buildKanban(mod){
             <div class="col-dot" style="background:${fase.color}"></div>
             <div class="col-title">${esc(fase.label)}</div>
             <div class="col-count">${fCards.length}</div>
+            ${canCreateInModule(mod)?`<button class="col-cfg" title="Editar fase" onclick="openPhaseEditor('${mod}','${faseKey}')">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+            </button>`:''}
           </div>
           <div class="col-cards" id="col-${mod}-${faseKey}">
             ${fCards.map(c=>buildCard(c)).join('')}
@@ -1976,8 +1925,7 @@ function buildCard(c){
     ${_canEdit?'draggable="true" ondragstart="onDragStart(event,\''+c.id+'\')" ondragend="onDragEnd(event)"':'draggable="false"'}
     onclick="openCard('${c.id}')" style="${_canEdit?'':'cursor:default'}">
     <div class="card-title">${esc(c.titulo||'Sem título')}</div>
-    ${c.nomeAluno?`<div class="card-desc" style="font-size:11px;color:var(--muted)">Aluno: ${esc(c.nomeAluno)}</div>`:''}
-    ${!c.nomeAluno&&c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
+    ${c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
     <div class="card-tags">
       ${c.escola?`<span class="tag school">${esc(schoolName(c.escola))}</span>`:''}
       ${c.categoria?`<span class="tag cat">${esc(c.categoria)}</span>`:''}
@@ -2074,7 +2022,7 @@ function openCard(id, defaultMod, defaultFase){
 
 // Torna o modal somente-leitura ou editável
 function setModalReadOnly(readOnly){
-  const fields = ['mTitle','mDesc','mValor','mFornecedor','mVencimento','mEscola','mPrazo','mModulo','mFase','mResponsavel','mCategoria','mNomeAluno','mDetalhamento'];
+  const fields = ['mTitle','mDesc','mValor','mFornecedor','mVencimento','mEscola','mPrazo','mModulo','mFase','mResponsavel','mCategoria'];
   fields.forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.disabled = readOnly;
@@ -2107,11 +2055,7 @@ function clearModal(mod, fase){
   populateCategoriaSelect(mod);
   populateEscolaSelect();
   selPrioVal('media');
-  const nomeAlunoEl = document.getElementById('mNomeAluno');
-  const detalhamentoEl = document.getElementById('mDetalhamento');
-  if(nomeAlunoEl) nomeAlunoEl.value = '';
-  if(detalhamentoEl) detalhamentoEl.value = '';
-  toggleFinancial(m.hasFinancial, mod);
+  toggleFinancial(m.hasFinancial);
 }
 
 function fillModalWith(c){
@@ -2133,11 +2077,7 @@ function fillModalWith(c){
   document.getElementById('mCategoria').value = c.categoria||'';
   document.getElementById('mResponsavel').value = c.responsavel||'';
   selPrioVal(c.prioridade||'media');
-  const nomeAlunoEl = document.getElementById('mNomeAluno');
-  const detalhamentoEl = document.getElementById('mDetalhamento');
-  if(nomeAlunoEl) nomeAlunoEl.value = c.nomeAluno || '';
-  if(detalhamentoEl) detalhamentoEl.value = c.detalhamento || '';
-  toggleFinancial(MODULES[c.modulo]?.hasFinancial, c.modulo);
+  toggleFinancial(MODULES[c.modulo]?.hasFinancial);
   renderComments(c);
   renderHistory(c);
 }
@@ -2172,14 +2112,10 @@ function onModuloChange(){
   const mod = document.getElementById('mModulo').value;
   populateFaseSelect(mod);
   populateCategoriaSelect(mod);
-  toggleFinancial(MODULES[mod]?.hasFinancial, mod);
+  toggleFinancial(MODULES[mod]?.hasFinancial);
 }
-function toggleFinancial(show, mod){
+function toggleFinancial(show){
   document.getElementById('financialFields').classList.toggle('hidden',!show);
-  const isFinanceiro = mod === 'financeiro';
-  document.getElementById('financialStandard').classList.toggle('hidden', isFinanceiro);
-  document.getElementById('financialExtra').classList.toggle('hidden', !isFinanceiro);
-  document.getElementById('financialSectionTitle').textContent = isFinanceiro ? 'Dados da Solicitação' : 'Informações Financeiras';
 }
 
 function selPrio(el){
@@ -2280,19 +2216,9 @@ function saveCard(){
   card.categoria    = document.getElementById('mCategoria').value;
   card.prazo        = document.getElementById('mPrazo').value;
   if(MODULES[modulo]?.hasFinancial){
-    if(modulo === 'financeiro'){
-      const nomeAluno = document.getElementById('mNomeAluno').value.trim();
-      const detalhamento = document.getElementById('mDetalhamento').value.trim();
-      if(!nomeAluno){ showToast('Informe o Nome do Aluno','error'); return; }
-      if(!detalhamento){ showToast('Informe o Detalhamento','error'); return; }
-      card.nomeAluno = nomeAluno;
-      card.detalhamento = detalhamento;
-      card.fornecedor = nomeAluno;
-    } else {
-      card.valor      = document.getElementById('mValor').value;
-      card.fornecedor = document.getElementById('mFornecedor').value;
-      card.vencimento = document.getElementById('mVencimento').value;
-    }
+    card.valor      = document.getElementById('mValor').value;
+    card.fornecedor = document.getElementById('mFornecedor').value;
+    card.vencimento = document.getElementById('mVencimento').value;
   }
   save();
   updateBadges();
@@ -2393,237 +2319,85 @@ function markRead(id){ const n=notifications.find(x=>x.id===id); if(n) n.read=tr
 function markAllNotifReadBell(){ notifications.forEach(n=>n.read=true); save(); renderNotifBell(); renderNotifList(); }
 function clearNotifs(){ notifications=[]; save(); document.getElementById('notifList').innerHTML='<div style="padding:24px;text-align:center;color:var(--faint);font-size:13px">Limpas.</div>'; renderNotifBell(); }
 
-// ─── PIPEPED API HELPER ─────────────────────────────────────────────
-const PIPEPED_API = 'https://pipeped-web-production.up.railway.app';
-function api(path, opts={}){
-  const token = currentUser?.token || localStorage.getItem('pipeped_token') || '';
-  const headers = Object.assign({}, opts.headers||{});
-  if(token) headers['Authorization'] = 'Bearer '+token;
-  return fetch(PIPEPED_API+'/api'+path, Object.assign({}, opts, {headers}));
-}
+// ─── AUTO-IMPORT FROM FORM (no approval needed) ─────────────────────
+const FORM_API = 'https://sised-x-clicksign-production.up.railway.app/api/form-queue';
+let _importedIds = JSON.parse(localStorage.getItem('pipeped_imported_ids')||'[]');
 
-// ─── APPROVAL QUEUE ──────────────────────────────────────────────────
-const FORM_API = PIPEPED_API+'/api/form-queue';
-let _queueCache = []; // local cache of queue data
-
-async function fetchQueue(){
+// Auto-import: fetch pending items and create cards directly in their modules
+async function autoImportFormSubmissions(){
   try {
     const r = await fetch(FORM_API);
     const d = await r.json();
-    _queueCache = d.items || [];
-  } catch(e) {
-    console.warn('Falha ao carregar fila:', e);
-    // fallback to localStorage
-    _queueCache = JSON.parse(localStorage.getItem('pipeped_pending_queue')||'[]');
-  }
-  return _queueCache;
-}
-function getPendingQueue(){
-  return _queueCache;
-}
+    const items = d.items || [];
+    let imported = 0;
 
-let approvalFilterMod = '';
-let approvalFilterSchool = '';
-let _queueLoaded = false;
+    for(const q of items){
+      // Skip already imported or non-pending items
+      if(q.status !== 'pendente') continue;
+      if(_importedIds.includes(q.id)) continue;
 
-function buildApprovalQueue(){
-  if(!_queueLoaded){
-    _queueLoaded = true;
-    fetchQueue().then(()=>renderPage());
-    return '<div class="approval-wrap" style="text-align:center;padding:60px;color:var(--muted)"><p>Carregando fila de aprovação...</p></div>';
-  }
-  const queue = getPendingQueue();
-  const pending = queue.filter(q=>q.status==='pendente');
-  const approved = queue.filter(q=>q.status==='aprovado');
-  const rejected = queue.filter(q=>q.status==='rejeitado');
-
-  // Apply filters
-  let filtered = pending;
-  if(approvalFilterMod) filtered = filtered.filter(q=>q.modulo===approvalFilterMod);
-  if(approvalFilterSchool) filtered = filtered.filter(q=>q.escola===approvalFilterSchool);
-
-  const formUrl = 'https://emersonsoucoc.github.io/pipeped/form.html';
-
-  const modColors = { compras:'var(--compras)', ti:'var(--ti)', comercial:'var(--comercial)', contratos:'var(--contratos)' };
-  const modBgs = { compras:'#FFFBEB', ti:'#EFF6FF', comercial:'#ECFDF5', contratos:'#F5F3FF' };
-  const modIcons = {
-    compras:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="21" r="1" stroke="currentColor" stroke-width="2"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    ti:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"/></svg>',
-    comercial:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>',
-    contratos:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2"/></svg>',
-  };
-
-  let html = `<div class="approval-wrap">
-    <h2>Fila de Aprovação</h2>
-    <p class="approval-sub">Solicitações enviadas via formulário público aguardando sua análise</p>
-
-    <div class="approval-link-bar">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <span style="font-weight:600;white-space:nowrap">Link do formulário:</span>
-      <code id="formPublicUrl">${esc(formUrl)}</code>
-      <button class="btn-copy-link" onclick="copyFormLink()">Copiar Link</button>
-    </div>
-
-    <div class="approval-stats">
-      <div class="approval-stat">
-        <strong style="color:var(--warn)">${pending.length}</strong> Pendentes
-      </div>
-      <div class="approval-stat">
-        <strong style="color:var(--ok)">${approved.length}</strong> Aprovadas
-      </div>
-      <div class="approval-stat">
-        <strong style="color:var(--err)">${rejected.length}</strong> Rejeitadas
-      </div>
-    </div>
-
-    <div class="approval-filters">
-      <select onchange="approvalFilterMod=this.value;renderPage()">
-        <option value="">Todos os módulos</option>
-        ${Object.keys(MODULES).map(k=>`<option value="${k}" ${approvalFilterMod===k?'selected':''}>${MODULES[k].label}</option>`).join('')}
-      </select>
-      <select onchange="approvalFilterSchool=this.value;renderPage()">
-        <option value="">Todas as escolas</option>
-        ${SCHOOLS.map(s=>`<option value="${s.id}" ${approvalFilterSchool===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}
-      </select>
-    </div>`;
-
-  if(!filtered.length){
-    html += `<div class="approval-empty">
-      <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <h3>Nenhuma solicitação pendente</h3>
-      <p>Quando alguém enviar pelo formulário público, aparecerá aqui.</p>
-    </div>`;
-  } else {
-    filtered.forEach(q=>{
       const mod = MODULES[q.modulo];
-      const schoolObj = SCHOOLS.find(s=>s.id===q.escola);
-      html += `<div class="approval-card">
-        <div class="approval-card-header">
-          <div class="approval-mod-dot" style="background:${modBgs[q.modulo]||'#F1F5F9'};color:${modColors[q.modulo]||'#64748B'}">
-            ${modIcons[q.modulo]||''}
-          </div>
-          <div class="approval-card-info">
-            <h3>${esc(q.titulo)}</h3>
-            <div class="meta">
-              <span class="approval-protocol">${esc(q.protocolo)}</span>
-              <span>${mod?mod.label:q.modulo}</span>
-              <span>${schoolObj?esc(schoolObj.name):''}</span>
-              <span>${esc(q.categoria)}</span>
-              <span class="approval-prio ${q.prioridade}">${q.prioridade==='urgente'?'Urgente':q.prioridade==='alta'?'Alta':q.prioridade==='media'?'Média':'Baixa'}</span>
-              ${q.prazo?'<span>Prazo: '+fmtDate(q.prazo)+'</span>':''}
-              ${q.valor?'<span>R$ '+esc(q.valor)+'</span>':''}
-            </div>
-          </div>
-        </div>
-        <div class="approval-card-desc">${esc(q.descricao)}</div>
-        <div class="approval-card-solicitante">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>
-          <strong>${esc(q.solicitante?.nome||'—')}</strong> · ${esc(q.solicitante?.email||'')} ${q.solicitante?.setor?'· '+esc(q.solicitante.setor):''}
-          · Enviado em ${esc(q.criadoEmFull||fmtDate(q.criadoEm))}
-          ${q.anexos&&q.anexos.length?'· <span style="color:var(--accent)">'+q.anexos.length+' anexo(s)</span>':''}
-        </div>
-        <div class="approval-actions">
-          <button class="btn-reject" onclick="rejectPending('${q.id}')">
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Rejeitar
-          </button>
-          <button class="btn-approve" onclick="approvePending('${q.id}')">
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Aprovar
-          </button>
-        </div>
-      </div>`;
-    });
+      if(!mod) continue;
+
+      // Create card directly in the module
+      const newCard = {
+        id: uid(),
+        modulo: q.modulo,
+        titulo: q.titulo,
+        descricao: q.descricao,
+        escola: q.escola,
+        categoria: q.categoria,
+        prioridade: q.prioridade,
+        fase: Object.keys(mod.fases)[0],
+        responsavel: '',
+        prazo: q.prazo || '',
+        criadoEm: q.criadoEm || today(),
+        criadoPor: 'formulario',
+        comentarios: [],
+        historico: [
+          { texto:'Solicitação recebida via formulário público por '+esc(q.solicitante?.nome||''), data:q.criadoEmFull||now(), usuario:q.solicitante?.nome||'Externo' },
+        ],
+        anexos: (q.anexos||[]).map(a=>({ name:a.name, size:a.size, type:a.type })),
+        origemFormulario: true,
+        protocolo: q.protocolo,
+      };
+      if(mod.hasFinancial){
+        newCard.valor = q.valor || '';
+        newCard.fornecedor = q.fornecedor || '';
+        newCard.vencimento = '';
+      }
+
+      allCards.unshift(newCard);
+      _importedIds.push(q.id);
+      imported++;
+
+      // Mark as approved in the API so it won't appear again
+      try {
+        await fetch(FORM_API + '/' + q.id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'aprovado', aprovadoPor: 'Sistema (auto)' }),
+        });
+      } catch(e) { console.warn('API patch failed:', e); }
+
+      addNotif('Nova solicitação recebida', q.titulo + ' (' + q.protocolo + ') → ' + mod.label, 'create');
+    }
+
+    if(imported > 0){
+      localStorage.setItem('pipeped_imported_ids', JSON.stringify(_importedIds));
+      save();
+      updateBadges();
+      buildSidebar();
+      renderPage();
+      showToast(imported + ' nova(s) solicitação(ões) importada(s) automaticamente!');
+    }
+  } catch(e) {
+    console.warn('Falha ao importar solicitações:', e);
   }
-  html += '</div>';
-  return html;
 }
 
-function copyFormLink(){
-  const url = document.getElementById('formPublicUrl')?.textContent||'';
-  navigator.clipboard.writeText(url).then(()=>showToast('Link copiado!')).catch(()=>showToast('Erro ao copiar','error'));
-}
-
-async function approvePending(id){
-  const queue = getPendingQueue();
-  const q = queue.find(q=>q.id===id);
-  if(!q) return;
-
-  try {
-    await fetch(FORM_API + '/' + id, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'aprovado', aprovadoPor: currentUser?.name||'Admin' }),
-    });
-  } catch(e) { console.warn('API patch failed, updating locally:', e); }
-
-  q.status = 'aprovado';
-  q.aprovadoPor = currentUser?.name||'Admin';
-  q.aprovadoEm = now();
-
-  // Create a real card in allCards
-  const mod = MODULES[q.modulo];
-  const newCard = {
-    id: uid(),
-    modulo: q.modulo,
-    titulo: q.titulo,
-    descricao: q.descricao,
-    escola: q.escola,
-    categoria: q.categoria,
-    prioridade: q.prioridade,
-    fase: mod ? Object.keys(mod.fases)[0] : 'solicitado',
-    responsavel: '',
-    prazo: q.prazo || '',
-    criadoEm: q.criadoEm || today(),
-    criadoPor: currentUser?.id || 'u1',
-    comentarios: [],
-    historico: [
-      { texto:'Solicitação enviada via formulário público por '+esc(q.solicitante?.nome||''), data:q.criadoEmFull||now(), usuario:q.solicitante?.nome||'Externo' },
-      { texto:'Aprovado por '+currentUser?.name, data:now(), usuario:currentUser?.name||'Admin' },
-    ],
-    anexos: (q.anexos||[]).map(a=>({ name:a.name, size:a.size, type:a.type })),
-    origemFormulario: true,
-    protocolo: q.protocolo,
-  };
-  if(mod?.hasFinancial){
-    newCard.valor = q.valor || '';
-    newCard.fornecedor = q.fornecedor || '';
-    newCard.vencimento = '';
-  }
-
-  allCards.unshift(newCard);
-  save();
-  addNotif('Solicitação aprovada', q.titulo + ' (' + q.protocolo + ')', 'create');
-  showToast('Solicitação aprovada e card criado no Kanban!');
-  _queueLoaded = false; // force re-fetch
-  updateBadges();
-  buildSidebar();
-  renderPage();
-}
-
-async function rejectPending(id){
-  const queue = getPendingQueue();
-  const q = queue.find(q=>q.id===id);
-  if(!q) return;
-
-  try {
-    await fetch(FORM_API + '/' + id, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'rejeitado', rejeitadoPor: currentUser?.name||'Admin' }),
-    });
-  } catch(e) { console.warn('API patch failed, updating locally:', e); }
-
-  q.status = 'rejeitado';
-  q.rejeitadoPor = currentUser?.name||'Admin';
-  q.rejeitadoEm = now();
-  addNotif('Solicitação rejeitada', q.titulo + ' (' + q.protocolo + ')', 'delete');
-  showToast('Solicitação rejeitada','warn');
-  _queueLoaded = false;
-  updateBadges();
-  buildSidebar();
-  renderPage();
-}
+// Poll for new form submissions every 30 seconds
+setInterval(autoImportFormSubmissions, 30000);
 
 // ─── SETTINGS PAGE STATE ──────────────────────────────────────────────
 let settingsTab = 'usuarios';
@@ -2638,24 +2412,13 @@ function getSettingsWorkflows(){ return JSON.parse(localStorage.getItem('SETTING
 function getSettingsNotifications(){ return JSON.parse(localStorage.getItem('SETTINGS_NOTIFICATIONS')||'{}') }
 function getAuditLog(){ return JSON.parse(localStorage.getItem('AUDIT_LOG')||'[]') }
 
-async function initSettingsData(){
-  // Carregar escolas do banco via API
-  try {
-    const resp = await fetch(PIPEPED_API+'/api/public/schools');
-    if(resp.ok){
-      const data = await resp.json();
-      const mapped = data.map(s=>({id:s.id, name:s.name, shortName:s.shortName||'', cnpj:s.cnpj||'', address:s.address||'', phone:s.phone||'', email:s.email||'', director:''}));
-      localStorage.setItem('SETTINGS_SCHOOLS', JSON.stringify(mapped));
-      SCHOOLS = mapped.map(s=>({id:s.id, name:s.name}));
-    }
-  } catch(e){ console.warn('Escolas: usando cache local', e); }
-  // Fallback: se não tem nada no localStorage (primeiro acesso sem API)
+function initSettingsData(){
   if(!localStorage.getItem('SETTINGS_SCHOOLS')){
-    localStorage.setItem('SETTINGS_SCHOOLS', JSON.stringify([]));
-  }
-  if(!getSettingsSchools().length && !SCHOOLS.length){
-    const savedSchools = getSettingsSchools();
-    SCHOOLS = savedSchools.map(s=>({id:s.id, name:s.name}));
+    localStorage.setItem('SETTINGS_SCHOOLS', JSON.stringify([
+      {id:'ped1',name:'PED 1 — Centro',cnpj:'12.345.678/0001-01',address:'Rua da Educação, 100 — Centro, Salvador/BA',phone:'(71) 3333-1001',director:'Emerson Santos'},
+      {id:'ped2',name:'PED 2 — Norte',cnpj:'12.345.678/0002-02',address:'Av. do Conhecimento, 200 — Norte, Salvador/BA',phone:'(71) 3333-1002',director:'Ana Lima'},
+      {id:'ped3',name:'PED 3 — Sul',cnpj:'12.345.678/0003-03',address:'Praça do Saber, 300 — Sul, Salvador/BA',phone:'(71) 3333-1003',director:'Ricardo Nunes'},
+    ]));
   }
   if(!localStorage.getItem('SETTINGS_WORKFLOWS')){
     localStorage.setItem('SETTINGS_WORKFLOWS', JSON.stringify([
@@ -2670,6 +2433,9 @@ async function initSettingsData(){
     localStorage.setItem('SETTINGS_NOTIFICATIONS', JSON.stringify({}));
   }
   if(!localStorage.getItem('AUDIT_LOG')) localStorage.setItem('AUDIT_LOG','[]');
+  // Sincronizar SCHOOLS em memória com localStorage
+  const savedSchools = getSettingsSchools();
+  SCHOOLS = savedSchools.map(s=>({id:s.id, name:s.name}));
 }
 
 // ─── AUDIT LOGGING ─────────────────────────────────────────────────
@@ -2685,7 +2451,7 @@ function switchSettingsTab(tab){ settingsTab=tab; renderPage(); }
 
 // ─── BUILD SETTINGS PAGE ──────────────────────────────────────────────
 function buildSettings(){
-  initSettingsData(); // async — carrega escolas do banco em background
+  initSettingsData();
   const tabs = [
     {id:'usuarios',icon:'👤',label:'Usuários'},
     {id:'escolas',icon:'🏫',label:'Escolas'},
@@ -3215,46 +2981,33 @@ function openSchoolModal(schoolId){
   showSettingsModal(schoolId?'Editar Escola':'Nova Escola', body, 'saveSchoolForm()');
 }
 
-async function saveSchoolForm(){
+function saveSchoolForm(){
   const name=document.getElementById('sf_name').value.trim();
   if(!name){showToast('Nome é obrigatório','error');return;}
   const cnpj=document.getElementById('sf_cnpj').value.trim();
   const address=document.getElementById('sf_address').value.trim();
   const phone=document.getElementById('sf_phone').value.trim();
   const director=document.getElementById('sf_director').value.trim();
-  const payload = {name, cnpj:cnpj||null, address:address||null, phone:phone||null};
-  try {
-    let resp;
-    if(editingSchoolId){
-      resp = await fetch(PIPEPED_API+'/api/public/schools/'+editingSchoolId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    } else {
-      resp = await fetch(PIPEPED_API+'/api/public/schools',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    }
-    if(!resp.ok){ const e=await resp.json(); throw new Error(e.error||'Erro ao salvar'); }
-    const saved = await resp.json();
-    // Atualizar localStorage como cache
-    const schools = getSettingsSchools();
-    if(editingSchoolId){
-      const s=schools.find(x=>x.id===editingSchoolId);
-      if(s) Object.assign(s,{name,cnpj,address,phone,director});
-      const sc=SCHOOLS.find(x=>x.id===editingSchoolId);
-      if(sc) sc.name=name;
-    } else {
-      schools.push({id:saved.id,name,cnpj,address,phone,director});
-      SCHOOLS.push({id:saved.id,name});
-    }
-    localStorage.setItem('SETTINGS_SCHOOLS',JSON.stringify(schools));
-    logAudit('school_save','settings','Escola: '+name);
-    showToast('Escola salva!');
-    closeSettingsModal();
-    renderPage();
-  } catch(e){
-    showToast('Erro: '+e.message,'error');
+  const schools = getSettingsSchools();
+  if(editingSchoolId){
+    const s=schools.find(x=>x.id===editingSchoolId);
+    if(s) Object.assign(s,{name,cnpj,address,phone,director});
+    const sc=SCHOOLS.find(x=>x.id===editingSchoolId);
+    if(sc) sc.name=name;
+  } else {
+    const id='ped'+uid();
+    schools.push({id,name,cnpj,address,phone,director});
+    SCHOOLS.push({id,name});
   }
+  localStorage.setItem('SETTINGS_SCHOOLS',JSON.stringify(schools));
+  logAudit('school_save','settings','Escola: '+name);
+  showToast('Escola salva!');
+  closeSettingsModal();
+  renderPage();
 }
 
 // ─── DELETE SCHOOL ────────────────────────────────────────────────────
-async function deleteSchool(schoolId){
+function deleteSchool(schoolId){
   const schoolObj = SCHOOLS.find(s=>s.id===schoolId);
   const schoolName = schoolObj ? schoolObj.name : schoolId;
   const cardsCount = allCards.filter(c=>c.escola===schoolId).length;
@@ -3262,10 +3015,6 @@ async function deleteSchool(schoolId){
     ? `Excluir "${schoolName}"?\n\nAtenção: existem ${cardsCount} card(s) vinculados a esta escola. Eles perderão a referência.`
     : `Excluir "${schoolName}"?`;
   if(!confirm(msg)) return;
-  try {
-    // Desativar no banco (soft delete via PUT active:false)
-    await fetch(PIPEPED_API+'/api/public/schools/'+schoolId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:false})});
-  } catch(e){ console.warn('Erro ao desativar escola no banco:', e); }
   // Remover do array em memória
   SCHOOLS = SCHOOLS.filter(s=>s.id!==schoolId);
   // Remover do localStorage
@@ -4355,57 +4104,17 @@ document.addEventListener('keydown',e=>{
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────
-(async function init(){
+(function init(){
   load();
   if(!allCards.length) seedData();
   initSettingsData();
   initEmailSystem();
   document.getElementById('notifPanel').style.display='none';
-  // Auto-login with saved token
-  if(authToken){
-    try {
-      const resp = await fetch(API_BASE + '/auth/me', {
-        headers: { 'Authorization': 'Bearer ' + authToken }
-      });
-      if(resp.ok){
-        const me = await resp.json();
-        if(me && me.id){
-          const u = {
-            id: me.id, name: me.name, email: me.email,
-            role: me.role === 'ADMIN' ? 'admin' : me.role === 'MANAGER' ? 'gestor' : 'colaborador',
-            initials: me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
-            dept: '', color: '#6366F1',
-            schools: [me.schoolId],
-            modulos: me.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
-            schoolId: me.schoolId,
-          };
-          if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
-          try {
-            const sResp = await fetch(API_BASE + '/schools', {
-              headers: { 'Authorization': 'Bearer ' + authToken }
-            });
-            if(sResp.ok){
-              const apiSchools = await sResp.json();
-              if(apiSchools && apiSchools.length){
-                SCHOOLS.length = 0;
-                apiSchools.forEach(s => SCHOOLS.push({ id: s.id, name: s.name }));
-              }
-            }
-          } catch(e){}
-          loginAs(u);
-        } else {
-          authToken = ''; localStorage.removeItem('pipeped_token');
-        }
-      } else {
-        // Token inválido/expirado — limpa e mostra tela de login
-        authToken = ''; localStorage.removeItem('pipeped_token');
-      }
-    } catch(e){
-      // API indisponível — limpa token, mostra login
-      authToken = ''; localStorage.removeItem('pipeped_token');
-    }
-  }
+  // Check overdue cards once on load (with delay so UI loads first)
   setTimeout(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 3000);
+  // Periodic overdue check every 5 minutes
   setInterval(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 300000);
+  // Auto-import form submissions on load (with delay)
+  setTimeout(autoImportFormSubmissions, 2000);
 })();
 </script></body></html>
