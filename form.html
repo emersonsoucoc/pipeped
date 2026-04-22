@@ -656,6 +656,14 @@ selectModule('compras');
 
 // Set min date to today
 document.getElementById('fPrazo').min = today();
+
+// Auto-refresh escolas a cada 30s para refletir mudanças em tempo real
+setInterval(()=>{
+  const current = document.getElementById('fEscola').value;
+  loadSchools().then(()=>{
+    if(current) document.getElementById('fEscola').value = current;
+  });
+}, 30000);
 </script>
 </body>
 </html>
