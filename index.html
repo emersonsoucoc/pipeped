@@ -1314,6 +1314,30 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 
 <script>
 'use strict';
+
+// ─── API CLIENT ──────────────────────────────────────────────────────
+let authToken = localStorage.getItem('pipeped_token')||'';
+const API_BASE = '/api';
+
+async function api(path, opts = {}){
+  const headers = { 'Content-Type':'application/json', ...opts.headers };
+  if(authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  let res;
+  try {
+    res = await fetch(API_BASE + path, { ...opts, headers });
+  } catch(err){
+    throw new Error('Sem conexão com o servidor');
+  }
+  if(res.status === 401){
+    authToken=''; localStorage.removeItem('pipeped_token');
+    if(!path.includes('/auth/login')){ location.reload(); }
+    throw new Error('Sessão expirada');
+  }
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || 'Erro na API');
+  return data;
+}
+
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
   { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','financeiro','contratos'] },
@@ -1575,16 +1599,52 @@ function showToast(msg, type='success'){
 }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────
-function doLogin(){
+async function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
-  const u = USERS.find(x=>x.email===email);
-  if(!u || !pass){ showToast('Credenciais inválidas','error'); return; }
-  loginAs(u);
+  if(!email || !pass){ showToast('Informe email e senha','error'); return; }
+  try {
+    const res = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password: pass })
+    });
+    if(!res || !res.token){ showToast('Resposta inválida do servidor','error'); return; }
+    authToken = res.token;
+    localStorage.setItem('pipeped_token', res.token);
+    const apiU = res.user;
+    const u = {
+      id: apiU.id, name: apiU.name, email: apiU.email,
+      role: apiU.role === 'ADMIN' ? 'admin' : apiU.role === 'MANAGER' ? 'gestor' : 'colaborador',
+      initials: apiU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+      dept: '', color: '#6366F1',
+      schools: [apiU.schoolId],
+      modulos: apiU.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
+      schoolId: apiU.schoolId,
+    };
+    if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
+    // Load schools from API
+    try {
+      const apiSchools = await api('/schools');
+      if(apiSchools && apiSchools.length){
+        SCHOOLS.length = 0;
+        apiSchools.forEach(s => SCHOOLS.push({ id: s.id, name: s.name }));
+      }
+    } catch(e){}
+    loginAs(u);
+  } catch(e){
+    // Fallback to local login
+    const u = USERS.find(x=>x.email===email);
+    if(u){ loginAs(u); }
+    else { showToast(e.message || 'Credenciais inválidas','error'); }
+  }
 }
 function quickLogin(role){
-  const u = USERS.find(x=>x.role===role);
-  if(u) loginAs(u);
+  const map = { admin:'emerson@grupoped.com.br', gestor:'ana@grupoped.com.br', colaborador:'carlos@grupoped.com.br' };
+  const email = map[role];
+  if(!email) return;
+  document.getElementById('loginEmail').value = email;
+  document.getElementById('loginPass').value = 'Ped@2026';
+  doLogin();
 }
 function loginAs(u){
   currentUser = u;
@@ -4272,15 +4332,42 @@ document.addEventListener('keydown',e=>{
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────
-(function init(){
+(async function init(){
   load();
   if(!allCards.length) seedData();
   initSettingsData();
   initEmailSystem();
   document.getElementById('notifPanel').style.display='none';
-  // Check overdue cards once on load (with delay so UI loads first)
+  // Auto-login with saved token
+  if(authToken){
+    try {
+      const me = await api('/auth/me');
+      if(me && me.id){
+        const u = {
+          id: me.id, name: me.name, email: me.email,
+          role: me.role === 'ADMIN' ? 'admin' : me.role === 'MANAGER' ? 'gestor' : 'colaborador',
+          initials: me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+          dept: '', color: '#6366F1',
+          schools: [me.schoolId],
+          modulos: me.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
+          schoolId: me.schoolId,
+        };
+        if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
+        try {
+          const apiSchools = await api('/schools');
+          if(apiSchools && apiSchools.length){
+            SCHOOLS.length = 0;
+            apiSchools.forEach(s => SCHOOLS.push({ id: s.id, name: s.name }));
+          }
+        } catch(e){}
+        loginAs(u);
+      }
+    } catch(e){
+      authToken = '';
+      localStorage.removeItem('pipeped_token');
+    }
+  }
   setTimeout(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 3000);
-  // Periodic overdue check every 5 minutes
   setInterval(()=>{ try{ NotifEngine.checkOverdue(); }catch(e){} }, 300000);
 })();
 </script></body></html>
