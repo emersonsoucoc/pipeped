@@ -11,7 +11,7 @@
   --border:#E2E8F0; --text:#0F172A; --muted:#64748B; --faint:#94A3B8;
   --accent:#6366F1; --accent-h:#4F46E5; --accent-l:#EEF2FF;
   --ok:#10B981; --warn:#F59E0B; --err:#EF4444;
-  --compras:#F59E0B; --ti:#3B82F6; --comercial:#10B981; --contratos:#8B5CF6;
+  --compras:#F59E0B; --ti:#3B82F6; --comercial:#10B981; --financeiro:#EF4444; --contratos:#8B5CF6;
   --r:12px; --r-sm:8px;
   --sh:0 1px 3px rgba(0,0,0,.06);
   --sh-md:0 4px 16px rgba(0,0,0,.08);
@@ -60,7 +60,7 @@ a{color:var(--accent);text-decoration:none}
 
 /* Module picker */
 .module-picker{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:0;
   border-bottom:1px solid var(--border);
 }
 .module-opt{
@@ -78,6 +78,7 @@ a{color:var(--accent);text-decoration:none}
 .module-opt[data-mod="compras"].active::after{background:var(--compras)}
 .module-opt[data-mod="ti"].active::after{background:var(--ti)}
 .module-opt[data-mod="comercial"].active::after{background:var(--comercial)}
+.module-opt[data-mod="financeiro"].active::after{background:var(--financeiro)}
 .module-opt[data-mod="contratos"].active::after{background:var(--contratos)}
 .module-dot{
   width:32px;height:32px;border-radius:10px;
@@ -87,6 +88,7 @@ a{color:var(--accent);text-decoration:none}
 .module-opt[data-mod="compras"] .module-dot{background:#FFFBEB;color:var(--compras)}
 .module-opt[data-mod="ti"] .module-dot{background:#EFF6FF;color:var(--ti)}
 .module-opt[data-mod="comercial"] .module-dot{background:#ECFDF5;color:var(--comercial)}
+.module-opt[data-mod="financeiro"] .module-dot{background:#FEF2F2;color:var(--financeiro)}
 .module-opt[data-mod="contratos"] .module-dot{background:#F5F3FF;color:var(--contratos)}
 .module-opt.active .module-dot{transform:scale(1.1)}
 
