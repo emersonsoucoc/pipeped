@@ -1613,11 +1613,11 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 'use strict';
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
-  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos','nota_fiscal'] },
+  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','financeiro','contratos','nota_fiscal'] },
   { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial'] },
   { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B', schools:['ped1','ped2','ped3'], modulos:['ti'] },
   { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444', schools:['ped1','ped2','ped3'], modulos:['comercial'] },
-  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos','nota_fiscal'] },
+  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','financeiro','contratos','nota_fiscal'] },
 ];
 
 const SCHOOLS = [
@@ -6902,7 +6902,7 @@ document.addEventListener('keydown',e=>{
         initials: me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
         dept: '', color: '#6366F1',
         schools: [me.schoolId],
-        modulos: me.role === 'ADMIN' ? Object.keys(MODULES) : ['compras','ti','comercial'],
+        modulos: me.role === 'ADMIN' || me.role === 'MANAGER' ? Object.keys(MODULES) : ['compras','ti','comercial','financeiro'],
         schoolId: me.schoolId,
       };
       if(!USERS.find(x=>x.id===u.id)) USERS.push(u);
