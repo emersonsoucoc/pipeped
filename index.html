@@ -2045,6 +2045,8 @@ function navigate(page){
   // Clicksign polling
   if(page==='contratos') csStartPolling(); else csStopPolling();
   renderPage();
+  // Sync RH data from API only when navigating to the RH page (not on every re-render)
+  if(page==='rh') initRHModule();
   updateBadges();
 }
 const pageTitles = { dashboard:'Dashboard', settings:'Configurações' };
@@ -2053,7 +2055,7 @@ function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
   else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
-  else if(currentPage==='rh') { el.innerHTML = buildRHModule(); initRHModule(); }
+  else if(currentPage==='rh') { el.innerHTML = buildRHModule(); }
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
   else if(currentPage==='settings') el.innerHTML = buildSettings();
 }
@@ -3790,7 +3792,7 @@ let rhGrades = JSON.parse(localStorage.getItem('rh_grades')||'[]');
 async function rhApi(method, path, body){
   if(!RH_API) return null;
   try{
-    const opts = { method, headers:{'Content-Type':'application/json'} };
+    const opts = { method, headers:{'Content-Type':'application/json'}, signal: AbortSignal.timeout(5000) };
     if(body) opts.body = JSON.stringify(body);
     const r = await fetch(RH_API + path, opts);
     if(!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.error||r.statusText); }
@@ -4150,9 +4152,11 @@ async function initRHModule(){
   _rhInitRunning = true;
   try {
     await rhSyncFromApi();
-    // Re-render only the RH content (NOT renderPage — that causes infinite loop)
+    // Re-render only the RH content area (NOT renderPage — that would re-trigger navigate logic)
     const el = document.getElementById('pageContent');
     if(el && currentPage === 'rh') el.innerHTML = buildRHModule();
+  } catch(e) {
+    console.error('initRHModule error:', e);
   } finally {
     _rhInitRunning = false;
   }
