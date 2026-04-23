@@ -3788,6 +3788,7 @@ let RH_PROFESSORES = JSON.parse(localStorage.getItem('rh_professores')||'null') 
 let RH_DISCIPLINAS = JSON.parse(localStorage.getItem('rh_disciplinas')||'null') || [...RH_DISC_DEFAULTS];
 let rhGrades = JSON.parse(localStorage.getItem('rh_grades')||'[]');
 let rhSegmentos = JSON.parse(localStorage.getItem('rh_segmentos')||'[]');
+let rhSubstituicoes = JSON.parse(localStorage.getItem('rh_substituicoes')||'[]');
 let rhResumoFolha = [];
 
 // ─── DATA LAYER: API com fallback localStorage ──────────────────────
@@ -3822,16 +3823,18 @@ async function rhSyncFromApi(){
   await rhCheckApi();
   if(!rhApiOnline) return;
 
-  const [profs, discs, grades, segs] = await Promise.all([
+  const [profs, discs, grades, segs, subs] = await Promise.all([
     rhApi('GET','/api/professores'),
     rhApi('GET','/api/disciplinas'),
     rhApi('GET','/api/grades'),
     rhApi('GET','/api/segmentos'),
+    rhApi('GET','/api/substituicoes'),
   ]);
   if(profs){ RH_PROFESSORES = profs; localStorage.setItem('rh_professores',JSON.stringify(profs)); }
   if(discs){ RH_DISCIPLINAS = discs.map(d=>d.nome); localStorage.setItem('rh_disciplinas',JSON.stringify(RH_DISCIPLINAS)); }
   if(grades){ rhGrades = grades; localStorage.setItem('rh_grades',JSON.stringify(grades)); }
   if(segs){ rhSegmentos = segs; localStorage.setItem('rh_segmentos',JSON.stringify(segs)); }
+  if(subs){ rhSubstituicoes = subs; localStorage.setItem('rh_substituicoes',JSON.stringify(subs)); }
 }
 
 async function rhSyncResumoFolha(){
@@ -3929,6 +3932,7 @@ function buildRHModule(){
         <button class="rh-tab ${rhCurrentTab==='nova'?'active':''}" onclick="rhSwitchTab('nova')">${rhEditingId?'✏️ Editando':'➕ Nova Grade'}</button>
         <button class="rh-tab ${rhCurrentTab==='cadastros'?'active':''}" onclick="rhSwitchTab('cadastros')">👩‍🏫 Professores</button>
         <button class="rh-tab ${rhCurrentTab==='disciplinas'?'active':''}" onclick="rhSwitchTab('disciplinas')">📚 Disciplinas</button>
+        <button class="rh-tab ${rhCurrentTab==='substituicoes'?'active':''}" onclick="rhSwitchTab('substituicoes')">🔄 Substituições</button>
         <button class="rh-tab ${rhCurrentTab==='segmentos'?'active':''}" onclick="rhSwitchTab('segmentos')">🏫 Segmentos</button>
         <button class="rh-tab ${rhCurrentTab==='folha'?'active':''}" onclick="rhSwitchTab('folha')">📊 Folha</button>
         <button class="rh-tab ${rhCurrentTab==='json'?'active':''}" onclick="rhSwitchTab('json')">🔗 API</button>
@@ -3944,6 +3948,7 @@ function buildRHModule(){
     ${rhCurrentTab==='nova' ? buildRHForm() : ''}
     ${rhCurrentTab==='cadastros' ? buildRHCadastros() : ''}
     ${rhCurrentTab==='disciplinas' ? buildRHDisciplinasTab() : ''}
+    ${rhCurrentTab==='substituicoes' ? buildRHSubstituicoesTab() : ''}
     ${rhCurrentTab==='segmentos' ? buildRHSegmentosTab() : ''}
     ${rhCurrentTab==='folha' ? buildRHFolhaTab() : ''}
     ${rhCurrentTab==='json' ? buildRHJsonPreview() : ''}
@@ -4072,7 +4077,7 @@ function buildRHForm(){
 
       <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;border:1px dashed var(--border)">
         <div style="font-size:12px;font-weight:700;color:var(--fg);margin-bottom:8px">⏱ Carga Horária Extra</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div class="rh-field">
             <label style="font-size:10px">Horas Extras (h/sem)</label>
             <input type="number" id="rhHorasExtras" step="0.5" min="0" value="${editing?.horas_extras||0}" style="padding:6px 8px;font-size:12px">
@@ -4081,11 +4086,8 @@ function buildRHForm(){
             <label style="font-size:10px">Coord. Pedagógica (h/sem)</label>
             <input type="number" id="rhCoordPed" step="0.5" min="0" value="${editing?.coord_pedagogica||0}" style="padding:6px 8px;font-size:12px">
           </div>
-          <div class="rh-field">
-            <label style="font-size:10px">Substituições (h/sem)</label>
-            <input type="number" id="rhSubstituicoes" step="0.5" min="0" value="${editing?.substituicoes||0}" style="padding:6px 8px;font-size:12px">
-          </div>
         </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">💡 Substituições são registradas separadamente na aba "Substituições"</div>
         <div class="rh-field" style="margin-top:6px">
           <label style="font-size:10px">Observações dos extras</label>
           <input type="text" id="rhObsExtras" placeholder="Ex: substituiu Prof. João na terça..." value="${esc(editing?.obs_extras||'')}" style="padding:6px 8px;font-size:12px">
@@ -4135,6 +4137,198 @@ function buildRHForm(){
       </div>`:''}
     </div>
   </div>`;
+}
+
+// ─── SUBSTITUIÇÕES TAB ────────────────────────────────────────────────
+function buildRHSubstituicoesTab(){
+  const schoolId = document.getElementById('schoolFilter')?.value || '';
+  const filtered = rhSubstituicoes.filter(s=> !schoolId || s.escola_id===schoolId);
+  const RH_MOTIVOS = ['Falta','Atestado Médico','Licença','Atraso','Reunião','Outro'];
+
+  // Resumo por substituto
+  const bySubst = {};
+  filtered.forEach(s=>{
+    if(!bySubst[s.substituto_id]) bySubst[s.substituto_id] = {nome:s.substituto_nome, total_horas:0, count:0};
+    bySubst[s.substituto_id].total_horas += s.total_horas||0;
+    bySubst[s.substituto_id].count++;
+  });
+
+  return `<div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <!-- FORMULÁRIO -->
+      <div class="rh-form-card">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rh)" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+          Registrar Substituição
+        </h3>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px">
+          Registre quando um professor assume a turma de outro que faltou.
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="rh-field">
+            <label style="font-size:11px">📅 Data</label>
+            <input type="date" id="rhSubData" value="${new Date().toISOString().slice(0,10)}" style="padding:6px 8px;font-size:12px">
+          </div>
+          <div class="rh-field">
+            <label style="font-size:11px">🏫 Escola</label>
+            <select id="rhSubEscola" style="padding:6px 8px;font-size:12px">
+              <option value="">Selecione...</option>
+              ${SCHOOLS.map(s=>`<option value="${s.id}" data-nome="${esc(s.name)}">${esc(s.name)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div class="rh-field">
+          <label style="font-size:11px">👩‍🏫 Professor Substituto (quem assumiu)</label>
+          <select id="rhSubSubstituto" style="padding:6px 8px;font-size:12px">
+            <option value="">Selecione...</option>
+            ${RH_PROFESSORES.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="rh-field">
+          <label style="font-size:11px">🚫 Professor Ausente (quem faltou)</label>
+          <select id="rhSubAusente" style="padding:6px 8px;font-size:12px">
+            <option value="">Selecione...</option>
+            ${RH_PROFESSORES.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="rh-field">
+            <label style="font-size:11px">📚 Disciplina</label>
+            <select id="rhSubDisciplina" style="padding:6px 8px;font-size:12px">
+              <option value="">Selecione...</option>
+              ${RH_DISCIPLINAS.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="rh-field">
+            <label style="font-size:11px">📋 Motivo da ausência</label>
+            <select id="rhSubMotivo" style="padding:6px 8px;font-size:12px">
+              ${RH_MOTIVOS.map(m=>`<option value="${m}">${m}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div class="rh-field">
+          <label style="font-size:11px">⏰ Horários substituídos (selecione os que se aplicam)</label>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+            ${RH_HORARIOS.map(h=>`<label style="display:flex;align-items:center;gap:3px;font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--bg)">
+              <input type="checkbox" class="rhSubHorario" value="${h}" style="margin:0"> ${h}
+            </label>`).join('')}
+          </div>
+        </div>
+
+        <div class="rh-field">
+          <label style="font-size:11px">📝 Observações</label>
+          <input type="text" id="rhSubObs" placeholder="Ex: Professora Maria cobriu as 2 primeiras aulas..." style="padding:6px 8px;font-size:12px">
+        </div>
+
+        <button class="rh-btn-submit primary" onclick="rhRegistrarSubstituicao()" style="margin-top:8px">
+          🔄 Registrar Substituição
+        </button>
+      </div>
+
+      <!-- RESUMO POR SUBSTITUTO -->
+      <div>
+        <div class="rh-form-card" style="margin-bottom:12px">
+          <h3 style="margin-bottom:8px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rh)" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Resumo de Substituições
+          </h3>
+          ${Object.values(bySubst).length?`
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${Object.values(bySubst).sort((a,b)=>b.total_horas-a.total_horas).map(s=>`
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:6px">
+                <span style="font-size:12px;font-weight:600">${esc(s.nome)}</span>
+                <div style="display:flex;gap:10px;align-items:center">
+                  <span style="font-size:11px;color:var(--muted)">${s.count} registro(s)</span>
+                  <span style="font-size:12px;font-weight:700;color:var(--rh)">${s.total_horas.toFixed(1)}h</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          `:'<div style="font-size:12px;color:var(--muted);padding:8px 0">Nenhuma substituição registrada</div>'}
+        </div>
+
+        <!-- HISTÓRICO -->
+        <div class="rh-form-card">
+          <h3 style="margin-bottom:8px">📋 Histórico (${filtered.length})</h3>
+          <div style="max-height:340px;overflow-y:auto">
+            ${filtered.length?filtered.map(s=>`
+              <div style="padding:10px;margin-bottom:6px;background:var(--bg);border-radius:8px;border-left:3px solid var(--rh)">
+                <div style="display:flex;justify-content:space-between;align-items:start">
+                  <div>
+                    <div style="font-size:12px;font-weight:600;color:var(--fg)">
+                      ${esc(s.substituto_nome)} <span style="color:var(--muted);font-weight:400">substituiu</span> ${esc(s.ausente_nome)}
+                    </div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:2px">
+                      ${esc(s.disciplina)} · ${esc(s.escola_nome||'')}${s.turma_nome?' · Turma '+esc(s.turma_nome):''} · ${s.data}
+                    </div>
+                    <div style="font-size:10px;color:var(--muted);margin-top:2px">
+                      ${(s.horarios||[]).map(h=>h.horario||h).join(', ')} · <strong>${s.total_aulas} aula(s)</strong> · Motivo: ${esc(s.motivo||'—')}
+                    </div>
+                    ${s.observacoes?`<div style="font-size:10px;color:var(--rh);margin-top:2px;font-style:italic">"${esc(s.observacoes)}"</div>`:''}
+                  </div>
+                  <button style="font-size:10px;padding:2px 6px;border:1px solid #EF4444;border-radius:4px;background:none;cursor:pointer;color:#EF4444" onclick="rhDeleteSubstituicao('${s.id}')">×</button>
+                </div>
+              </div>
+            `).join(''):'<div style="font-size:12px;color:var(--muted)">Nenhum registro</div>'}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function rhRegistrarSubstituicao(){
+  const data = document.getElementById('rhSubData')?.value;
+  const escolaSel = document.getElementById('rhSubEscola');
+  const escolaId = escolaSel?.value;
+  const escolaNome = escolaSel?.selectedOptions[0]?.dataset?.nome || '';
+  const substitutoId = document.getElementById('rhSubSubstituto')?.value;
+  const ausenteId = document.getElementById('rhSubAusente')?.value;
+  const disciplina = document.getElementById('rhSubDisciplina')?.value;
+  const motivo = document.getElementById('rhSubMotivo')?.value;
+  const obs = document.getElementById('rhSubObs')?.value?.trim() || '';
+
+  if(!data){ showToast('Selecione a data','error'); return; }
+  if(!substitutoId){ showToast('Selecione o professor substituto','error'); return; }
+  if(!ausenteId){ showToast('Selecione o professor ausente','error'); return; }
+  if(substitutoId===ausenteId){ showToast('Substituto e ausente não podem ser o mesmo professor','error'); return; }
+  if(!disciplina){ showToast('Selecione a disciplina','error'); return; }
+
+  const horarioChecks = document.querySelectorAll('.rhSubHorario:checked');
+  if(!horarioChecks.length){ showToast('Selecione pelo menos um horário','error'); return; }
+
+  const horarios = Array.from(horarioChecks).map(cb=>({horario:cb.value}));
+
+  const result = await rhApi('POST','/api/substituicoes',{
+    data, substituto_id:substitutoId, ausente_id:ausenteId,
+    escola_id:escolaId, escola_nome:escolaNome,
+    disciplina, horarios, motivo, observacoes:obs,
+    registrado_por: currentUser?.name||'',
+  });
+
+  if(result){
+    await rhSyncFromApi();
+    const subst = RH_PROFESSORES.find(p=>p.id===substitutoId);
+    const aus = RH_PROFESSORES.find(p=>p.id===ausenteId);
+    showToast(`Substituição registrada: ${subst?.nome||''} → ${aus?.nome||''}`);
+    logAudit('rh_substituicao','rh',`${subst?.nome} substituiu ${aus?.nome} em ${data}`);
+    renderPage();
+  } else {
+    showToast('Erro ao registrar substituição','error');
+  }
+}
+
+async function rhDeleteSubstituicao(id){
+  if(!confirm('Excluir este registro de substituição?')) return;
+  await rhApi('DELETE','/api/substituicoes/'+id);
+  await rhSyncFromApi();
+  showToast('Substituição excluída');
+  renderPage();
 }
 
 // ─── SEGMENTOS TAB ────────────────────────────────────────────────────
@@ -4286,9 +4480,21 @@ function buildRHFolhaTab(){
     p.total_aulas += g.total_aulas||0;
     p.horas_extras += g.horas_extras||0;
     p.coord_pedagogica += g.coord_pedagogica||0;
-    p.substituicoes += g.substituicoes||0;
     if(!p.disciplinas.includes(g.disciplina)) p.disciplinas.push(g.disciplina);
     p.grades.push(g);
+  });
+
+  // Adicionar horas de substituição do módulo separado
+  rhSubstituicoes.filter(s=> !schoolId || s.escola_id===schoolId).forEach(s=>{
+    if(!byProf[s.substituto_id]){
+      const prof = RH_PROFESSORES.find(p=>p.id===s.substituto_id)||{nome:s.substituto_nome,initials:s.substituto_initials||'??',color:s.substituto_color||'#94A3B8',titulacao:'graduacao',valor_hora_aula:0};
+      byProf[s.substituto_id] = {
+        prof, total_horas:0, total_aulas:0, horas_extras:0,
+        coord_pedagogica:0, substituicoes:0, disciplinas:[], grades:[],
+        valor_hora: prof.valor_hora_aula||0
+      };
+    }
+    byProf[s.substituto_id].substituicoes += s.total_horas||0;
   });
   const profList = Object.values(byProf).sort((a,b)=>a.prof.nome.localeCompare(b.prof.nome));
 
