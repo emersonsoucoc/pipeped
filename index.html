@@ -59,13 +59,12 @@ svg{display:block;flex-shrink:0}
 .login-label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .login-field{margin-bottom:16px}
 .btn-primary{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:11px 20px;background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:11px 20px;background:var(--accent);color:#fff;
   border-radius:var(--r-sm);font-weight:600;font-size:14px;
   transition:background var(--t),transform var(--t);
 }
 .btn-primary:hover{background:var(--accent-h);transform:translateY(-1px)}
-#loginScreen .btn-primary{width:100%}
 .login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--faint);font-size:12px}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .login-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -213,12 +212,57 @@ svg{display:block;flex-shrink:0}
 .panel-title span{flex:1}
 .panel-title a{font-size:12px;font-weight:500;color:var(--accent);cursor:pointer}
 
-/* Module bar chart */
-.mod-bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.mod-bar-label{font-size:12px;color:var(--muted);width:80px;flex-shrink:0}
-.mod-bar-track{flex:1;height:8px;background:var(--surface);border-radius:9999px;overflow:hidden}
-.mod-bar-fill{height:100%;border-radius:9999px;transition:width .6s ease}
-.mod-bar-count{font-size:12px;font-weight:600;color:var(--text);width:28px;text-align:right;flex-shrink:0}
+/* Module bar chart — refatorado */
+.mod-bar-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;transition:transform .15s ease}
+.mod-bar-row:hover{transform:translateX(2px)}
+.mod-bar-label{font-size:12px;font-weight:600;width:85px;flex-shrink:0;letter-spacing:.2px}
+.mod-bar-track{flex:1;height:10px;background:var(--surface);border-radius:10px;overflow:hidden;position:relative}
+.mod-bar-fill{height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1);position:relative;min-width:4px}
+.mod-bar-count{font-size:13px;font-weight:700;color:var(--text);width:32px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+
+/* School summary cards */
+.school-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:8px}
+.school-summary-card{
+  padding:14px;border-radius:10px;border:1px solid var(--border);
+  background:var(--white);cursor:pointer;
+  transition:all .2s ease;display:flex;flex-direction:column;gap:6px;
+  position:relative;overflow:hidden;
+}
+.school-summary-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:10px 10px 0 0;
+}
+.school-summary-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
+.school-summary-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.school-summary-count{font-size:20px;font-weight:800;color:var(--accent);letter-spacing:-1px}
+.school-summary-sub{font-size:10px;color:var(--muted);font-weight:500}
+.school-critical-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  background:#FEF2F2;color:#EF4444;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:9999px;margin-top:2px;width:fit-content;
+}
+.school-critical-badge.zero{background:#ECFDF5;color:#10B981}
+
+/* Alertas críticos widget */
+.alerts-critical{margin-bottom:8px}
+.alert-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:12px 0 8px;display:flex;align-items:center;gap:6px}
+.alert-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:8px;margin-bottom:6px;cursor:pointer;
+  transition:all .15s ease;border:1px solid transparent;
+}
+.alert-item:hover{transform:translateX(3px);border-color:var(--border)}
+.alert-item .alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.alert-item .alert-text{flex:1;min-width:0}
+.alert-item .alert-title{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-item .alert-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.alert-item .alert-tag{
+  font-size:9px;font-weight:700;padding:2px 8px;border-radius:9999px;
+  text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;
+}
+.alert-empty{text-align:center;padding:16px;color:var(--ok);font-size:12px;font-weight:500}
+.alert-pulse{animation:alertPulse 2s infinite}
+@keyframes alertPulse{0%,100%{opacity:1}50%{opacity:.6}}
 
 /* Donut */
 .donut-wrap{display:flex;align-items:center;gap:24px}
@@ -288,34 +332,6 @@ svg{display:block;flex-shrink:0}
 .col-header:hover .col-cfg{opacity:1}
 .col-cfg:hover{background:rgba(0,0,0,.08);color:var(--text)}
 
-/* ─── ADD PHASE BETWEEN COLUMNS ──────────────────────────────── */
-.phase-separator{
-  display:flex;align-items:stretch;justify-content:center;
-  width:24px;flex-shrink:0;position:relative;cursor:pointer;
-  margin:0 -8px;z-index:2;
-}
-.phase-separator .phase-sep-line{
-  width:2px;background:transparent;border-radius:1px;
-  transition:background .2s;align-self:stretch;
-}
-.phase-separator:hover .phase-sep-line{background:var(--accent)}
-.phase-separator .phase-sep-btn{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:28px;height:28px;border-radius:50%;
-  background:var(--accent);color:#fff;border:2px solid var(--white);
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;transition:all .2s;font-size:16px;font-weight:700;
-  box-shadow:0 2px 8px rgba(99,102,241,.4);
-}
-.phase-separator:hover .phase-sep-btn{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.phase-separator .phase-sep-tooltip{
-  position:absolute;top:calc(50% + 22px);left:50%;transform:translateX(-50%);
-  background:#1E293B;color:#fff;font-size:11px;font-weight:500;
-  padding:4px 10px;border-radius:6px;white-space:nowrap;
-  opacity:0;pointer-events:none;transition:opacity .2s;
-}
-.phase-separator:hover .phase-sep-tooltip{opacity:1}
-
 /* ─── PHASE EDITOR MODAL ──────────────────────────────────────── */
 .phase-editor-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;
@@ -324,16 +340,8 @@ svg{display:block;flex-shrink:0}
 .phase-editor-overlay.active{display:flex;animation:fadeIn .15s}
 .phase-editor-box{
   background:var(--white);border-radius:var(--r);padding:24px;
-  width:420px;max-width:90vw;box-shadow:var(--sh-lg);
+  width:380px;max-width:90vw;box-shadow:var(--sh-lg);
 }
-.phase-field-check{
-  display:flex;align-items:center;gap:7px;padding:6px 10px;
-  border:1px solid var(--border);border-radius:8px;cursor:pointer;
-  transition:all .15s;font-size:12px;color:var(--text);
-}
-.phase-field-check:hover{border-color:var(--accent);background:var(--accent-l)}
-.phase-field-check input{margin:0;accent-color:var(--accent)}
-.phase-field-check.checked{border-color:var(--accent);background:var(--accent-l)}
 .phase-editor-box h3{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
 .phase-editor-box .form-group{margin-bottom:14px}
 .phase-editor-box label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
@@ -514,73 +522,16 @@ svg{display:block;flex-shrink:0}
 .notif-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
 
 /* ─── SETTINGS ────────────────────────────────────────────────────── */
-/* ─── SETTINGS LAYOUT (sidebar + content) ────────────────────── */
-.settings-wrap{padding:0;max-width:100%;display:flex;min-height:calc(100vh - 60px)}
-.settings-sidebar{
-  width:240px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);
-  padding:28px 0;display:flex;flex-direction:column;gap:4px;
-}
-.settings-sidebar-title{
-  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
-  color:var(--muted);padding:0 20px;margin-bottom:8px;
-}
-.settings-sidebar-group{margin-bottom:16px}
-.settings-sidebar-group:last-child{margin-bottom:0}
-.settings-sidebar-group-label{
-  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
-  color:var(--faint);padding:12px 20px 6px;
-}
+.settings-wrap{padding:24px;max-width:1100px}
+.settings-wrap h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.settings-wrap p{color:var(--muted);margin-bottom:24px;font-size:13.5px}
+.settings-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;flex-wrap:wrap}
 .stab{
-  display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;font-weight:500;
-  color:var(--muted);cursor:pointer;transition:all .15s;border-left:3px solid transparent;
-  border-radius:0;margin:0;
+  padding:12px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--t);white-space:nowrap;
 }
-.stab:hover{color:var(--text);background:var(--surface)}
-.stab.active{color:var(--accent);background:var(--accent-l);border-left-color:var(--accent);font-weight:600}
-.stab .stab-icon{width:18px;text-align:center;font-size:14px;flex-shrink:0}
-.settings-content{flex:1;padding:32px 36px;overflow-y:auto;background:var(--surface)}
-.settings-content-header{margin-bottom:28px}
-.settings-content-header h2{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px}
-.settings-content-header p{color:var(--muted);font-size:13.5px;margin:0}
-
-/* ─── USER CARDS (replaces table) ────────────────────────────── */
-.user-list{display:flex;flex-direction:column;gap:8px}
-.user-row{
-  display:flex;align-items:center;gap:16px;padding:14px 18px;
-  background:var(--white);border:1px solid var(--border);border-radius:12px;
-  transition:all .2s;cursor:default;
-}
-.user-row:hover{box-shadow:0 4px 16px rgba(0,0,0,.06);border-color:rgba(99,102,241,.2)}
-.user-row .avatar{position:relative}
-.user-row .user-status-ring{
-  position:absolute;bottom:-1px;right:-1px;width:12px;height:12px;border-radius:50%;
-  border:2px solid var(--white);
-}
-.user-row .user-status-ring.active{background:#10B981}
-.user-row .user-status-ring.inactive{background:#CBD5E1}
-.user-info{flex:1;min-width:0}
-.user-info-name{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
-.user-info-meta{font-size:12px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px}
-.user-info-meta .separator{color:var(--border)}
-.user-modules{display:flex;gap:4px;flex-wrap:wrap}
-.user-mod-chip{
-  padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;
-  letter-spacing:.3px;text-transform:uppercase;
-}
-.user-stats{display:flex;align-items:center;gap:20px;flex-shrink:0}
-.user-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
-.user-stat-val{font-size:16px;font-weight:800;color:var(--accent)}
-.user-stat-label{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.3px}
-.user-actions{display:flex;gap:6px;flex-shrink:0}
-.user-action-btn{
-  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
-  background:var(--white);color:var(--muted);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .15s;
-}
-.user-action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
-.user-action-btn.danger:hover{border-color:#EF4444;color:#EF4444;background:#FEF2F2}
-
-/* Legacy support */
+.stab:hover{color:var(--text)}
+.stab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
 .users-table{width:100%;border-collapse:collapse;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
 .users-table th{background:var(--surface);padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)}
 .users-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
@@ -811,6 +762,11 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 .email-status.error{background:#FEF2F2;color:#DC2626}
 .email-status.pending{background:#FEF3C7;color:#B45309}
 .email-status.mock{background:var(--accent-l);color:var(--accent)}
+.email-status.enviado{background:#ECFDF5;color:#059669}
+.email-status.enviando{background:#FEF3C7;color:#B45309}
+.email-status.erro{background:#FEF2F2;color:#DC2626}
+.spinner-sm{display:inline-block;width:14px;height:14px;border:2px solid #BFDBFE;border-top-color:#3B82F6;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ─── TEMPLATE EDITOR MODAL ──────────────────────────────────────── */
 .tpl-editor-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:700;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
@@ -1118,20 +1074,6 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
           </div>
         </div>
 
-        <!-- Financeiro-specific fields (Nome do Aluno, Detalhamento) -->
-        <div id="financeiroFields" class="hidden">
-          <div class="divider"></div>
-          <div class="section-title">Dados da Solicitação</div>
-          <div class="field-group">
-            <div class="field-label">Nome do Aluno</div>
-            <input type="text" id="mNomeAluno" placeholder="Nome completo do aluno…">
-          </div>
-          <div class="field-group">
-            <div class="field-label">Detalhamento</div>
-            <textarea id="mDetalhamento" placeholder="Descreva os detalhes da solicitação…" rows="3" style="min-height:60px;font-size:13px"></textarea>
-          </div>
-        </div>
-
         <!-- Comments -->
         <div class="divider"></div>
         <div class="section-title">Comentários</div>
@@ -1186,10 +1128,6 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
         <div class="meta-field">
           <div class="meta-label">Prazo</div>
           <input type="date" id="mPrazo">
-        </div>
-        <div class="meta-field">
-          <div class="meta-label">Protocolo</div>
-          <div class="meta-val text-sm" id="mProtocolo" style="font-family:monospace;font-weight:700;color:#6366F1">—</div>
         </div>
         <div class="meta-field">
           <div class="meta-label">Criado em</div>
@@ -1378,11 +1316,6 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
         <span id="phaseEditorColorHex" style="font-size:12px;color:var(--muted)">#3B82F6</span>
       </div>
     </div>
-    <div class="form-group" id="phaseFieldsGroup">
-      <label style="margin-bottom:8px">Campos visíveis no card</label>
-      <div id="phaseFieldsChecks" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-      </div>
-    </div>
     <div class="phase-editor-actions">
       <button class="btn-cancel" onclick="closePhaseEditor()">Cancelar</button>
       <button class="btn-save" onclick="savePhaseEdit()">Salvar</button>
@@ -1397,11 +1330,11 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 'use strict';
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
-  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','financeiro','contratos'] },
+  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos'] },
   { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial'] },
   { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B', schools:['ped1','ped2','ped3'], modulos:['ti'] },
   { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444', schools:['ped1','ped2','ped3'], modulos:['comercial'] },
-  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','financeiro','contratos'] },
+  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos'] },
 ];
 
 let SCHOOLS = [
@@ -1451,20 +1384,6 @@ const MODULES = {
     },
     lastPhase:'matriculado',
   },
-  financeiro: {
-    label:'Financeiro', shortLabel:'Financeiro', btnLabel:'Nova Solicitação',
-    color:'#EF4444', colorLight:'#FEF2F2', hasFinancial:true,
-    categorias:['Declarações','Solicitar Baixa','Atualização de Boleto','Atualização Contratual','Cancelamento de Matrícula','Cancelamento de Extracurricular','Cadastrar Nova Cobrança','Outros'],
-    fases:{
-      pendente:    { label:'Pendente',    color:'#94A3B8', bg:'#F1F5F9' },
-      a_vencer:    { label:'A Vencer',    color:'#F59E0B', bg:'#FFFBEB' },
-      em_analise:  { label:'Em Análise',  color:'#3B82F6', bg:'#EFF6FF' },
-      aprovado:    { label:'Aprovado',    color:'#8B5CF6', bg:'#F5F3FF' },
-      pago:        { label:'Pago',        color:'#10B981', bg:'#ECFDF5' },
-      vencido:     { label:'Vencido',     color:'#EF4444', bg:'#FEF2F2' },
-    },
-    lastPhase:'pago',
-  },
   contratos: {
     label:'Contratos', shortLabel:'Contratos', btnLabel:'Novo Contrato',
     color:'#8B5CF6', colorLight:'#F5F3FF', hasFinancial:false,
@@ -1488,26 +1407,13 @@ function loadCustomPhases(){
     const custom = JSON.parse(saved);
     Object.keys(custom).forEach(mod=>{
       if(!MODULES[mod]) return;
-      // Reconstruir fases mantendo a ordem salva (inclui novas fases)
-      const newFases = {};
       Object.keys(custom[mod]).forEach(faseKey=>{
+        if(!MODULES[mod].fases[faseKey]) return;
         const c = custom[mod][faseKey];
-        if(MODULES[mod].fases[faseKey]){
-          // Fase existente — atualizar label/color/bg
-          if(c.label) MODULES[mod].fases[faseKey].label = c.label;
-          if(c.color) MODULES[mod].fases[faseKey].color = c.color;
-          if(c.bg)    MODULES[mod].fases[faseKey].bg    = c.bg;
-          if(c.cardFields) MODULES[mod].fases[faseKey].cardFields = c.cardFields;
-          newFases[faseKey] = MODULES[mod].fases[faseKey];
-        } else if(c.label){
-          // Fase nova (adicionada pelo usuário) — criar
-          newFases[faseKey] = { label:c.label, color:c.color||'#3B82F6', bg:c.bg||'#EFF6FF', cardFields:c.cardFields };
-        }
+        if(c.label) MODULES[mod].fases[faseKey].label = c.label;
+        if(c.color) MODULES[mod].fases[faseKey].color = c.color;
+        if(c.bg)    MODULES[mod].fases[faseKey].bg    = c.bg;
       });
-      // Se temos fases salvas com ordem, usar essa ordem
-      if(Object.keys(newFases).length >= Object.keys(MODULES[mod].fases).length){
-        MODULES[mod].fases = newFases;
-      }
     });
   } catch(e){ console.warn('Erro ao carregar fases customizadas:', e); }
 }
@@ -1517,7 +1423,7 @@ function saveCustomPhases(){
     custom[mod] = {};
     Object.keys(MODULES[mod].fases).forEach(faseKey=>{
       const f = MODULES[mod].fases[faseKey];
-      custom[mod][faseKey] = { label:f.label, color:f.color, bg:f.bg, cardFields:f.cardFields };
+      custom[mod][faseKey] = { label:f.label, color:f.color, bg:f.bg };
     });
   });
   localStorage.setItem('pipeped_custom_phases', JSON.stringify(custom));
@@ -1527,35 +1433,6 @@ loadCustomPhases();
 
 let _phaseEditMod = '';
 let _phaseEditKey = '';
-
-const CARD_FIELD_OPTIONS = [
-  {key:'protocolo', label:'Protocolo'},
-  {key:'descricao', label:'Descrição'},
-  {key:'aluno',     label:'Nome do Aluno'},
-  {key:'escola',    label:'Escola'},
-  {key:'categoria', label:'Categoria'},
-  {key:'responsavel',label:'Responsável'},
-  {key:'prazo',     label:'Prazo'},
-  {key:'prioridade',label:'Prioridade'},
-  {key:'comentarios',label:'Comentários'},
-];
-const DEFAULT_CARD_FIELDS = ['protocolo','descricao','escola','categoria','responsavel','prazo','prioridade','comentarios'];
-
-function getCardFields(mod, faseKey){
-  const fase = MODULES[mod]?.fases[faseKey];
-  return fase?.cardFields || DEFAULT_CARD_FIELDS;
-}
-
-function renderPhaseFieldChecks(selectedFields){
-  const container = document.getElementById('phaseFieldsChecks');
-  container.innerHTML = CARD_FIELD_OPTIONS.map(f=>{
-    const checked = selectedFields.includes(f.key);
-    return `<label class="phase-field-check ${checked?'checked':''}">
-      <input type="checkbox" value="${f.key}" ${checked?'checked':''} onchange="this.parentElement.classList.toggle('checked',this.checked)">
-      ${f.label}
-    </label>`;
-  }).join('');
-}
 
 function openPhaseEditor(mod, faseKey){
   _phaseEditMod = mod;
@@ -1569,27 +1446,6 @@ function openPhaseEditor(mod, faseKey){
   document.getElementById('phaseEditorColor').oninput = function(){
     document.getElementById('phaseEditorColorHex').textContent = this.value;
   };
-  document.getElementById('phaseFieldsGroup').style.display = '';
-  renderPhaseFieldChecks(fase.cardFields || DEFAULT_CARD_FIELDS);
-  document.getElementById('phaseEditorOverlay').classList.add('active');
-  setTimeout(()=>document.getElementById('phaseEditorName').focus(), 100);
-}
-
-let _phaseInsertAfterIdx = -1;
-
-function openAddPhase(mod, afterIdx){
-  _phaseEditMod = mod;
-  _phaseEditKey = '__NEW__';
-  _phaseInsertAfterIdx = afterIdx;
-  document.getElementById('phaseEditorTitle').textContent = 'Nova Fase';
-  document.getElementById('phaseEditorName').value = '';
-  document.getElementById('phaseEditorColor').value = '#3B82F6';
-  document.getElementById('phaseFieldsGroup').style.display = '';
-  renderPhaseFieldChecks(DEFAULT_CARD_FIELDS);
-  document.getElementById('phaseEditorColorHex').textContent = '#3B82F6';
-  document.getElementById('phaseEditorColor').oninput = function(){
-    document.getElementById('phaseEditorColorHex').textContent = this.value;
-  };
   document.getElementById('phaseEditorOverlay').classList.add('active');
   setTimeout(()=>document.getElementById('phaseEditorName').focus(), 100);
 }
@@ -1598,56 +1454,23 @@ function closePhaseEditor(){
   document.getElementById('phaseEditorOverlay').classList.remove('active');
   _phaseEditMod = '';
   _phaseEditKey = '';
-  _phaseInsertAfterIdx = -1;
-}
-
-function getSelectedCardFields(){
-  const checks = document.querySelectorAll('#phaseFieldsChecks input[type="checkbox"]:checked');
-  return Array.from(checks).map(c=>c.value);
 }
 
 function savePhaseEdit(){
   if(!_phaseEditMod || !_phaseEditKey) return;
+  const fase = MODULES[_phaseEditMod]?.fases[_phaseEditKey];
+  if(!fase) return;
 
   const newLabel = document.getElementById('phaseEditorName').value.trim();
   const newColor = document.getElementById('phaseEditorColor').value;
-  const cardFields = getSelectedCardFields();
+
   if(!newLabel){ showToast('O nome da fase não pode ficar vazio','error'); return; }
-
-  // ── Criar nova fase ──
-  if(_phaseEditKey === '__NEW__' && _phaseInsertAfterIdx >= 0){
-    const mod = MODULES[_phaseEditMod];
-    if(!mod) return;
-    const newKey = newLabel.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'') || ('fase_' + Date.now());
-    if(mod.fases[newKey]){ showToast('Já existe uma fase com nome similar','error'); return; }
-    const entries = Object.entries(mod.fases);
-    const newFases = {};
-    entries.forEach(([k,v], i)=>{
-      newFases[k] = v;
-      if(i === _phaseInsertAfterIdx){
-        newFases[newKey] = { label:newLabel, color:newColor, bg:newColor+'18', cardFields };
-      }
-    });
-    mod.fases = newFases;
-    saveCustomPhases();
-    closePhaseEditor();
-    renderPage();
-    updateBadges();
-    buildSidebar();
-    logAudit('phase_add', _phaseEditMod, `Nova fase "${newLabel}" adicionada`);
-    showToast('Fase "'+newLabel+'" criada com sucesso!');
-    return;
-  }
-
-  // ── Editar fase existente ──
-  const fase = MODULES[_phaseEditMod]?.fases[_phaseEditKey];
-  if(!fase) return;
 
   const oldLabel = fase.label;
   fase.label = newLabel;
   fase.color = newColor;
+  // Generate a lighter bg from the color
   fase.bg = newColor + '18';
-  fase.cardFields = cardFields;
 
   saveCustomPhases();
   closePhaseEditor();
@@ -1707,24 +1530,11 @@ function load() {
   const n = localStorage.getItem('pipeped_notifs');
   if (c) allCards = JSON.parse(c);
   if (n) notifications = JSON.parse(n);
-  // Retroativo: gerar protocolo para cards existentes sem protocolo
-  let changed = false;
-  allCards.forEach((card,i)=>{
-    if(!card.protocolo){
-      card.protocolo = 'PED-' + (i+1).toString().padStart(6,'0');
-      changed = true;
-    }
-  });
-  if(changed) save();
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6) }
-function gerarProtocolo(){
-  const n = (allCards.filter(c=>c.protocolo).length + 1).toString().padStart(6,'0');
-  return 'PED-' + n;
-}
 function now(){
   const d = new Date();
   return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -1827,7 +1637,7 @@ function getCards(mod){
     // 4) Filtro de busca textual
     if(filterSearch){
       const q=filterSearch.toLowerCase();
-      return c.titulo.toLowerCase().includes(q)||c.descricao.toLowerCase().includes(q)||(c.responsavel&&userName(c.responsavel).toLowerCase().includes(q))||(c.protocolo&&c.protocolo.toLowerCase().includes(q));
+      return c.titulo.toLowerCase().includes(q)||c.descricao.toLowerCase().includes(q)||(c.responsavel&&userName(c.responsavel).toLowerCase().includes(q));
     }
     return true;
   });
@@ -1879,7 +1689,6 @@ const MODULE_ICONS = {
   compras:'<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8"/><path d="M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   ti:'<rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   comercial:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
-  financeiro:'<line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
   contratos:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
 };
 
@@ -1975,18 +1784,15 @@ function buildDashboard(){
 
   const visibleMods = getUserModules(currentUser);
   const modCounts = Object.keys(MODULES).filter(k=>visibleMods.includes(k)).map(k=>{
-    const localCount = vis.filter(c=>c.modulo===k).length;
-    const localActive = activeCards(k).length;
-    if(k==='contratos') return { mod:k, count:localCount+csTotal, active:localActive+csActive };
-    return { mod:k, count:localCount, active:localActive };
+    if(k==='contratos') return { mod:k, count:csTotal, active:csActive };
+    return { mod:k, count:vis.filter(c=>c.modulo===k).length, active:activeCards(k).length };
   });
   const maxCount  = Math.max(...modCounts.map(x=>x.count),1);
 
   // Donut chart data
   const donutData = Object.entries(MODULES).filter(([k])=>visibleMods.includes(k)).map(([k,m])=>{
-    const localVal = vis.filter(c=>c.modulo===k).length;
-    if(k==='contratos') return { label:m.shortLabel, color:m.color, val:localVal+csTotal };
-    return { label:m.shortLabel, color:m.color, val:localVal };
+    if(k==='contratos') return { label:m.shortLabel, color:m.color, val:csTotal };
+    return { label:m.shortLabel, color:m.color, val:vis.filter(c=>c.modulo===k).length };
   });
   const donutTotal = donutData.reduce((a,x)=>a+x.val,0)||1;
   let dashOffset = 0;
@@ -2006,6 +1812,32 @@ function buildDashboard(){
   // Overdue list
   const overdueList = vis.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).slice(0,5);
 
+  // School summary data
+  const schoolSummary = SCHOOLS.map(s=>{
+    const sCards = vis.filter(c=>c.escola===s.id);
+    const critical = sCards.filter(c=>c.prioridade==='urgente'&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
+    const overdueSch = sCards.filter(c=>isOverdue(c.prazo)&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
+    return { ...s, total:sCards.length, critical, overdue:overdueSch };
+  });
+
+  // Alertas críticos — vencimentos de hoje
+  const todayStr = today();
+  const vencHoje = vis.filter(c=>{
+    if(c.fase===MODULES[c.modulo]?.lastPhase) return false;
+    return c.prazo===todayStr || c.vencimento===todayStr;
+  });
+  const contratosHoje = vencHoje.filter(c=>c.modulo==='contratos'||c.modulo==='financeiro');
+  const outrosHoje = vencHoje.filter(c=>c.modulo!=='contratos'&&c.modulo!=='financeiro');
+
+  // Gradient colors per module
+  const modGradients = {
+    compras:'linear-gradient(90deg,#F59E0B,#FBBF24)',
+    ti:'linear-gradient(90deg,#3B82F6,#60A5FA)',
+    comercial:'linear-gradient(90deg,#10B981,#34D399)',
+    financeiro:'linear-gradient(90deg,#EF4444,#F87171)',
+    contratos:'linear-gradient(90deg,#8B5CF6,#A78BFA)',
+  };
+
   return `<div class="dash-wrap">
     <div class="dash-greeting">
       <h2>Bom dia, ${esc(currentUser?.name.split(' ')[0]||'Gestor')} 👋</h2>
@@ -2019,18 +1851,91 @@ function buildDashboard(){
       ${kpiCard('Atrasados','⚠️',overdue,'Precisam atenção','#FEF2F2','#EF4444')}
     </div>
 
+    <!-- Resumo por Unidade + Alertas Críticos -->
+    <div class="dash-row">
+      <div class="dash-panel">
+        <div class="panel-title">
+          <span>📍 Resumo por Unidade</span>
+        </div>
+        <div class="school-summary-grid">
+          ${schoolSummary.map(s=>`
+          <div class="school-summary-card" style="--school-accent:var(--accent)" onclick="document.getElementById('schoolFilter').value='${s.id}';filterBySchool()">
+            <div class="school-summary-name">${esc(s.name)}</div>
+            <div class="school-summary-count">${s.total}</div>
+            <div class="school-summary-sub">cards ativos</div>
+            <div class="school-critical-badge ${s.critical+s.overdue===0?'zero':''}">
+              ${s.critical+s.overdue>0
+                ?'<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> '+
+                 (s.critical+s.overdue)+' crítico'+(s.critical+s.overdue!==1?'s':'')
+                :'<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Em dia'}
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="dash-panel">
+        <div class="panel-title">
+          <span>🔔 Alertas Críticos</span>
+          ${vencHoje.length>0?'<span class="alert-pulse" style="background:#EF4444;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px">'+vencHoje.length+' hoje</span>':''}
+        </div>
+        <div class="alerts-critical">
+          ${vencHoje.length===0?'<div class="alert-empty">✓ Nenhum vencimento para hoje</div>':`
+            ${contratosHoje.length>0?`
+              <div class="alert-section-title">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="#8B5CF6" stroke-width="2"/></svg>
+                Contratos / Financeiro
+              </div>
+              ${contratosHoje.map(c=>{
+                const mod=MODULES[c.modulo];
+                return `<div class="alert-item" onclick="openCard('${c.id}')" style="background:${c.prioridade==='urgente'?'#FEF2F2':'#FFFBEB'}">
+                  <div class="alert-dot" style="background:${c.prioridade==='urgente'?'#EF4444':'#F59E0B'}"></div>
+                  <div class="alert-text">
+                    <div class="alert-title">${esc(c.titulo)}</div>
+                    <div class="alert-meta">${esc(mod.shortLabel)} · ${esc(c.escola?SCHOOLS.find(s=>s.id===c.escola)?.name||'':'Geral')}</div>
+                  </div>
+                  <div class="alert-tag" style="background:${c.prioridade==='urgente'?'#FEE2E2':'#FEF3C7'};color:${c.prioridade==='urgente'?'#EF4444':'#F59E0B'}">
+                    ${c.vencimento===todayStr?'Vence hoje':'Prazo hoje'}
+                  </div>
+                </div>`;
+              }).join('')}
+            `:''}
+            ${outrosHoje.length>0?`
+              <div class="alert-section-title">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#F59E0B" stroke-width="2"/></svg>
+                Outros Vencimentos
+              </div>
+              ${outrosHoje.map(c=>{
+                const mod=MODULES[c.modulo];
+                return `<div class="alert-item" onclick="openCard('${c.id}')" style="background:#FFFBEB">
+                  <div class="alert-dot" style="background:${mod.color}"></div>
+                  <div class="alert-text">
+                    <div class="alert-title">${esc(c.titulo)}</div>
+                    <div class="alert-meta">${esc(mod.shortLabel)} · Prazo: hoje</div>
+                  </div>
+                  <div class="alert-tag" style="background:${mod.colorLight};color:${mod.color}">Hoje</div>
+                </div>`;
+              }).join('')}
+            `:''}
+          `}
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards por Módulo (refatorado) + Distribuição -->
     <div class="dash-row">
       <div class="dash-panel">
         <div class="panel-title"><span>Cards por Módulo</span></div>
-        ${modCounts.map(x=>`
+        ${modCounts.map(x=>{
+          const grad = modGradients[x.mod] || 'linear-gradient(90deg,'+MODULES[x.mod].color+','+MODULES[x.mod].color+'88)';
+          return `
         <div class="mod-bar-row">
           <div class="mod-bar-label" style="color:${MODULES[x.mod].color}">${esc(MODULES[x.mod].shortLabel)}</div>
-          <div class="mod-bar-track"><div class="mod-bar-fill" style="width:${Math.round(x.count/maxCount*100)}%;background:${MODULES[x.mod].color}"></div></div>
+          <div class="mod-bar-track"><div class="mod-bar-fill" style="width:${Math.round(x.count/maxCount*100)}%;background:${grad}"></div></div>
           <div class="mod-bar-count">${x.count}</div>
-        </div>`).join('')}
+        </div>`;}).join('')}
         <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(${Math.min(modCounts.length,4)},1fr);gap:8px">
           ${Object.entries(MODULES).filter(([k])=>visibleMods.includes(k)).map(([k,m])=>`
-          <div onclick="navigate('${k}')" style="cursor:pointer;padding:12px;background:${m.colorLight};border-radius:8px;border:1px solid ${m.color}22">
+          <div onclick="navigate('${k}')" style="cursor:pointer;padding:12px;background:${m.colorLight};border-radius:8px;border:1px solid ${m.color}22;transition:all .15s ease" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--sh-md)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
             <div style="font-size:20px;font-weight:800;color:${m.color}">${activeCards(k).length}</div>
             <div style="font-size:10px;color:${m.color};font-weight:600;margin-top:2px">Ativos</div>
             <div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(m.shortLabel)}</div>
@@ -2056,6 +1961,7 @@ function buildDashboard(){
       </div>
     </div>
 
+    <!-- Atividade Recente + Atrasados -->
     <div class="dash-row">
       <div class="dash-panel">
         <div class="panel-title">
@@ -2134,14 +2040,8 @@ function buildKanban(mod){
       <span style="font-size:12px;color:var(--muted)">${cards.length} card${cards.length!==1?'s':''}</span>
     </div>
     <div class="kanban-board">
-      ${cols.map(([faseKey, fase], idx)=>{
+      ${cols.map(([faseKey, fase])=>{
         const fCards = cards.filter(c=>c.fase===faseKey);
-        const separator = (canCreateInModule(mod) && idx < cols.length - 1) ?
-          `<div class="phase-separator" onclick="openAddPhase('${mod}',${idx})">
-            <div class="phase-sep-line"></div>
-            <div class="phase-sep-btn">+</div>
-            <div class="phase-sep-tooltip">Adicionar fase</div>
-          </div>` : '';
         return `<div class="kanban-col" data-mod="${mod}" data-fase="${faseKey}"
           ondragover="onDragOver(event)" ondrop="onDrop(event,'${mod}','${faseKey}')" ondragleave="onDragLeave(event)">
           <div class="col-header" style="border-bottom-color:${fase.color}">
@@ -2159,7 +2059,7 @@ function buildKanban(mod){
             <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
             Adicionar card
           </div>`:''}
-        </div>${separator}`;
+        </div>`;
       }).join('')}
     </div>
   </div>`;
@@ -2171,26 +2071,21 @@ function buildCard(c){
   const u = userById(c.responsavel);
   const cCount = (c.comentarios||[]).length;
   const _canEdit = canEditCard(c);
-  const fields = getCardFields(c.modulo, c.fase);
-  const show = (f) => fields.includes(f);
-
   return `<div class="card" id="card-${c.id}" data-id="${c.id}" data-prio="${c.prioridade}"
     ${_canEdit?'draggable="true" ondragstart="onDragStart(event,\''+c.id+'\')" ondragend="onDragEnd(event)"':'draggable="false"'}
     onclick="openCard('${c.id}')" style="${_canEdit?'':'cursor:default'}">
-    ${show('protocolo')&&c.protocolo?`<div style="font-size:10px;color:var(--muted);font-weight:600;font-family:monospace;margin-bottom:2px">${esc(c.protocolo)}</div>`:''}
     <div class="card-title">${esc(c.titulo||'Sem título')}</div>
-    ${show('descricao')&&c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
-    ${show('aluno')&&c.modulo==='financeiro'&&c.supplier?`<div class="card-desc" style="color:#6366F1;font-weight:500">Aluno: ${esc(c.supplier)}</div>`:''}
+    ${c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
     <div class="card-tags">
-      ${show('escola')&&c.escola?`<span class="tag school">${esc(schoolName(c.escola))}</span>`:''}
-      ${show('categoria')&&c.categoria?`<span class="tag cat">${esc(c.categoria)}</span>`:''}
+      ${c.escola?`<span class="tag school">${esc(schoolName(c.escola))}</span>`:''}
+      ${c.categoria?`<span class="tag cat">${esc(c.categoria)}</span>`:''}
     </div>
     <div class="card-footer">
-      ${show('responsavel')&&u?`<div class="avatar sm" style="background:${u.color}" title="${esc(u.name)}">${u.initials}</div>`:'<div style="width:24px"></div>'}
+      ${u?`<div class="avatar sm" style="background:${u.color}" title="${esc(u.name)}">${u.initials}</div>`:'<div style="width:24px"></div>'}
       <div class="card-footer-spacer"></div>
-      ${show('comentarios')&&cCount?`<div class="card-comments-count"><svg width="11" height="11" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.8"/></svg>${cCount}</div>`:''}
-      ${show('prazo')&&c.prazo?`<div class="due-badge ${overdue?'overdue':''}"><svg width="11" height="11" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.8"/></svg>${fmtDate(c.prazo)}</div>`:''}
-      ${show('prioridade')?`<div style="width:6px;height:6px;border-radius:50%;background:${ {urgente:'#EF4444',alta:'#F97316',media:'#F59E0B',baixa:'#22C55E'}[c.prioridade]||'#94A3B8' };flex-shrink:0"></div>`:''}
+      ${cCount?`<div class="card-comments-count"><svg width="11" height="11" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.8"/></svg>${cCount}</div>`:''}
+      ${c.prazo?`<div class="due-badge ${overdue?'overdue':''}"><svg width="11" height="11" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.8"/></svg>${fmtDate(c.prazo)}</div>`:''}
+      <div style="width:6px;height:6px;border-radius:50%;background:${ {urgente:'#EF4444',alta:'#F97316',media:'#F59E0B',baixa:'#22C55E'}[c.prioridade]||'#94A3B8' };flex-shrink:0"></div>
     </div>
   </div>`;
 }
@@ -2297,7 +2192,6 @@ function clearModal(mod, fase){
   document.getElementById('mVencimento').value='';
   document.getElementById('mEscola').value='';
   document.getElementById('mPrazo').value='';
-  document.getElementById('mProtocolo').textContent='—';
   document.getElementById('mCriadoEm').textContent='—';
   document.getElementById('mCriadoPor').textContent='—';
   document.getElementById('commentsList').innerHTML='';
@@ -2311,7 +2205,7 @@ function clearModal(mod, fase){
   populateCategoriaSelect(mod);
   populateEscolaSelect();
   selPrioVal('media');
-  toggleFinancial(m.hasFinancial, mod);
+  toggleFinancial(m.hasFinancial);
 }
 
 function fillModalWith(c){
@@ -2323,7 +2217,6 @@ function fillModalWith(c){
   populateEscolaSelect();
   document.getElementById('mEscola').value = c.escola||'';
   document.getElementById('mPrazo').value  = c.prazo||'';
-  document.getElementById('mProtocolo').textContent = c.protocolo||'—';
   document.getElementById('mCriadoEm').textContent = fmtDate(c.criadoEm)||'—';
   document.getElementById('mCriadoPor').textContent = userName(c.criadoPor)||'—';
   populateModuloSelect();
@@ -2334,12 +2227,7 @@ function fillModalWith(c){
   document.getElementById('mCategoria').value = c.categoria||'';
   document.getElementById('mResponsavel').value = c.responsavel||'';
   selPrioVal(c.prioridade||'media');
-  toggleFinancial(MODULES[c.modulo]?.hasFinancial, c.modulo);
-  // Preencher campos do financeiro se aplicável
-  if(c.modulo === 'financeiro'){
-    document.getElementById('mNomeAluno').value = c.supplier||'';
-    document.getElementById('mDetalhamento').value = c.documentNumber||'';
-  }
+  toggleFinancial(MODULES[c.modulo]?.hasFinancial);
   renderComments(c);
   renderHistory(c);
 }
@@ -2374,12 +2262,10 @@ function onModuloChange(){
   const mod = document.getElementById('mModulo').value;
   populateFaseSelect(mod);
   populateCategoriaSelect(mod);
-  toggleFinancial(MODULES[mod]?.hasFinancial, mod);
+  toggleFinancial(MODULES[mod]?.hasFinancial);
 }
-function toggleFinancial(show, mod){
-  const isFinanceiro = mod === 'financeiro';
-  document.getElementById('financialFields').classList.toggle('hidden', !show || isFinanceiro);
-  document.getElementById('financeiroFields').classList.toggle('hidden', !isFinanceiro);
+function toggleFinancial(show){
+  document.getElementById('financialFields').classList.toggle('hidden',!show);
 }
 
 function selPrio(el){
@@ -2460,13 +2346,12 @@ function saveCard(){
       try{ NotifEngine.execute('card_enter_phase', card, { fase }); }catch(e){ console.warn('NotifEngine error:', e); }
     }
   } else {
-    card = { id:uid(), protocolo:gerarProtocolo(), criadoEm:today(), criadoPor:currentUser?.id||'u1', comentarios:[], historico:[], anexos:[] };
+    card = { id:uid(), criadoEm:today(), criadoPor:currentUser?.id||'u1', comentarios:[], historico:[], anexos:[] };
     card.historico.push({ texto:`Card criado por ${currentUser?.name}`, data:now(), usuario:currentUser?.name });
     allCards.unshift(card);
     editCardId = card.id;
     document.getElementById('modalHeaderTitle').textContent = 'Editar Card';
     document.getElementById('modalDeleteBtn').style.display = '';
-    document.getElementById('mProtocolo').textContent = card.protocolo;
     document.getElementById('mCriadoEm').textContent = fmtDate(today());
     document.getElementById('mCriadoPor').textContent = userName(currentUser?.id);
   }
@@ -2480,10 +2365,7 @@ function saveCard(){
   card.escola       = document.getElementById('mEscola').value;
   card.categoria    = document.getElementById('mCategoria').value;
   card.prazo        = document.getElementById('mPrazo').value;
-  if(modulo === 'financeiro'){
-    card.supplier       = document.getElementById('mNomeAluno').value.trim();
-    card.documentNumber = document.getElementById('mDetalhamento').value.trim();
-  } else if(MODULES[modulo]?.hasFinancial){
+  if(MODULES[modulo]?.hasFinancial){
     card.valor      = document.getElementById('mValor').value;
     card.fornecedor = document.getElementById('mFornecedor').value;
     card.vencimento = document.getElementById('mVencimento').value;
@@ -2587,11 +2469,8 @@ function markRead(id){ const n=notifications.find(x=>x.id===id); if(n) n.read=tr
 function markAllNotifReadBell(){ notifications.forEach(n=>n.read=true); save(); renderNotifBell(); renderNotifList(); }
 function clearNotifs(){ notifications=[]; save(); document.getElementById('notifList').innerHTML='<div style="padding:24px;text-align:center;color:var(--faint);font-size:13px">Limpas.</div>'; renderNotifBell(); }
 
-// ─── PIPEPED API HELPER ─────────────────────────────────────────────
-const PIPEPED_API = 'https://pipeped-web-production.up.railway.app';
-
 // ─── AUTO-IMPORT FROM FORM (no approval needed) ─────────────────────
-const FORM_API = PIPEPED_API + '/api/form-queue';
+const FORM_API = 'https://sised-x-clicksign-production.up.railway.app/api/form-queue';
 let _importedIds = JSON.parse(localStorage.getItem('pipeped_imported_ids')||'[]');
 
 // Auto-import: fetch pending items and create cards directly in their modules
@@ -2683,21 +2562,13 @@ function getSettingsWorkflows(){ return JSON.parse(localStorage.getItem('SETTING
 function getSettingsNotifications(){ return JSON.parse(localStorage.getItem('SETTINGS_NOTIFICATIONS')||'{}') }
 function getAuditLog(){ return JSON.parse(localStorage.getItem('AUDIT_LOG')||'[]') }
 
-async function initSettingsData(){
-  // Carregar escolas do banco via API
-  try {
-    const resp = await fetch(PIPEPED_API+'/api/public/schools');
-    if(resp.ok){
-      const data = await resp.json();
-      const mapped = data.map(s=>({id:s.id, name:s.name, shortName:s.shortName||'', cnpj:s.cnpj||'', address:s.address||'', phone:s.phone||'', email:s.email||'', director:''}));
-      localStorage.setItem('SETTINGS_SCHOOLS', JSON.stringify(mapped));
-      SCHOOLS = mapped.map(s=>({id:s.id, name:s.name}));
-    }
-  } catch(e){ console.warn('Escolas: usando cache local', e); }
-  if(!localStorage.getItem('SETTINGS_SCHOOLS')) localStorage.setItem('SETTINGS_SCHOOLS','[]');
-  if(!SCHOOLS.length){
-    const savedSchools = getSettingsSchools();
-    SCHOOLS = savedSchools.map(s=>({id:s.id, name:s.name}));
+function initSettingsData(){
+  if(!localStorage.getItem('SETTINGS_SCHOOLS')){
+    localStorage.setItem('SETTINGS_SCHOOLS', JSON.stringify([
+      {id:'ped1',name:'PED 1 — Centro',cnpj:'12.345.678/0001-01',address:'Rua da Educação, 100 — Centro, Salvador/BA',phone:'(71) 3333-1001',director:'Emerson Santos'},
+      {id:'ped2',name:'PED 2 — Norte',cnpj:'12.345.678/0002-02',address:'Av. do Conhecimento, 200 — Norte, Salvador/BA',phone:'(71) 3333-1002',director:'Ana Lima'},
+      {id:'ped3',name:'PED 3 — Sul',cnpj:'12.345.678/0003-03',address:'Praça do Saber, 300 — Sul, Salvador/BA',phone:'(71) 3333-1003',director:'Ricardo Nunes'},
+    ]));
   }
   if(!localStorage.getItem('SETTINGS_WORKFLOWS')){
     localStorage.setItem('SETTINGS_WORKFLOWS', JSON.stringify([
@@ -2712,6 +2583,9 @@ async function initSettingsData(){
     localStorage.setItem('SETTINGS_NOTIFICATIONS', JSON.stringify({}));
   }
   if(!localStorage.getItem('AUDIT_LOG')) localStorage.setItem('AUDIT_LOG','[]');
+  // Sincronizar SCHOOLS em memória com localStorage
+  const savedSchools = getSettingsSchools();
+  SCHOOLS = savedSchools.map(s=>({id:s.id, name:s.name}));
 }
 
 // ─── AUDIT LOGGING ─────────────────────────────────────────────────
@@ -2728,36 +2602,18 @@ function switchSettingsTab(tab){ settingsTab=tab; renderPage(); }
 // ─── BUILD SETTINGS PAGE ──────────────────────────────────────────────
 function buildSettings(){
   initSettingsData();
-  const groups = [
-    { label:'Geral', items:[
-      {id:'usuarios',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/></svg>',label:'Usuários'},
-      {id:'escolas',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',label:'Escolas'},
-      {id:'modulos',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>',label:'Módulos'},
-    ]},
-    { label:'Fluxos', items:[
-      {id:'workflows',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="4" y1="20" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><polyline points="21 16 21 21 16 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="15" y1="15" x2="21" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',label:'Workflows'},
-      {id:'automacoes',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z" stroke="currentColor" stroke-width="1.8"/></svg>',label:'Automações'},
-      {id:'templates',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="1.8"/><line x1="9" y1="21" x2="9" y2="9" stroke="currentColor" stroke-width="1.8"/></svg>',label:'Templates'},
-    ]},
-    { label:'Sistema', items:[
-      {id:'notificacoes',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',label:'Notificações'},
-      {id:'emails_log',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.8"/><polyline points="22 6 12 13 2 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',label:'Log E-mails'},
-      {id:'auditoria',icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',label:'Auditoria'},
-    ]},
+  const tabs = [
+    {id:'usuarios',icon:'👤',label:'Usuários'},
+    {id:'escolas',icon:'🏫',label:'Escolas'},
+    {id:'modulos',icon:'📦',label:'Módulos'},
+    {id:'workflows',icon:'🔄',label:'Workflows'},
+    {id:'notificacoes',icon:'🔔',label:'Notificações'},
+    {id:'templates',icon:'🧩',label:'Templates'},
+    {id:'automacoes',icon:'⚙️',label:'Automações'},
+    {id:'emails_log',icon:'📩',label:'Log E-mails'},
+    {id:'email_smtp',icon:'📧',label:'E-mail (SMTP)'},
+    {id:'auditoria',icon:'📋',label:'Auditoria'},
   ];
-
-  const tabDescriptions = {
-    usuarios:'Gerencie contas, permissões e acessos da equipe.',
-    escolas:'Cadastre e configure as unidades escolares.',
-    modulos:'Ative ou desative módulos para cada usuário.',
-    workflows:'Visualize e configure os fluxos de cada módulo.',
-    notificacoes:'Controle quando e como as notificações são disparadas.',
-    templates:'Modelos de cards pré-configurados.',
-    automacoes:'Regras automáticas disparadas por eventos.',
-    emails_log:'Histórico de e-mails enviados pelo sistema.',
-    auditoria:'Registro completo de ações no sistema.',
-  };
-
   let content = '';
   if(settingsTab==='usuarios')    content = buildSettingsUsuarios();
   if(settingsTab==='escolas')     content = buildSettingsEscolas();
@@ -2767,34 +2623,16 @@ function buildSettings(){
   if(settingsTab==='templates')   content = buildSettingsTemplates();
   if(settingsTab==='automacoes')  content = buildSettingsAutomacoes();
   if(settingsTab==='emails_log')  content = buildSettingsEmailLog();
+  if(settingsTab==='email_smtp')  content = buildSettingsEmailSMTP();
   if(settingsTab==='auditoria')   content = buildSettingsAuditoria();
 
-  const activeTab = groups.flatMap(g=>g.items).find(t=>t.id===settingsTab);
-  const tabTitle = activeTab?.label||'Configurações';
-
   return `<div class="settings-wrap">
-    <div class="settings-sidebar">
-      <div style="padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:8px">
-        <div style="font-size:16px;font-weight:800;color:var(--text)">Configurações</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Sistema PIPEPED</div>
-      </div>
-      ${groups.map(g=>`
-        <div class="settings-sidebar-group">
-          <div class="settings-sidebar-group-label">${g.label}</div>
-          ${g.items.map(t=>`<div class="stab ${settingsTab===t.id?'active':''}" onclick="switchSettingsTab('${t.id}')">
-            <span class="stab-icon">${t.icon}</span>
-            <span>${t.label}</span>
-          </div>`).join('')}
-        </div>
-      `).join('')}
+    <h2>Configurações do Sistema</h2>
+    <p>Gerencie usuários, escolas, módulos, workflows, notificações e auditoria.</p>
+    <div class="settings-tabs">
+      ${tabs.map(t=>`<div class="stab ${settingsTab===t.id?'active':''}" onclick="switchSettingsTab('${t.id}')">${t.icon} ${t.label}</div>`).join('')}
     </div>
-    <div class="settings-content">
-      <div class="settings-content-header">
-        <h2>${esc(tabTitle)}</h2>
-        <p>${tabDescriptions[settingsTab]||''}</p>
-      </div>
-      ${content}
-    </div>
+    ${content}
   </div>
   ${buildSettingsModals()}`;
 }
@@ -2804,75 +2642,43 @@ function buildSettings(){
 // ═══════════════════════════════════════════════════════════════════════
 function buildSettingsUsuarios(){
   if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
-
-  const modColors = {compras:'#F59E0B',ti:'#3B82F6',comercial:'#10B981',financeiro:'#EF4444',contratos:'#8B5CF6'};
-  const modBgs    = {compras:'#FFFBEB',ti:'#EFF6FF',comercial:'#ECFDF5',financeiro:'#FEF2F2',contratos:'#F5F3FF'};
-
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="background:var(--accent-l);color:var(--accent);width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center">
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      </div>
-      <div>
-        <span style="font-size:15px;font-weight:700;color:var(--text)">${USERS.length} usuários</span>
-        <div style="font-size:12px;color:var(--muted)">${USERS.filter(u=>(localStorage.getItem('user_status_'+u.id)||'ativo')==='ativo').length} ativos</div>
-      </div>
-    </div>
-    ${currentUser?.role==='admin'?`<button class="btn-primary" style="padding:8px 16px;font-size:12px;border-radius:8px;display:flex;align-items:center;gap:5px" onclick="openUserModal()">
-      <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-      Novo Usuário
-    </button>`:''}
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h3 style="font-size:14px;font-weight:600">Usuários do Sistema (${USERS.length})</h3>
+    ${currentUser?.role==='admin'?'<button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openUserModal()">+ Novo Usuário</button>':''}
   </div>
-
-  <div class="user-list">
-    ${USERS.map(u=>{
-      const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[u.role];
-      const activeCards = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
-      const totalCards = allCards.filter(c=>c.responsavel===u.id).length;
-      const st = localStorage.getItem('user_status_'+u.id)||'ativo';
-      const mods = getUserModules(u);
-      const schools = getUserSchools(u);
-      return `<div class="user-row" style="${st==='inativo'?'opacity:.5':''}">
-        <div class="avatar" style="background:${u.color};width:40px;height:40px;border-radius:12px;font-size:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;position:relative;flex-shrink:0">
-          ${u.initials}
-          <div class="user-status-ring ${st==='ativo'?'active':'inactive'}"></div>
-        </div>
-        <div class="user-info">
-          <div class="user-info-name">
-            ${esc(u.name)}
-            <span class="role-badge ${u.role}" style="font-size:10px;padding:2px 8px">${esc(roleLabel)}</span>
-          </div>
-          <div class="user-info-meta">
-            <span>${esc(u.email)}</span>
-            <span class="separator">·</span>
-            <span>${esc(u.dept)}</span>
-            <span class="separator">·</span>
-            <span>${schools.length} escola${schools.length!==1?'s':''}</span>
-          </div>
-        </div>
-        <div class="user-modules">
-          ${mods.map(m=>`<span class="user-mod-chip" style="background:${modBgs[m]||'var(--surface)'};color:${modColors[m]||'var(--muted)'}">${esc(MODULES[m]?.shortLabel||m)}</span>`).join('')}
-        </div>
-        <div class="user-stats">
-          <div class="user-stat">
-            <div class="user-stat-val">${activeCards}</div>
-            <div class="user-stat-label">Ativos</div>
-          </div>
-        </div>
-        ${currentUser?.role==='admin'?`<div class="user-actions">
-          <button class="user-action-btn" title="Editar" onclick="openUserModal('${u.id}')">
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <button class="user-action-btn ${st==='ativo'?'danger':''}" title="${st==='ativo'?'Desativar':'Ativar'}" onclick="toggleUserStatus('${u.id}')">
-            ${st==='ativo'
-              ?'<svg width="15" height="15" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="1.8"/></svg>'
-              :'<svg width="15" height="15" fill="none" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-            }
-          </button>
-        </div>`:''}
-      </div>`;
-    }).join('')}
+  <div style="overflow-x:auto">
+  <table class="users-table">
+    <thead><tr>
+      <th>Usuário</th><th>E-mail</th><th>Departamento</th><th>Função</th><th>Escolas</th><th>Status</th><th>Cards</th>${currentUser?.role==='admin'?'<th>Ações</th>':''}
+    </tr></thead>
+    <tbody>
+      ${USERS.map(u=>{
+        const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[u.role];
+        const active = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
+        const st = localStorage.getItem('user_status_'+u.id)||'ativo';
+        const schools = getUserSchools(u);
+        const mods = getUserModules(u);
+        return `<tr style="${st==='inativo'?'opacity:.55':''}">
+          <td><div style="display:flex;align-items:center;gap:10px">
+            <div class="avatar sm" style="background:${u.color}">${u.initials}</div>
+            <div><span style="font-weight:500">${esc(u.name)}</span>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${mods.map(m=>MODULES[m]?.shortLabel||m).join(', ')}</div></div>
+          </div></td>
+          <td style="color:var(--muted);font-size:12px">${esc(u.email)}</td>
+          <td style="font-size:12px">${esc(u.dept)}</td>
+          <td><span class="role-badge ${u.role}">${esc(roleLabel)}</span></td>
+          <td style="font-size:11px">${schools.length}/${SCHOOLS.length}</td>
+          <td><span class="status-dot ${st==='ativo'?'active':'inactive'}">${st==='ativo'?'Ativo':'Inativo'}</span></td>
+          <td style="font-weight:700;color:var(--accent)">${active}</td>
+          ${currentUser?.role==='admin'?`<td><div style="display:flex;gap:6px">
+            <button class="btn-action btn-action-edit" onclick="openUserModal('${u.id}')">Editar</button>
+            <button class="btn-action btn-action-delete" onclick="toggleUserStatus('${u.id}')">${st==='ativo'?'Desativar':'Ativar'}</button>
+          </div></td>`:''}
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>
   </div>
   <div class="dash-row" style="margin-top:24px">
     <div class="dash-panel">
@@ -2910,51 +2716,33 @@ function buildSettingsEscolas(){
   if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
   const schoolsData = getSettingsSchools();
   const mods = getSettingsSchoolModules();
-  const schoolColors = ['#6366F1','#10B981','#F59E0B','#EF4444','#8B5CF6','#3B82F6','#EC4899'];
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="background:#ECFDF5;color:#10B981;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center">
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-      </div>
-      <div>
-        <span style="font-size:15px;font-weight:700;color:var(--text)">${SCHOOLS.length} unidades</span>
-        <div style="font-size:12px;color:var(--muted)">${Object.keys(MODULES).length} módulos disponíveis</div>
-      </div>
-    </div>
-    ${currentUser?.role==='admin'?`<button class="btn-primary" style="padding:8px 16px;font-size:12px;border-radius:8px;display:inline-flex;align-items:center;gap:5px" onclick="openSchoolModal()">
-      <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-      Nova Escola
-    </button>`:''}
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h3 style="font-size:14px;font-weight:600">Escolas (${SCHOOLS.length})</h3>
+    ${currentUser?.role==='admin'?'<button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openSchoolModal()">+ Nova Escola</button>':''}
   </div>
-  <div class="user-list">
-    ${SCHOOLS.map((s,i)=>{
+  <div class="schools-grid">
+    ${SCHOOLS.map(s=>{
       const data = schoolsData.find(x=>x.id===s.id)||{};
       const activeModules = Object.keys(MODULES).filter(m=>(mods[s.id]||{})[m]!==false).length;
       const usersCount = USERS.filter(u=>{const us=JSON.parse(localStorage.getItem('user_schools_'+u.id)||'null');return !us||us.includes(s.id)}).length;
-      const clr = schoolColors[i%schoolColors.length];
-      const initials = s.name.split(/[\s—-]+/).filter(w=>w.length>2).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'??';
-      return `<div class="user-row">
-        <div style="background:${clr};width:40px;height:40px;border-radius:10px;font-size:13px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0">${initials}</div>
-        <div class="user-info" style="flex:1;min-width:0">
-          <div class="user-info-name">${esc(s.name)}</div>
-          <div class="user-info-meta">
-            ${data.cnpj?`<span>${esc(data.cnpj)}</span><span class="separator">·</span>`:''}
-            ${data.phone?`<span>${esc(data.phone)}</span><span class="separator">·</span>`:''}
-            <span>${usersCount} usuário${usersCount!==1?'s':''}</span>
-          </div>
+      return `<div class="school-card">
+        <div class="school-card-header">
+          <div class="school-card-title">${esc(s.name)}</div>
+          <div class="school-card-badge">${activeModules}/${Object.keys(MODULES).length} módulos</div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <span style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;background:#ECFDF5;color:#10B981">${activeModules}/${Object.keys(MODULES).length} módulos</span>
+        <div class="school-card-info">
+          <div class="school-info-row"><span class="school-info-label">CNPJ:</span><span>${esc(data.cnpj||'—')}</span></div>
+          <div class="school-info-row"><span class="school-info-label">Endereço:</span><span>${esc(data.address||'—')}</span></div>
+          <div class="school-info-row"><span class="school-info-label">Telefone:</span><span>${esc(data.phone||'—')}</span></div>
+          <div class="school-info-row"><span class="school-info-label">Diretor:</span><span>${esc(data.director||'—')}</span></div>
+          <div class="school-info-row"><span class="school-info-label">Equipe:</span><span>${usersCount} usuários</span></div>
         </div>
-        ${currentUser?.role==='admin'?`<div class="user-actions">
-          <button class="user-action-btn" title="Editar" onclick="openSchoolModal('${s.id}')">
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <button class="user-action-btn danger" title="Excluir" onclick="deleteSchool('${s.id}')">
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>`:''}
+        <div class="school-card-actions">
+          <button class="btn-action btn-action-edit" style="flex:1" onclick="openSchoolModal('${s.id}')">Editar</button>
+          <button class="btn-action btn-action-view" style="flex:1" onclick="switchSettingsTab('modulos')">Módulos</button>
+          ${currentUser?.role==='admin'?`<button class="btn-action btn-action-delete" style="flex:1" onclick="deleteSchool('${s.id}')">Excluir</button>`:''}
+        </div>
       </div>`;
     }).join('')}
   </div>`;
@@ -3124,6 +2912,217 @@ function buildSettingsEmailLog(){
   <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">Log de E-mails Enviados (${logs.length})</h3>
   <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Histórico de todos os e-mails disparados pelas automações.</p>
   ${buildNCEmailLogs(logs)}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB — E-MAIL (SMTP)
+// ═══════════════════════════════════════════════════════════════════════
+function getEmailConfig(){
+  return JSON.parse(localStorage.getItem('pipeped_email_config')||'null') || {
+    provider:'gmail',
+    host:'smtp.gmail.com',
+    port:587,
+    secure:false,
+    user:'',
+    pass:'',
+    fromName:'PIPEPED — Grupo PED',
+    fromEmail:'',
+    enabled:false
+  };
+}
+function saveEmailConfig(cfg){ localStorage.setItem('pipeped_email_config',JSON.stringify(cfg)); }
+
+function buildSettingsEmailSMTP(){
+  if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores.</p></div>';
+  const cfg = getEmailConfig();
+  const providerOpts = [
+    {id:'gmail',label:'Gmail (SMTP Google)',host:'smtp.gmail.com',port:587,secure:false},
+    {id:'outlook',label:'Outlook / Microsoft 365',host:'smtp.office365.com',port:587,secure:false},
+    {id:'custom',label:'SMTP Customizado',host:'',port:587,secure:false},
+  ];
+  const curProvider = providerOpts.find(p=>p.id===cfg.provider)||providerOpts[0];
+  return `
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">Configuração do Servidor de E-mail (SMTP)</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:20px">Configure o servidor SMTP para envio real de e-mails de confirmação, notificações e alertas.</p>
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding:14px 18px;border-radius:10px;background:${cfg.enabled?'#ECFDF5':'#FEF2F2'};border:1px solid ${cfg.enabled?'#A7F3D0':'#FECACA'}">
+    <div style="width:10px;height:10px;border-radius:50%;background:${cfg.enabled?'#10B981':'#EF4444'}"></div>
+    <span style="font-size:13px;font-weight:600;color:${cfg.enabled?'#065F46':'#991B1B'}">${cfg.enabled?'Envio de e-mails ATIVO':'Envio de e-mails INATIVO (modo MOCK)'}</span>
+    <button class="btn-ghost" style="margin-left:auto;padding:6px 14px;font-size:12px" onclick="toggleEmailEnabled()">${cfg.enabled?'Desativar':'Ativar'}</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:720px">
+
+    <!-- Provedor -->
+    <div style="grid-column:1/-1">
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Provedor</label>
+      <select id="smtpProvider" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text)" onchange="onSmtpProviderChange()">
+        ${providerOpts.map(p=>`<option value="${p.id}" ${cfg.provider===p.id?'selected':''}>${esc(p.label)}</option>`).join('')}
+      </select>
+    </div>
+
+    <!-- Host SMTP -->
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Host SMTP</label>
+      <input id="smtpHost" type="text" value="${esc(cfg.host)}" placeholder="smtp.gmail.com"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);box-sizing:border-box"
+        ${cfg.provider!=='custom'?'readonly':''}>
+    </div>
+
+    <!-- Porta -->
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Porta</label>
+      <input id="smtpPort" type="number" value="${cfg.port}" placeholder="587"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);box-sizing:border-box"
+        ${cfg.provider!=='custom'?'readonly':''}>
+    </div>
+
+    <!-- Usuário (e-mail) -->
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Usuário (e-mail da conta)</label>
+      <input id="smtpUser" type="email" value="${esc(cfg.user)}" placeholder="seuemail@gmail.com"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);box-sizing:border-box">
+    </div>
+
+    <!-- Senha de App -->
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Senha de App</label>
+      <div style="position:relative">
+        <input id="smtpPass" type="password" value="${esc(cfg.pass)}" placeholder="••••••••••••••••"
+          style="width:100%;padding:10px 12px;padding-right:40px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);box-sizing:border-box">
+        <button type="button" onclick="toggleSmtpPassVisibility()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px" title="Mostrar/ocultar senha">👁</button>
+      </div>
+    </div>
+
+    <!-- Nome do remetente -->
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Nome do Remetente</label>
+      <input id="smtpFromName" type="text" value="${esc(cfg.fromName)}" placeholder="PIPEPED — Grupo PED"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);box-sizing:border-box">
+    </div>
+
+    <!-- E-mail do remetente -->
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">E-mail do Remetente (From)</label>
+      <input id="smtpFromEmail" type="email" value="${esc(cfg.fromEmail)}" placeholder="naoresponda@grupoped.com.br"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);box-sizing:border-box">
+    </div>
+
+    <!-- TLS -->
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:10px">
+      <input id="smtpSecure" type="checkbox" ${cfg.secure?'checked':''}
+        style="width:16px;height:16px;accent-color:var(--accent)">
+      <label for="smtpSecure" style="font-size:12px;font-weight:500;color:var(--text)">Usar SSL/TLS (porta 465). Desmarque para STARTTLS (porta 587).</label>
+    </div>
+  </div>
+
+  <!-- Botões -->
+  <div style="display:flex;gap:12px;margin-top:28px;flex-wrap:wrap">
+    <button class="btn-primary" style="padding:10px 24px;font-size:13px;border-radius:8px" onclick="saveSmtpSettings()">
+      💾 Salvar Configurações
+    </button>
+    <button class="btn-ghost" style="padding:10px 24px;font-size:13px;border-radius:8px;border:1px solid var(--border)" onclick="testSmtpConnection()">
+      🧪 Enviar E-mail de Teste
+    </button>
+  </div>
+
+  <!-- Status do teste -->
+  <div id="smtpTestResult" style="margin-top:16px"></div>
+
+  <!-- Dica Gmail -->
+  <div style="margin-top:28px;padding:16px 20px;border-radius:10px;background:var(--card);border:1px solid var(--border)">
+    <h4 style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text)">Como configurar o Gmail:</h4>
+    <ol style="font-size:12px;color:var(--muted);line-height:1.8;margin:0;padding-left:20px">
+      <li>Acesse <strong>myaccount.google.com</strong> → Segurança</li>
+      <li>Ative a <strong>Verificação em duas etapas</strong> (obrigatório)</li>
+      <li>Em "Verificação em duas etapas", role até <strong>Senhas de app</strong></li>
+      <li>Crie uma nova senha de app com nome "PIPEPED"</li>
+      <li>Copie a senha gerada (16 caracteres) e cole no campo "Senha de App" acima</li>
+      <li>No campo "Usuário", coloque o e-mail do Gmail</li>
+    </ol>
+  </div>`;
+}
+
+function onSmtpProviderChange(){
+  const prov = document.getElementById('smtpProvider').value;
+  const presets = {gmail:{host:'smtp.gmail.com',port:587,secure:false}, outlook:{host:'smtp.office365.com',port:587,secure:false}, custom:{host:'',port:587,secure:false}};
+  const p = presets[prov]||presets.custom;
+  document.getElementById('smtpHost').value = p.host;
+  document.getElementById('smtpPort').value = p.port;
+  document.getElementById('smtpSecure').checked = p.secure;
+  document.getElementById('smtpHost').readOnly = prov!=='custom';
+  document.getElementById('smtpPort').readOnly = prov!=='custom';
+}
+
+function toggleSmtpPassVisibility(){
+  const inp = document.getElementById('smtpPass');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+}
+
+function toggleEmailEnabled(){
+  const cfg = getEmailConfig();
+  cfg.enabled = !cfg.enabled;
+  saveEmailConfig(cfg);
+  if(cfg.enabled) showToast('Envio de e-mails ATIVADO','success');
+  else showToast('Envio de e-mails desativado (modo MOCK)','warn');
+  renderPage();
+}
+
+function saveSmtpSettings(){
+  const cfg = getEmailConfig();
+  cfg.provider  = document.getElementById('smtpProvider').value;
+  cfg.host      = document.getElementById('smtpHost').value.trim();
+  cfg.port      = parseInt(document.getElementById('smtpPort').value)||587;
+  cfg.secure    = document.getElementById('smtpSecure').checked;
+  cfg.user      = document.getElementById('smtpUser').value.trim();
+  cfg.pass      = document.getElementById('smtpPass').value;
+  cfg.fromName  = document.getElementById('smtpFromName').value.trim();
+  cfg.fromEmail = document.getElementById('smtpFromEmail').value.trim() || cfg.user;
+  if(!cfg.host||!cfg.user||!cfg.pass){
+    showToast('Preencha Host, Usuário e Senha','error');
+    return;
+  }
+  saveEmailConfig(cfg);
+  showToast('Configurações SMTP salvas com sucesso!','success');
+  logAudit('settings_change','settings',`SMTP configurado: ${cfg.provider} / ${cfg.host}:${cfg.port}`);
+}
+
+async function testSmtpConnection(){
+  const cfg = getEmailConfig();
+  if(!cfg.host||!cfg.user||!cfg.pass){
+    showToast('Salve as configurações antes de testar','error');
+    return;
+  }
+  const resultDiv = document.getElementById('smtpTestResult');
+  resultDiv.innerHTML = '<div style="padding:12px 16px;border-radius:8px;background:#EFF6FF;border:1px solid #BFDBFE;font-size:13px;color:#1E40AF;display:flex;align-items:center;gap:8px"><span class="spinner-sm"></span> Enviando e-mail de teste para <strong>'+esc(cfg.user)+'</strong>...</div>';
+
+  try {
+    const resp = await fetch(CLICKSIGN_API_BASE+'/api/email/test', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        host: cfg.host,
+        port: cfg.port,
+        secure: cfg.secure,
+        user: cfg.user,
+        pass: cfg.pass,
+        fromName: cfg.fromName,
+        fromEmail: cfg.fromEmail || cfg.user,
+        toEmail: cfg.user,
+      })
+    });
+    const data = await resp.json();
+    if(resp.ok && data.success){
+      resultDiv.innerHTML = '<div style="padding:12px 16px;border-radius:8px;background:#ECFDF5;border:1px solid #A7F3D0;font-size:13px;color:#065F46">✅ E-mail de teste enviado com sucesso! Verifique sua caixa de entrada.</div>';
+      showToast('E-mail de teste enviado!','success');
+    } else {
+      resultDiv.innerHTML = '<div style="padding:12px 16px;border-radius:8px;background:#FEF2F2;border:1px solid #FECACA;font-size:13px;color:#991B1B">❌ Falha: '+ esc(data.error||data.message||'Erro desconhecido') +'</div>';
+      showToast('Falha no teste de e-mail','error');
+    }
+  } catch(err){
+    resultDiv.innerHTML = '<div style="padding:12px 16px;border-radius:8px;background:#FEF2F2;border:1px solid #FECACA;font-size:13px;color:#991B1B">❌ Erro de conexão: '+ esc(err.message) +'</div>';
+    showToast('Erro ao conectar com o servidor','error');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -3345,46 +3344,33 @@ function openSchoolModal(schoolId){
   showSettingsModal(schoolId?'Editar Escola':'Nova Escola', body, 'saveSchoolForm()');
 }
 
-async function saveSchoolForm(){
+function saveSchoolForm(){
   const name=document.getElementById('sf_name').value.trim();
   if(!name){showToast('Nome é obrigatório','error');return;}
   const cnpj=document.getElementById('sf_cnpj').value.trim();
   const address=document.getElementById('sf_address').value.trim();
   const phone=document.getElementById('sf_phone').value.trim();
   const director=document.getElementById('sf_director').value.trim();
-  const payload = {name, cnpj:cnpj||null, address:address||null, phone:phone||null};
-  try {
-    let resp;
-    if(editingSchoolId){
-      resp = await fetch(PIPEPED_API+'/api/public/schools/'+editingSchoolId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    } else {
-      resp = await fetch(PIPEPED_API+'/api/public/schools',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    }
-    if(!resp.ok){ const e=await resp.json(); throw new Error(e.error||'Erro ao salvar'); }
-    const saved = await resp.json();
-    // Atualizar cache local
-    const schools = getSettingsSchools();
-    if(editingSchoolId){
-      const s=schools.find(x=>x.id===editingSchoolId);
-      if(s) Object.assign(s,{name,cnpj,address,phone,director});
-      const sc=SCHOOLS.find(x=>x.id===editingSchoolId);
-      if(sc) sc.name=name;
-    } else {
-      schools.push({id:saved.id,name,cnpj,address,phone,director});
-      SCHOOLS.push({id:saved.id,name});
-    }
-    localStorage.setItem('SETTINGS_SCHOOLS',JSON.stringify(schools));
-    logAudit('school_save','settings','Escola: '+name);
-    showToast('Escola salva!');
-    closeSettingsModal();
-    renderPage();
-  } catch(e){
-    showToast('Erro: '+e.message,'error');
+  const schools = getSettingsSchools();
+  if(editingSchoolId){
+    const s=schools.find(x=>x.id===editingSchoolId);
+    if(s) Object.assign(s,{name,cnpj,address,phone,director});
+    const sc=SCHOOLS.find(x=>x.id===editingSchoolId);
+    if(sc) sc.name=name;
+  } else {
+    const id='ped'+uid();
+    schools.push({id,name,cnpj,address,phone,director});
+    SCHOOLS.push({id,name});
   }
+  localStorage.setItem('SETTINGS_SCHOOLS',JSON.stringify(schools));
+  logAudit('school_save','settings','Escola: '+name);
+  showToast('Escola salva!');
+  closeSettingsModal();
+  renderPage();
 }
 
 // ─── DELETE SCHOOL ────────────────────────────────────────────────────
-async function deleteSchool(schoolId){
+function deleteSchool(schoolId){
   const schoolObj = SCHOOLS.find(s=>s.id===schoolId);
   const schoolName = schoolObj ? schoolObj.name : schoolId;
   const cardsCount = allCards.filter(c=>c.escola===schoolId).length;
@@ -3392,8 +3378,6 @@ async function deleteSchool(schoolId){
     ? `Excluir "${schoolName}"?\n\nAtenção: existem ${cardsCount} card(s) vinculados a esta escola. Eles perderão a referência.`
     : `Excluir "${schoolName}"?`;
   if(!confirm(msg)) return;
-  // Desativar no banco (soft delete)
-  try { await fetch(PIPEPED_API+'/api/public/schools/'+schoolId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:false})}); } catch(e){}
   // Remover do array em memória
   SCHOOLS = SCHOOLS.filter(s=>s.id!==schoolId);
   // Remover do localStorage
@@ -3917,14 +3901,18 @@ function renderTemplate(templateBody, card, recipientUser){
 // ─── MOCK EMAIL SENDER ───────────────────────────────────────────────
 function sendMockEmail(to, subject, body, card, triggerType){
   const logs = getEmailLogs();
+  const toEmail = typeof to === 'string' ? to : (to?.email||'—');
+  const toName  = typeof to === 'string' ? to : (to?.name||to?.email||'—');
+  const cfg = getEmailConfig();
+  const isReal = cfg.enabled && cfg.host && cfg.user && cfg.pass;
   const log = {
     id: uid(),
     to: to,
-    toName: typeof to === 'string' ? to : (to?.name||to?.email||'—'),
-    toEmail: typeof to === 'string' ? to : (to?.email||'—'),
+    toName: toName,
+    toEmail: toEmail,
     subject: subject,
     body: body,
-    status: 'mock',
+    status: isReal ? 'enviando' : 'mock',
     cardId: card?.id || '',
     cardTitle: card?.titulo || '',
     module: card?.modulo || '',
@@ -3936,7 +3924,38 @@ function sendMockEmail(to, subject, body, card, triggerType){
   logs.unshift(log);
   if(logs.length > 200) logs.splice(200);
   saveEmailLogs(logs);
-  console.log('[PIPEPED EMAIL MOCK]', {to:log.toEmail, subject, triggerType});
+
+  // Se SMTP está ativo, envia de verdade via backend
+  if(isReal){
+    fetch(CLICKSIGN_API_BASE+'/api/email/send', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        host: cfg.host, port: cfg.port, secure: cfg.secure,
+        user: cfg.user, pass: cfg.pass,
+        fromName: cfg.fromName, fromEmail: cfg.fromEmail||cfg.user,
+        toEmail: toEmail, toName: toName,
+        subject: subject, body: body,
+      })
+    }).then(r=>r.json()).then(data=>{
+      const updLogs = getEmailLogs();
+      const idx = updLogs.findIndex(l=>l.id===log.id);
+      if(idx>=0){
+        updLogs[idx].status = data.success ? 'enviado' : 'erro';
+        if(data.error) updLogs[idx].errorMsg = data.error;
+        saveEmailLogs(updLogs);
+      }
+      if(data.success) console.log('[PIPEPED EMAIL] Enviado:', toEmail, subject);
+      else console.warn('[PIPEPED EMAIL] Erro:', data.error);
+    }).catch(err=>{
+      const updLogs = getEmailLogs();
+      const idx = updLogs.findIndex(l=>l.id===log.id);
+      if(idx>=0){ updLogs[idx].status='erro'; updLogs[idx].errorMsg=err.message; saveEmailLogs(updLogs); }
+      console.error('[PIPEPED EMAIL] Falha conexão:', err.message);
+    });
+  } else {
+    console.log('[PIPEPED EMAIL MOCK]', {to:toEmail, subject, triggerType});
+  }
   return log;
 }
 
@@ -4142,13 +4161,13 @@ function buildNCEmailLogs(logs){
             <td>${esc(MODULES[l.module]?.shortLabel||l.module||'—')}</td>
             <td style="font-size:11px">${esc(schoolName(l.school)||'—')}</td>
             <td style="font-size:11px">${esc(triggerLabels[l.triggerType]||l.triggerType||'—')}</td>
-            <td><span class="email-status ${l.status}">${l.status==='mock'?'Mock':'Enviado'}</span></td>
+            <td><span class="email-status ${l.status}">${({mock:'Mock',enviando:'Enviando...',enviado:'Enviado',erro:'Erro'})[l.status]||l.status}</span></td>
           </tr>`;
         }).join('')}
       </tbody>
     </table>
     </div>
-    <p style="font-size:11px;color:var(--faint);margin-top:12px;text-align:center">E-mails em modo MOCK — nenhum envio real é feito. Ative um provedor SMTP ou SendGrid para envio real.</p>`;
+    <p style="font-size:11px;color:var(--faint);margin-top:12px;text-align:center">${getEmailConfig().enabled?'📧 Envio real via SMTP ativo — os e-mails são enviados pelo servidor configurado.':'E-mails em modo MOCK — nenhum envio real é feito. <a href="#" onclick="switchSettingsTab(\'email_smtp\');return false" style="color:var(--accent);text-decoration:underline">Configure o SMTP</a> para envio real.'}</p>`;
 }
 
 // ─── TEMPLATES VIEW ──────────────────────────────────────────────────
