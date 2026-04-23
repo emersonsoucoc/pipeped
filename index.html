@@ -17,6 +17,7 @@
   --ti:#3B82F6;     --ti-l:#EFF6FF;
   --comercial:#10B981; --comercial-l:#ECFDF5;
   --contratos:#8B5CF6; --contratos-l:#F5F3FF;
+  --financeiro:#EF4444; --financeiro-l:#FEF2F2;
   --p-urgente:#EF4444; --p-alta:#F97316; --p-media:#F59E0B; --p-baixa:#22C55E;
   --sb:240px; --top:60px;
   --r:10px; --r-sm:6px;
@@ -584,18 +585,42 @@ svg{display:block;flex-shrink:0}
 .settings-wrap{padding:24px;max-width:1100px}
 .settings-wrap h2{font-size:20px;font-weight:700;margin-bottom:6px}
 .settings-wrap p{color:var(--muted);margin-bottom:24px;font-size:13.5px}
-.settings-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;flex-wrap:wrap}
-.stab{
-  padding:12px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
-  border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--t);white-space:nowrap;
+.settings-layout{display:grid;grid-template-columns:220px 1fr;gap:0;min-height:calc(100vh - var(--top) - 48px)}
+.settings-sidebar{
+  background:var(--white);border-right:1px solid var(--border);border-radius:var(--r) 0 0 var(--r);
+  padding:16px 0;box-shadow:var(--sh);
 }
-.stab:hover{color:var(--text)}
-.stab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
-.users-table{width:100%;border-collapse:collapse;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
-.users-table th{background:var(--surface);padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)}
-.users-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
-.users-table tr:last-child td{border-bottom:none}
-.users-table tbody tr:hover td{background:var(--surface);transition:background var(--t)}
+.settings-sidebar .ss-section{padding:8px 16px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint)}
+.settings-sidebar .ss-item{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:500;
+  color:var(--muted);cursor:pointer;transition:all var(--t);border-left:3px solid transparent;
+}
+.settings-sidebar .ss-item:hover{background:var(--surface);color:var(--text)}
+.settings-sidebar .ss-item.active{background:var(--accent-l);color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.settings-sidebar .ss-item svg{width:16px;height:16px;flex-shrink:0}
+.settings-content{padding:24px;background:var(--white);border-radius:0 var(--r) var(--r) 0;box-shadow:var(--sh)}
+.settings-tabs{display:none}
+.stab{display:none}
+/* User list (card-based) */
+.user-list{display:flex;flex-direction:column;gap:8px}
+.user-row{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r);
+  transition:all var(--t);cursor:default;
+}
+.user-row:hover{box-shadow:var(--sh-md);border-color:var(--accent)}
+.user-status-ring{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative}
+.user-status-ring::after{content:'';width:10px;height:10px;border-radius:50%;position:absolute;bottom:0;right:0;border:2px solid var(--white)}
+.user-status-ring.online::after{background:var(--ok)}
+.user-status-ring.offline::after{background:var(--faint)}
+.user-mod-chip{display:inline-flex;padding:2px 8px;border-radius:9999px;font-size:9px;font-weight:700;letter-spacing:.3px}
+.user-action-btn{
+  padding:6px 12px;border-radius:var(--r-sm);font-size:11px;font-weight:600;
+  cursor:pointer;transition:all var(--t);border:1px solid var(--border);
+  background:var(--white);color:var(--muted);
+}
+.user-action-btn:hover{border-color:var(--accent);color:var(--accent)}
+.user-action-btn.danger:hover{border-color:var(--err);color:var(--err)}
 .role-badge{display:inline-flex;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:600}
 .role-badge.admin{background:#FEE2E2;color:#DC2626}
 .role-badge.gestor{background:var(--accent-l);color:var(--accent)}
@@ -1467,11 +1492,11 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 'use strict';
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
-  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos'] },
+  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos','financeiro'] },
   { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial'] },
   { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B', schools:['ped1','ped2','ped3'], modulos:['ti'] },
   { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444', schools:['ped1','ped2','ped3'], modulos:['comercial'] },
-  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos'] },
+  { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos','financeiro'] },
 ];
 
 let SCHOOLS = [
@@ -1533,6 +1558,22 @@ const MODULES = {
       recusado:               { label:'Recusado / Cancelado',    color:'#DC2626', bg:'#FEE2E2' },
     },
     lastPhase:'assinado',
+  },
+  financeiro: {
+    label:'Financeiro', shortLabel:'Financeiro', btnLabel:'Nova Solicitação',
+    color:'#EF4444', colorLight:'#FEF2F2', hasFinancial:true,
+    fornecedorLabel:'Fornecedor / Prestador',
+    numDocLabel:'Nº Documento / NF',
+    categorias:['Declarações','Solicitar Baixa','Renegociação','Reembolso','Pagamento Avulso','Outros'],
+    fases:{
+      pendente:    { label:'Pendente',     color:'#94A3B8', bg:'#F1F5F9' },
+      a_vencer:    { label:'A Vencer',     color:'#F59E0B', bg:'#FFFBEB', slaDias:3 },
+      em_analise:  { label:'Em Análise',   color:'#3B82F6', bg:'#EFF6FF' },
+      aprovado:    { label:'Aprovado',     color:'#8B5CF6', bg:'#F5F3FF' },
+      pago:        { label:'Pago',         color:'#10B981', bg:'#ECFDF5' },
+      vencido:     { label:'Vencido',      color:'#EF4444', bg:'#FEF2F2' },
+    },
+    lastPhase:'pago',
   },
 };
 
@@ -1827,6 +1868,7 @@ const MODULE_ICONS = {
   ti:'<rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   comercial:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   contratos:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  financeiro:'<line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
 };
 
 function buildSidebar(){
@@ -2763,13 +2805,44 @@ function buildSettings(){
   if(settingsTab==='email_smtp')  content = buildSettingsEmailSMTP();
   if(settingsTab==='auditoria')   content = buildSettingsAuditoria();
 
+  const sidebarSections = [
+    { section:'Geral', items:[
+      {id:'usuarios',icon:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/>',label:'Usuários'},
+      {id:'escolas',icon:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8"/><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="1.8"/>',label:'Escolas'},
+    ]},
+    { section:'Fluxos', items:[
+      {id:'modulos',icon:'<rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.8"/>',label:'Módulos'},
+      {id:'workflows',icon:'<polyline points="16 3 21 3 21 8" stroke="currentColor" stroke-width="1.8"/><line x1="4" y1="20" x2="21" y2="3" stroke="currentColor" stroke-width="1.8"/>',label:'Workflows'},
+      {id:'automacoes',icon:'<circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/>',label:'Automações'},
+    ]},
+    { section:'Sistema', items:[
+      {id:'notificacoes',icon:'<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8"/>',label:'Notificações'},
+      {id:'templates',icon:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8"/>',label:'Templates'},
+      {id:'email_smtp',icon:'<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.8"/><polyline points="22 6 12 13 2 6" stroke="currentColor" stroke-width="1.8"/>',label:'E-mail SMTP'},
+      {id:'emails_log',icon:'<line x1="17" y1="10" x2="3" y2="10" stroke="currentColor" stroke-width="1.8"/><line x1="21" y1="6" x2="3" y2="6" stroke="currentColor" stroke-width="1.8"/><line x1="21" y1="14" x2="3" y2="14" stroke="currentColor" stroke-width="1.8"/><line x1="17" y1="18" x2="3" y2="18" stroke="currentColor" stroke-width="1.8"/>',label:'Log E-mails'},
+      {id:'auditoria',icon:'<path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="1.8"/>',label:'Auditoria'},
+    ]},
+  ];
+
   return `<div class="settings-wrap">
     <h2>Configurações do Sistema</h2>
     <p>Gerencie usuários, escolas, módulos, workflows, notificações e auditoria.</p>
-    <div class="settings-tabs">
-      ${tabs.map(t=>`<div class="stab ${settingsTab===t.id?'active':''}" onclick="switchSettingsTab('${t.id}')">${t.icon} ${t.label}</div>`).join('')}
+    <div class="settings-layout">
+      <div class="settings-sidebar">
+        ${sidebarSections.map(s=>`
+          <div class="ss-section">${s.section}</div>
+          ${s.items.map(i=>`
+            <div class="ss-item ${settingsTab===i.id?'active':''}" onclick="switchSettingsTab('${i.id}')">
+              <svg fill="none" viewBox="0 0 24 24">${i.icon}</svg>
+              ${i.label}
+            </div>
+          `).join('')}
+        `).join('')}
+      </div>
+      <div class="settings-content">
+        ${content}
+      </div>
     </div>
-    ${content}
   </div>
   ${buildSettingsModals()}`;
 }
@@ -2882,40 +2955,39 @@ function buildSettingsUsuarios(){
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
     <h3 style="font-size:14px;font-weight:600">Usuários do Sistema (${USERS.length})</h3>
-    ${currentUser?.role==='admin'?'<button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openUserModal()">+ Novo Usuário</button>':''}
+    ${currentUser?.role==='admin'?'<button class="btn-primary" style="padding:8px 16px;font-size:12px" onclick="openUserModal()">+ Novo Usuário</button>':''}
   </div>
-  <div style="overflow-x:auto">
-  <table class="users-table">
-    <thead><tr>
-      <th>Usuário</th><th>E-mail</th><th>Departamento</th><th>Função</th><th>Escolas</th><th>Status</th><th>Cards</th>${currentUser?.role==='admin'?'<th>Ações</th>':''}
-    </tr></thead>
-    <tbody>
-      ${USERS.map(u=>{
-        const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[u.role];
-        const active = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
-        const st = localStorage.getItem('user_status_'+u.id)||'ativo';
-        const schools = getUserSchools(u);
-        const mods = getUserModules(u);
-        return `<tr style="${st==='inativo'?'opacity:.55':''}">
-          <td><div style="display:flex;align-items:center;gap:10px">
-            <div class="avatar sm" style="background:${u.color}">${u.initials}</div>
-            <div><span style="font-weight:500">${esc(u.name)}</span>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">${mods.map(m=>MODULES[m]?.shortLabel||m).join(', ')}</div></div>
-          </div></td>
-          <td style="color:var(--muted);font-size:12px">${esc(u.email)}</td>
-          <td style="font-size:12px">${esc(u.dept)}</td>
-          <td><span class="role-badge ${u.role}">${esc(roleLabel)}</span></td>
-          <td style="font-size:11px">${schools.length}/${SCHOOLS.length}</td>
-          <td><span class="status-dot ${st==='ativo'?'active':'inactive'}">${st==='ativo'?'Ativo':'Inativo'}</span></td>
-          <td style="font-weight:700;color:var(--accent)">${active}</td>
-          ${currentUser?.role==='admin'?`<td><div style="display:flex;gap:6px">
-            <button class="btn-action btn-action-edit" onclick="openUserModal('${u.id}')">Editar</button>
-            <button class="btn-action btn-action-delete" onclick="toggleUserStatus('${u.id}')">${st==='ativo'?'Desativar':'Ativar'}</button>
-          </div></td>`:''}
-        </tr>`;
-      }).join('')}
-    </tbody>
-  </table>
+  <div class="user-list">
+    ${USERS.map(u=>{
+      const roleLabel = {admin:'Administrador',gestor:'Gestor',colaborador:'Colaborador'}[u.role];
+      const active = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
+      const st = localStorage.getItem('user_status_'+u.id)||'ativo';
+      const mods = getUserModules(u);
+      const modColors = {compras:'#F59E0B',ti:'#3B82F6',comercial:'#10B981',contratos:'#8B5CF6',financeiro:'#EF4444'};
+      return `<div class="user-row" style="${st==='inativo'?'opacity:.55':''}">
+        <div class="user-status-ring ${st==='ativo'?'online':'offline'}">
+          <div class="avatar sm" style="background:${u.color}">${u.initials}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-weight:600;font-size:13px">${esc(u.name)}</span>
+            <span class="role-badge ${u.role}" style="font-size:9px;padding:2px 8px">${esc(roleLabel)}</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${esc(u.email)} · ${esc(u.dept)}</div>
+          <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+            ${mods.map(m=>`<span class="user-mod-chip" style="background:${modColors[m]||'var(--accent)'}15;color:${modColors[m]||'var(--accent)'}">${MODULES[m]?.shortLabel||m}</span>`).join('')}
+          </div>
+        </div>
+        <div style="text-align:center;min-width:40px">
+          <div style="font-size:18px;font-weight:800;color:var(--accent)">${active}</div>
+          <div style="font-size:9px;color:var(--muted)">cards</div>
+        </div>
+        ${currentUser?.role==='admin'?`<div style="display:flex;gap:6px">
+          <button class="user-action-btn" onclick="openUserModal('${u.id}')">Editar</button>
+          <button class="user-action-btn danger" onclick="toggleUserStatus('${u.id}')">${st==='ativo'?'Desativar':'Ativar'}</button>
+        </div>`:''}
+      </div>`;
+    }).join('')}
   </div>
   <div class="dash-row" style="margin-top:24px">
     <div class="dash-panel">
@@ -2958,27 +3030,31 @@ function buildSettingsEscolas(){
     <h3 style="font-size:14px;font-weight:600">Escolas (${SCHOOLS.length})</h3>
     ${currentUser?.role==='admin'?'<button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openSchoolModal()">+ Nova Escola</button>':''}
   </div>
-  <div class="schools-grid">
+  <div class="user-list">
     ${SCHOOLS.map(s=>{
       const data = schoolsData.find(x=>x.id===s.id)||{};
       const activeModules = Object.keys(MODULES).filter(m=>(mods[s.id]||{})[m]!==false).length;
       const usersCount = USERS.filter(u=>{const us=JSON.parse(localStorage.getItem('user_schools_'+u.id)||'null');return !us||us.includes(s.id)}).length;
-      return `<div class="school-card">
-        <div class="school-card-header">
-          <div class="school-card-title">${esc(s.name)}</div>
-          <div class="school-card-badge">${activeModules}/${Object.keys(MODULES).length} módulos</div>
+      const cardCount = allCards.filter(c=>c.escola===s.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
+      return `<div class="user-row">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#fff" stroke-width="2"/><polyline points="9 22 9 12 15 12 15 22" stroke="#fff" stroke-width="2"/></svg>
         </div>
-        <div class="school-card-info">
-          <div class="school-info-row"><span class="school-info-label">CNPJ:</span><span>${esc(data.cnpj||'—')}</span></div>
-          <div class="school-info-row"><span class="school-info-label">Endereço:</span><span>${esc(data.address||'—')}</span></div>
-          <div class="school-info-row"><span class="school-info-label">Telefone:</span><span>${esc(data.phone||'—')}</span></div>
-          <div class="school-info-row"><span class="school-info-label">Diretor:</span><span>${esc(data.director||'—')}</span></div>
-          <div class="school-info-row"><span class="school-info-label">Equipe:</span><span>${usersCount} usuários</span></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-weight:600;font-size:13px">${esc(s.name)}</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:9999px;background:var(--accent-l);color:var(--accent);font-weight:600">${activeModules} módulos</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${esc(data.cnpj||'Sem CNPJ')} · ${usersCount} usuários · ${esc(data.director||'—')}</div>
         </div>
-        <div class="school-card-actions">
-          <button class="btn-action btn-action-edit" style="flex:1" onclick="openSchoolModal('${s.id}')">Editar</button>
-          <button class="btn-action btn-action-view" style="flex:1" onclick="switchSettingsTab('modulos')">Módulos</button>
-          ${currentUser?.role==='admin'?`<button class="btn-action btn-action-delete" style="flex:1" onclick="deleteSchool('${s.id}')">Excluir</button>`:''}
+        <div style="text-align:center;min-width:40px">
+          <div style="font-size:18px;font-weight:800;color:var(--accent)">${cardCount}</div>
+          <div style="font-size:9px;color:var(--muted)">ativos</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="user-action-btn" onclick="openSchoolModal('${s.id}')">Editar</button>
+          <button class="user-action-btn" onclick="switchSettingsTab('modulos')">Módulos</button>
+          ${currentUser?.role==='admin'?`<button class="user-action-btn danger" onclick="deleteSchool('${s.id}')">Excluir</button>`:''}
         </div>
       </div>`;
     }).join('')}
