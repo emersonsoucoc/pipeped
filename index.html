@@ -166,6 +166,15 @@ svg{display:block;flex-shrink:0}
   padding:1px 6px;border-radius:9999px;min-width:18px;text-align:center;
 }
 .nav-badge:empty,.nav-badge[data-count="0"]{display:none}
+.nav-parent{position:relative}
+.nav-parent .nav-arrow{width:14px;height:14px;opacity:.4;transition:transform .2s}
+.nav-parent.open .nav-arrow{transform:rotate(90deg)}
+.nav-sub{overflow:hidden;max-height:0;transition:max-height .25s ease}
+.nav-parent.open .nav-sub{max-height:60px}
+.nav-sub .nav-item{padding:7px 12px 7px 40px;margin:0 8px;font-size:12px}
+.nav-sub .nav-icon{width:15px;height:15px}
+.nav-sub .nav-text{font-size:12.5px}
+.nav-sub .nav-badge{font-size:9px;padding:0 5px}
 
 .sb-footer{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(255,255,255,.08)}
 .sb-user{
@@ -1874,6 +1883,27 @@ function buildSidebar(){
     <div class="sb-section">Módulos</div>`;
   Object.keys(MODULES).forEach(k=>{
     if(!mods.includes(k)) return;
+    if(k==='contratos') return; // rendered as submenu of comercial
+    if(k==='comercial'){
+      const hasContratos = mods.includes('contratos');
+      const isOpen = currentPage==='comercial'||currentPage==='contratos';
+      html += `<div class="nav-parent${isOpen?' open':''}" id="navParentComercial">
+        <a class="nav-item" data-page="comercial" onclick="navigate('comercial')">
+          <svg class="nav-icon" fill="none" viewBox="0 0 24 24">${MODULE_ICONS.comercial||''}</svg>
+          <span class="nav-text">Comercial</span>
+          <span class="nav-badge" id="badge-comercial">0</span>
+          ${hasContratos?`<svg class="nav-arrow" viewBox="0 0 24 24" fill="none" onclick="event.stopPropagation();toggleSubMenu('navParentComercial')"><polyline points="9 18 15 12 9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+        </a>
+        ${hasContratos?`<div class="nav-sub">
+          <a class="nav-item" data-page="contratos" onclick="navigate('contratos')">
+            <svg class="nav-icon" fill="none" viewBox="0 0 24 24">${MODULE_ICONS.contratos||''}</svg>
+            <span class="nav-text">Contratos</span>
+            <span class="nav-badge" id="badge-contratos">0</span>
+          </a>
+        </div>`:''}
+      </div>`;
+      return;
+    }
     html += `<a class="nav-item" data-page="${k}" onclick="navigate('${k}')">
       <svg class="nav-icon" fill="none" viewBox="0 0 24 24">${MODULE_ICONS[k]||''}</svg>
       <span class="nav-text">${MODULES[k].label}</span>
@@ -1888,6 +1918,11 @@ function buildSidebar(){
       <span class="nav-text">Configurações</span>
     </a>`;
   nav.innerHTML = html;
+}
+
+function toggleSubMenu(parentId){
+  const el = document.getElementById(parentId);
+  if(el) el.classList.toggle('open');
 }
 
 // ─── SCHOOL FILTER (ACL-aware) ────────────────────────────────────────
@@ -1913,6 +1948,11 @@ function navigate(page){
   document.querySelectorAll('.nav-item').forEach(el=>{
     el.classList.toggle('active', el.dataset.page===page);
   });
+  // Auto-open/close comercial submenu
+  const parentCom = document.getElementById('navParentComercial');
+  if(parentCom){
+    if(page==='comercial'||page==='contratos') parentCom.classList.add('open');
+  }
   const mod = MODULES[page];
   document.getElementById('topbarTitle').textContent = mod ? mod.label : pageTitles[page]||'PIPEPED';
   const newBtn = document.getElementById('topbarNewBtn');
