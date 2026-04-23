@@ -75,16 +75,6 @@ svg{display:block;flex-shrink:0}
 }
 .btn-primary:hover{background:var(--accent-h);transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,.3)}
 #loginScreen .btn-primary{width:100%}
-.login-divider{display:flex;align-items:center;gap:12px;margin:28px 0 20px;color:#9CA3AF;font-size:12px}
-.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:#E5E7EB}
-.login-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.btn-quick{
-  padding:12px 8px;border:1.5px solid #E5E7EB;border-radius:10px;
-  font-size:12px;font-weight:600;color:#6b7280;transition:all .2s;text-align:center;
-  background:#fff;
-}
-.btn-quick:hover{border-color:var(--accent);color:var(--accent);background:#EEF2FF}
-.login-role{font-size:10px;color:#9CA3AF;margin-top:4px;font-weight:400}
 /* ── Right column (branding) ── */
 .login-right{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -1050,18 +1040,6 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
         <input type="password" id="loginPass" placeholder="Digite sua senha" value="admin123">
       </div>
       <button class="btn-primary" onclick="doLogin()">Continuar</button>
-      <div class="login-divider">ou continuar com</div>
-      <div class="login-quick">
-        <button class="btn-quick" onclick="quickLogin('admin')">
-          Administrador<div class="login-role">Acesso total</div>
-        </button>
-        <button class="btn-quick" onclick="quickLogin('gestor')">
-          Gestor<div class="login-role">Aprova tarefas</div>
-        </button>
-        <button class="btn-quick" onclick="quickLogin('colaborador')">
-          Colaborador<div class="login-role">Cria e executa</div>
-        </button>
-      </div>
     </div>
   </div>
   <!-- Right column — Branding -->
@@ -1162,6 +1140,10 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
           <div class="sb-user-role" id="sbRole">Administrador</div>
         </div>
       </div>
+      <button onclick="doLogout()" style="width:100%;margin-top:6px;padding:7px 0;background:rgba(239,68,68,.12);border:none;border-radius:8px;color:#f87171;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .2s" onmouseenter="this.style.background='rgba(239,68,68,.25)'" onmouseleave="this.style.background='rgba(239,68,68,.12)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair
+      </button>
     </div>
   </aside>
 
@@ -1860,6 +1842,14 @@ function loginAs(u){
   navigate('dashboard');
   showToast(`Bem-vindo(a), ${u.name.split(' ')[0]}!`);
   try{logAudit('login','sistema','Login: '+u.name);}catch(e){}
+}
+function doLogout(){
+  try{logAudit('logout','sistema','Logout: '+currentUser?.name);}catch(e){}
+  currentUser = null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('loginScreen').style.display='';
+  document.getElementById('loginPass').value='';
+  showToast('Você saiu do sistema');
 }
 
 // ─── SIDEBAR BUILDER (ACL-aware) ──────────────────────────────────────
@@ -2985,6 +2975,7 @@ function buildSettingsUsuarios(){
         ${currentUser?.role==='admin'?`<div style="display:flex;gap:6px">
           <button class="user-action-btn" onclick="openUserModal('${u.id}')">Editar</button>
           <button class="user-action-btn danger" onclick="toggleUserStatus('${u.id}')">${st==='ativo'?'Desativar':'Ativar'}</button>
+          <button class="user-action-btn danger" onclick="deleteUser('${u.id}')" title="Excluir usuário">🗑</button>
         </div>`:''}
       </div>`;
     }).join('')}
@@ -3638,6 +3629,18 @@ function toggleUserStatus(userId){
   localStorage.setItem('user_status_'+userId,ns);
   logAudit(ns==='ativo'?'user_activate':'user_deactivate','settings','Usuário '+userName(userId));
   showToast(ns==='ativo'?'Usuário ativado':'Usuário desativado');
+  renderPage();
+}
+function deleteUser(userId){
+  const u = USERS.find(x=>x.id===userId);
+  if(!u) return;
+  if(u.role==='admin'){ showToast('Não é possível excluir um administrador','err'); return; }
+  if(!confirm(`Tem certeza que deseja excluir o usuário "${u.nome||u.name}"?\nEssa ação não pode ser desfeita.`)) return;
+  const idx = USERS.findIndex(x=>x.id===userId);
+  if(idx>-1) USERS.splice(idx,1);
+  localStorage.removeItem('user_status_'+userId);
+  logAudit('user_delete','settings','Usuário '+(u.nome||u.name)+' excluído');
+  showToast('Usuário excluído com sucesso');
   renderPage();
 }
 
