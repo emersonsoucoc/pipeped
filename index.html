@@ -2855,33 +2855,51 @@ function buildSettingsEscolas(){
   if(currentUser?.role==='colaborador') return '<div class="empty-state"><p>Acesso restrito a administradores e gestores.</p></div>';
   const schoolsData = getSettingsSchools();
   const mods = getSettingsSchoolModules();
+  const schoolColors = ['#6366F1','#10B981','#F59E0B','#EF4444','#8B5CF6','#3B82F6','#EC4899'];
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-    <h3 style="font-size:14px;font-weight:600">Escolas (${SCHOOLS.length})</h3>
-    ${currentUser?.role==='admin'?'<button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openSchoolModal()">+ Nova Escola</button>':''}
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="background:#ECFDF5;color:#10B981;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <span style="font-size:15px;font-weight:700;color:var(--text)">${SCHOOLS.length} unidades</span>
+        <div style="font-size:12px;color:var(--muted)">${Object.keys(MODULES).length} módulos disponíveis</div>
+      </div>
+    </div>
+    ${currentUser?.role==='admin'?`<button class="btn-primary" style="padding:8px 16px;font-size:12px;border-radius:8px;display:inline-flex;align-items:center;gap:5px" onclick="openSchoolModal()">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      Nova Escola
+    </button>`:''}
   </div>
-  <div class="schools-grid">
-    ${SCHOOLS.map(s=>{
+  <div class="user-list">
+    ${SCHOOLS.map((s,i)=>{
       const data = schoolsData.find(x=>x.id===s.id)||{};
       const activeModules = Object.keys(MODULES).filter(m=>(mods[s.id]||{})[m]!==false).length;
       const usersCount = USERS.filter(u=>{const us=JSON.parse(localStorage.getItem('user_schools_'+u.id)||'null');return !us||us.includes(s.id)}).length;
-      return `<div class="school-card">
-        <div class="school-card-header">
-          <div class="school-card-title">${esc(s.name)}</div>
-          <div class="school-card-badge">${activeModules}/${Object.keys(MODULES).length} módulos</div>
+      const clr = schoolColors[i%schoolColors.length];
+      const initials = s.name.split(/[\s—-]+/).filter(w=>w.length>2).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'??';
+      return `<div class="user-row">
+        <div style="background:${clr};width:40px;height:40px;border-radius:10px;font-size:13px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0">${initials}</div>
+        <div class="user-info" style="flex:1;min-width:0">
+          <div class="user-info-name">${esc(s.name)}</div>
+          <div class="user-info-meta">
+            ${data.cnpj?`<span>${esc(data.cnpj)}</span><span class="separator">·</span>`:''}
+            ${data.phone?`<span>${esc(data.phone)}</span><span class="separator">·</span>`:''}
+            <span>${usersCount} usuário${usersCount!==1?'s':''}</span>
+          </div>
         </div>
-        <div class="school-card-info">
-          <div class="school-info-row"><span class="school-info-label">CNPJ:</span><span>${esc(data.cnpj||'—')}</span></div>
-          <div class="school-info-row"><span class="school-info-label">Endereço:</span><span>${esc(data.address||'—')}</span></div>
-          <div class="school-info-row"><span class="school-info-label">Telefone:</span><span>${esc(data.phone||'—')}</span></div>
-          <div class="school-info-row"><span class="school-info-label">Diretor:</span><span>${esc(data.director||'—')}</span></div>
-          <div class="school-info-row"><span class="school-info-label">Equipe:</span><span>${usersCount} usuários</span></div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <span style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;background:#ECFDF5;color:#10B981">${activeModules}/${Object.keys(MODULES).length} módulos</span>
         </div>
-        <div class="school-card-actions">
-          <button class="btn-action btn-action-edit" style="flex:1" onclick="openSchoolModal('${s.id}')">Editar</button>
-          <button class="btn-action btn-action-view" style="flex:1" onclick="switchSettingsTab('modulos')">Módulos</button>
-          ${currentUser?.role==='admin'?`<button class="btn-action btn-action-delete" style="flex:1" onclick="deleteSchool('${s.id}')">Excluir</button>`:''}
-        </div>
+        ${currentUser?.role==='admin'?`<div class="user-actions">
+          <button class="user-action-btn" title="Editar" onclick="openSchoolModal('${s.id}')">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="user-action-btn danger" title="Excluir" onclick="deleteSchool('${s.id}')">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>`:''}
       </div>`;
     }).join('')}
   </div>`;
