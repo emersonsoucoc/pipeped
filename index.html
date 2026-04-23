@@ -18,6 +18,7 @@
   --comercial:#10B981; --comercial-l:#ECFDF5;
   --contratos:#8B5CF6; --contratos-l:#F5F3FF;
   --financeiro:#EF4444; --financeiro-l:#FEF2F2;
+  --rh:#EC4899; --rh-l:#FDF2F8;
   --p-urgente:#EF4444; --p-alta:#F97316; --p-media:#F59E0B; --p-baixa:#22C55E;
   --sb:240px; --top:60px;
   --r:10px; --r-sm:6px;
@@ -176,6 +177,52 @@ svg{display:block;flex-shrink:0}
 .nav-sub .nav-text{font-size:12.5px}
 .nav-sub .nav-badge{font-size:9px;padding:0 5px}
 
+/* ─── RH MODULE ─── */
+.rh-wrap{padding:24px;max-width:1200px}
+.rh-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.rh-header h2{font-size:20px;font-weight:700;color:var(--fg);margin:0}
+.rh-tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px}
+.rh-tab{padding:8px 16px;border-radius:8px;border:none;background:none;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
+.rh-tab.active{background:var(--rh);color:#fff;font-weight:600}
+.rh-tab:hover:not(.active){background:var(--rh-l);color:var(--rh)}
+.rh-grid{display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.rh-grid{grid-template-columns:1fr}}
+.rh-form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.rh-form-card h3{font-size:15px;font-weight:700;color:var(--fg);margin:0 0 16px;display:flex;align-items:center;gap:8px}
+.rh-field{margin-bottom:14px}
+.rh-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.rh-field select,.rh-field input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--fg);transition:border .2s}
+.rh-field select:focus,.rh-field input:focus{outline:none;border-color:var(--rh)}
+.rh-time-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;font-size:11px}
+.rh-time-header{font-weight:700;color:var(--muted);text-align:center;padding:6px 2px;font-size:10px;text-transform:uppercase}
+.rh-time-slot{padding:6px 2px;text-align:center;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s;font-size:10px;color:var(--muted);user-select:none}
+.rh-time-slot:hover{border-color:var(--rh);color:var(--rh)}
+.rh-time-slot.selected{background:var(--rh);border-color:var(--rh);color:#fff;font-weight:700}
+.rh-time-slot.conflict{background:#FEE2E2;border-color:var(--err);color:var(--err);font-weight:700}
+.rh-summary{display:flex;gap:12px;margin:14px 0;flex-wrap:wrap}
+.rh-summary-chip{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.rh-btn-submit{width:100%;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.rh-btn-submit.primary{background:var(--rh);color:#fff}
+.rh-btn-submit.primary:hover{background:#DB2777}
+.rh-btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.rh-grades-list{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.rh-grade-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);transition:background .15s}
+.rh-grade-row:last-child{border-bottom:none}
+.rh-grade-row:hover{background:var(--rh-l)}
+.rh-grade-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.rh-grade-info{flex:1;min-width:0}
+.rh-grade-name{font-size:13px;font-weight:600;color:var(--fg)}
+.rh-grade-detail{font-size:11px;color:var(--muted);margin-top:2px}
+.rh-grade-status{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.rh-grade-hours{font-size:14px;font-weight:800;color:var(--rh);min-width:50px;text-align:center}
+.rh-grade-actions{display:flex;gap:4px}
+.rh-grade-actions button{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:none;font-size:11px;cursor:pointer;color:var(--muted);transition:all .15s}
+.rh-grade-actions button:hover{border-color:var(--rh);color:var(--rh)}
+.rh-grade-actions button.danger:hover{border-color:var(--err);color:var(--err)}
+.rh-empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.rh-empty svg{margin-bottom:12px;opacity:.3}
+.rh-json-preview{background:#1E293B;border-radius:8px;padding:16px;overflow-x:auto;margin-top:12px}
+.rh-json-preview code{color:#A5B4FC;font-size:12px;font-family:'Fira Code',monospace;white-space:pre}
 .sb-footer{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(255,255,255,.08)}
 .sb-user{
   display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--r-sm);
@@ -1483,8 +1530,8 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 'use strict';
 // ─── CONFIG ──────────────────────────────────────────────────────────
 const USERS = [
-  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos','financeiro'] },
-  { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial'] },
+  { id:'u1', name:'Emerson Santos',  email:'emerson@grupoped.com.br', role:'admin',       initials:'ES', dept:'Diretoria',    color:'#6366F1', schools:['ped1','ped2','ped3'], modulos:['compras','ti','comercial','contratos','financeiro','rh'] },
+  { id:'u2', name:'Ana Lima',        email:'ana@grupoped.com.br',     role:'gestor',      initials:'AL', dept:'Coordenação',  color:'#10B981', schools:['ped1','ped2'],        modulos:['compras','comercial','rh'] },
   { id:'u3', name:'Carlos Melo',     email:'carlos@grupoped.com.br',  role:'colaborador', initials:'CM', dept:'TI',           color:'#F59E0B', schools:['ped1','ped2','ped3'], modulos:['ti'] },
   { id:'u4', name:'Beatriz Souza',   email:'bea@grupoped.com.br',     role:'colaborador', initials:'BS', dept:'Comercial',    color:'#EF4444', schools:['ped1','ped2','ped3'], modulos:['comercial'] },
   { id:'u5', name:'Ricardo Nunes',   email:'ric@grupoped.com.br',     role:'gestor',      initials:'RN', dept:'Financeiro',   color:'#8B5CF6', schools:['ped1','ped2','ped3'], modulos:['compras','contratos','financeiro'] },
@@ -1565,6 +1612,20 @@ const MODULES = {
       vencido:     { label:'Vencido',      color:'#EF4444', bg:'#FEF2F2' },
     },
     lastPhase:'pago',
+  },
+  rh: {
+    label:'RH / Coordenação', shortLabel:'RH', btnLabel:'Nova Grade',
+    color:'#EC4899', colorLight:'#FDF2F8', hasFinancial:false,
+    isCustomView: true,
+    categorias:['Grade Escolar','Admissão','Desligamento','Alteração Contratual','Férias','Outros'],
+    fases:{
+      rascunho:      { label:'Rascunho',               color:'#94A3B8', bg:'#F1F5F9' },
+      preenchido:    { label:'Preenchido',              color:'#3B82F6', bg:'#EFF6FF' },
+      aguardando_rh: { label:'Aguardando Aprovação RH', color:'#F59E0B', bg:'#FFFBEB' },
+      aprovado:      { label:'Aprovado pelo RH',        color:'#10B981', bg:'#ECFDF5' },
+      devolvido:     { label:'Devolvido p/ Correção',   color:'#EF4444', bg:'#FEF2F2' },
+    },
+    lastPhase:'aprovado',
   },
 };
 
@@ -1868,6 +1929,7 @@ const MODULE_ICONS = {
   comercial:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   contratos:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   financeiro:'<line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  rh:'<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M22 21v-2a4 4 0 00-3-3.87" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="19" y1="8" x2="19" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="11" x2="22" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
 };
 
 function buildSidebar(){
@@ -1960,7 +2022,7 @@ function navigate(page){
   if(mod){
     newLabel.textContent=mod.btnLabel;
     // Esconde botão "Novo" se Clicksign (form inline) ou sem permissão
-    newBtn.style.display = (mod.isClicksign || !canCreateInModule(page)) ? 'none' : '';
+    newBtn.style.display = (mod.isClicksign || mod.isCustomView || !canCreateInModule(page)) ? 'none' : '';
   }
   else { newBtn.style.display = (page==='settings') ? 'none' : ''; newLabel.textContent='Nova Tarefa'; }
   // Clicksign polling
@@ -1974,6 +2036,7 @@ function renderPage(){
   const el = document.getElementById('pageContent');
   if(currentPage==='dashboard') el.innerHTML = buildDashboard();
   else if(currentPage==='contratos') { el.innerHTML = buildKanbanClicksign(); }
+  else if(currentPage==='rh') { el.innerHTML = buildRHModule(); initRHModule(); }
   else if(MODULES[currentPage]) { el.innerHTML = buildKanban(currentPage); initDragDrop(); }
   else if(currentPage==='settings') el.innerHTML = buildSettings();
 }
@@ -2045,6 +2108,7 @@ function buildDashboard(){
     comercial:'linear-gradient(90deg,#10B981,#34D399)',
     financeiro:'linear-gradient(90deg,#EF4444,#F87171)',
     contratos:'linear-gradient(90deg,#8B5CF6,#A78BFA)',
+    rh:'linear-gradient(90deg,#EC4899,#F472B6)',
   };
 
   return `<div class="dash-wrap">
@@ -2993,7 +3057,7 @@ function buildSettingsUsuarios(){
       const active = allCards.filter(c=>c.responsavel===u.id&&c.fase!==MODULES[c.modulo]?.lastPhase).length;
       const st = localStorage.getItem('user_status_'+u.id)||'ativo';
       const mods = getUserModules(u);
-      const modColors = {compras:'#F59E0B',ti:'#3B82F6',comercial:'#10B981',contratos:'#8B5CF6',financeiro:'#EF4444'};
+      const modColors = {compras:'#F59E0B',ti:'#3B82F6',comercial:'#10B981',contratos:'#8B5CF6',financeiro:'#EF4444',rh:'#EC4899'};
       return `<div class="user-row" style="${st==='inativo'?'opacity:.55':''}">
         <div class="user-status-ring ${st==='ativo'?'online':'offline'}">
           <div class="avatar sm" style="background:${u.color}">${u.initials}</div>
@@ -3682,6 +3746,458 @@ function deleteUser(userId){
   logAudit('user_delete','settings','Usuário '+(u.nome||u.name)+' excluído');
   showToast('Usuário excluído com sucesso');
   renderPage();
+}
+
+// ─── RH / COORDENAÇÃO MODULE ──────────────────────────────────────────
+const RH_PROFESSORES = [
+  { id:'prof1', nome:'Maria das Graças', initials:'MG', color:'#6366F1', disciplinas:['Português','Redação'] },
+  { id:'prof2', nome:'João Pedro Silva',  initials:'JP', color:'#10B981', disciplinas:['Matemática','Geometria'] },
+  { id:'prof3', nome:'Fernanda Costa',   initials:'FC', color:'#F59E0B', disciplinas:['História','Geografia'] },
+  { id:'prof4', nome:'Roberto Alves',    initials:'RA', color:'#3B82F6', disciplinas:['Ciências','Biologia'] },
+  { id:'prof5', nome:'Patrícia Mendes',  initials:'PM', color:'#8B5CF6', disciplinas:['Inglês','Espanhol'] },
+  { id:'prof6', nome:'André Oliveira',   initials:'AO', color:'#EF4444', disciplinas:['Ed. Física'] },
+  { id:'prof7', nome:'Luciana Barros',   initials:'LB', color:'#EC4899', disciplinas:['Artes','Música'] },
+];
+const RH_HORARIOS = ['07:00','07:50','08:40','09:30','10:20','11:10','13:00','13:50','14:40','15:30','16:20'];
+const RH_DIAS = ['seg','ter','qua','qui','sex'];
+const RH_DIAS_LABEL = {seg:'Segunda',ter:'Terça',qua:'Quarta',qui:'Quinta',sex:'Sexta'};
+const RH_STATUS_MAP = {
+  rascunho:      { label:'Rascunho',               color:'#94A3B8', bg:'#F1F5F9' },
+  preenchido:    { label:'Preenchido',              color:'#3B82F6', bg:'#EFF6FF' },
+  aguardando_rh: { label:'Aguardando Aprovação RH', color:'#F59E0B', bg:'#FFFBEB' },
+  aprovado:      { label:'Aprovado pelo RH',        color:'#10B981', bg:'#ECFDF5' },
+  devolvido:     { label:'Devolvido p/ Correção',   color:'#EF4444', bg:'#FEF2F2' },
+};
+let rhGrades = JSON.parse(localStorage.getItem('rh_grades')||'[]');
+let rhSelectedSlots = {};
+let rhCurrentTab = 'grades';
+let rhEditingId = null;
+
+function saveRHGrades(){ localStorage.setItem('rh_grades', JSON.stringify(rhGrades)); }
+
+function buildRHModule(){
+  const schoolId = document.getElementById('schoolFilter')?.value || '';
+  const filtered = rhGrades.filter(g=> !schoolId || g.escola_id===schoolId);
+  const stats = {
+    total: filtered.length,
+    aguardando: filtered.filter(g=>g.status==='aguardando_rh').length,
+    aprovado: filtered.filter(g=>g.status==='aprovado').length,
+    devolvido: filtered.filter(g=>g.status==='devolvido').length,
+  };
+
+  return `<div class="rh-wrap">
+    <div class="rh-header">
+      <h2>RH / Coordenação Pedagógica</h2>
+      <div class="rh-tabs">
+        <button class="rh-tab ${rhCurrentTab==='grades'?'active':''}" onclick="rhSwitchTab('grades')">📋 Grades Enviadas</button>
+        <button class="rh-tab ${rhCurrentTab==='nova'?'active':''}" onclick="rhSwitchTab('nova')">${rhEditingId?'✏️ Editando':'➕ Nova Grade'}</button>
+        <button class="rh-tab ${rhCurrentTab==='json'?'active':''}" onclick="rhSwitchTab('json')">🔗 API / JSON</button>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:10px">
+        <div class="rh-summary-chip" style="background:#ECFDF5;color:#10B981">✓ ${stats.aprovado} aprovadas</div>
+        <div class="rh-summary-chip" style="background:#FFFBEB;color:#F59E0B">⏳ ${stats.aguardando} pendentes</div>
+        ${stats.devolvido?`<div class="rh-summary-chip" style="background:#FEF2F2;color:#EF4444">↩ ${stats.devolvido} devolvidas</div>`:''}
+      </div>
+    </div>
+    ${rhCurrentTab==='grades' ? buildRHGradesList(filtered) : ''}
+    ${rhCurrentTab==='nova' ? buildRHForm() : ''}
+    ${rhCurrentTab==='json' ? buildRHJsonPreview() : ''}
+  </div>`;
+}
+
+function buildRHGradesList(grades){
+  if(!grades.length) return `<div class="rh-empty">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/><line x1="19" y1="8" x2="19" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="11" x2="22" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <div style="font-size:14px;font-weight:600;margin-bottom:4px">Nenhuma grade cadastrada</div>
+    <div style="font-size:12px">Clique em "Nova Grade" para cadastrar a grade de um professor</div>
+  </div>`;
+
+  return `<div class="rh-grades-list">
+    ${grades.map(g=>{
+      const prof = RH_PROFESSORES.find(p=>p.id===g.professor_id)||{nome:'—',initials:'??',color:'#94A3B8'};
+      const st = RH_STATUS_MAP[g.status]||RH_STATUS_MAP.rascunho;
+      const isAdmin = currentUser?.role==='admin'||currentUser?.role==='gestor';
+      return `<div class="rh-grade-row">
+        <div class="rh-grade-avatar" style="background:${prof.color}">${prof.initials}</div>
+        <div class="rh-grade-info">
+          <div class="rh-grade-name">${esc(prof.nome)}</div>
+          <div class="rh-grade-detail">${esc(g.disciplina)} · ${esc(g.escola_nome||'—')} · Enviado ${g.data_submissao||'—'}</div>
+        </div>
+        <div class="rh-grade-hours">${g.total_horas}h</div>
+        <div class="rh-grade-status" style="background:${st.bg};color:${st.color}">${st.label}</div>
+        <div class="rh-grade-actions">
+          <button onclick="rhViewGrade('${g.id}')" title="Ver detalhes">👁</button>
+          ${g.status!=='aprovado'?`<button onclick="rhEditGrade('${g.id}')" title="Editar">✏️</button>`:''}
+          ${isAdmin && g.status==='aguardando_rh'?`<button onclick="rhApproveGrade('${g.id}')" style="color:#10B981;border-color:#10B981" title="Aprovar">✓</button><button onclick="rhRejectGrade('${g.id}')" class="danger" title="Devolver">↩</button>`:''}
+          ${g.status!=='aprovado'?`<button class="danger" onclick="rhDeleteGrade('${g.id}')" title="Excluir">🗑</button>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function buildRHForm(){
+  const editing = rhEditingId ? rhGrades.find(g=>g.id===rhEditingId) : null;
+  const selProf = editing ? editing.professor_id : '';
+  const selDisc = editing ? editing.disciplina : '';
+  const selEscola = editing ? editing.escola_id : (document.getElementById('schoolFilter')?.value||'');
+
+  // Restore slots if editing
+  if(editing && !rhSelectedSlots._loaded){
+    rhSelectedSlots = {};
+    (editing.grade_array||[]).forEach(s=>{ rhSelectedSlots[s.dia+'_'+s.horario] = true; });
+    rhSelectedSlots._loaded = true;
+  }
+
+  const profOptions = RH_PROFESSORES.map(p=>`<option value="${p.id}" ${p.id===selProf?'selected':''}>${p.nome}</option>`).join('');
+  const selectedProf = RH_PROFESSORES.find(p=>p.id===(selProf||document.getElementById('rhProfessor')?.value));
+  const discOptions = selectedProf
+    ? selectedProf.disciplinas.map(d=>`<option value="${d}" ${d===selDisc?'selected':''}>${d}</option>`).join('')
+    : '<option value="">Selecione um professor primeiro</option>';
+
+  // Count selected hours
+  const slotCount = Object.keys(rhSelectedSlots).filter(k=>k!=='_loaded'&&rhSelectedSlots[k]).length;
+  const totalHoras = (slotCount * 50 / 60).toFixed(1); // 50 min each
+
+  // Detect conflicts
+  const conflicts = rhDetectConflicts(selProf, rhEditingId);
+
+  return `<div class="rh-grid">
+    <div class="rh-form-card">
+      <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rh)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${editing?'Editar':'Nova'} Grade Escolar</h3>
+
+      <div class="rh-field">
+        <label>Escola</label>
+        <select id="rhEscola" onchange="renderPage()">
+          <option value="">Selecione a escola</option>
+          ${SCHOOLS.map(s=>`<option value="${s.id}" ${s.id===selEscola?'selected':''}>${esc(s.name)}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="rh-field">
+        <label>Professor(a)</label>
+        <select id="rhProfessor" onchange="rhOnProfChange()">
+          <option value="">Selecione o professor</option>
+          ${profOptions}
+        </select>
+      </div>
+
+      <div class="rh-field">
+        <label>Disciplina</label>
+        <select id="rhDisciplina">
+          <option value="">Selecione a disciplina</option>
+          ${discOptions}
+        </select>
+      </div>
+
+      <div class="rh-summary">
+        <div class="rh-summary-chip" style="background:${slotCount>0?'var(--rh-l)':'#F1F5F9'};color:${slotCount>0?'var(--rh)':'var(--muted)'}">
+          📚 ${slotCount} aulas selecionadas
+        </div>
+        <div class="rh-summary-chip" style="background:${slotCount>0?'#ECFDF5':'#F1F5F9'};color:${slotCount>0?'#10B981':'var(--muted)'}">
+          ⏱ ${totalHoras}h semanais
+        </div>
+        ${conflicts.length?`<div class="rh-summary-chip" style="background:#FEF2F2;color:var(--err)">⚠ ${conflicts.length} conflito${conflicts.length>1?'s':''}</div>`:''}
+      </div>
+
+      <button class="rh-btn-submit primary" onclick="rhSubmitGrade()" ${(!slotCount||conflicts.length)?'disabled':''}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+        ${editing ? 'Atualizar Grade' : 'Enviar para Aprovação RH'}
+      </button>
+      ${editing?`<button class="rh-btn-submit" style="background:var(--border);color:var(--muted);margin-top:6px" onclick="rhCancelEdit()">Cancelar edição</button>`:''}
+    </div>
+
+    <div class="rh-form-card">
+      <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rh)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg> Seletor de Horários</h3>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Clique nos horários para selecionar. Cada aula = 50 minutos.</div>
+      <div class="rh-time-grid">
+        <div class="rh-time-header">Horário</div>
+        ${RH_DIAS.map(d=>`<div class="rh-time-header">${RH_DIAS_LABEL[d]}</div>`).join('')}
+        ${RH_HORARIOS.map(h=>{
+          return `<div style="padding:6px 2px;text-align:center;font-size:11px;font-weight:600;color:var(--fg)">${h}</div>
+          ${RH_DIAS.map(d=>{
+            const key = d+'_'+h;
+            const isSelected = rhSelectedSlots[key];
+            const isConflict = conflicts.some(c=>c.dia===d&&c.horario===h);
+            return `<div class="rh-time-slot ${isSelected?'selected':''} ${isConflict?'conflict':''}"
+              onclick="rhToggleSlot('${key}')"
+              title="${isConflict?'⚠ Conflito com outra grade deste professor':RH_DIAS_LABEL[d]+' '+h}">
+              ${isSelected?(isConflict?'⚠':'✓'):''}
+            </div>`;
+          }).join('')}`;
+        }).join('')}
+      </div>
+      ${conflicts.length?`<div style="margin-top:12px;padding:10px;background:#FEF2F2;border-radius:8px;font-size:12px;color:var(--err)">
+        <strong>⚠ Conflitos detectados:</strong><br>
+        ${conflicts.map(c=>`${RH_DIAS_LABEL[c.dia]} ${c.horario} — já alocado em "${c.outra_disciplina}"`).join('<br>')}
+      </div>`:''}
+    </div>
+  </div>`;
+}
+
+function buildRHJsonPreview(){
+  const lastGrade = rhGrades[rhGrades.length-1];
+  const sample = lastGrade || {
+    id:'grade_exemplo',
+    professor_id:'prof1',
+    professor_nome:'Maria das Graças',
+    disciplina:'Português',
+    escola_id:'ped1',
+    escola_nome:'PED Lauro de Freitas',
+    total_horas:12.5,
+    total_aulas:15,
+    status:'aguardando_rh',
+    data_submissao:new Date().toISOString().slice(0,10),
+    enviado_por:currentUser?.name||'Coordenador',
+    grade_array:[
+      {dia:'seg',horario:'07:00',duracao_min:50},
+      {dia:'seg',horario:'07:50',duracao_min:50},
+      {dia:'ter',horario:'08:40',duracao_min:50},
+    ]
+  };
+
+  const endpoint = 'POST /api/rh/grades';
+  const jsonStr = JSON.stringify(sample, null, 2);
+
+  return `<div class="rh-form-card">
+    <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rh)" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Estrutura JSON para API</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      Endpoint: <code style="background:var(--rh-l);padding:2px 8px;border-radius:4px;color:var(--rh);font-weight:600">${endpoint}</code>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+      <strong>Campos obrigatórios:</strong> professor_id, disciplina, escola_id, total_horas, grade_array, data_submissao
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      <strong>Tabela PostgreSQL:</strong> <code style="background:#1E293B;padding:2px 8px;border-radius:4px;color:#A5B4FC">rh_grades</code>
+    </div>
+    <div class="rh-json-preview"><code>${esc(jsonStr)}</code></div>
+    <button class="rh-btn-submit primary" style="margin-top:12px" onclick="rhCopyJson()">📋 Copiar JSON</button>
+    <div style="margin-top:16px;padding:14px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:8px">📐 Schema SQL sugerido</div>
+      <div class="rh-json-preview"><code>${esc(`CREATE TABLE rh_grades (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  professor_id VARCHAR(50) NOT NULL,
+  professor_nome VARCHAR(200) NOT NULL,
+  disciplina VARCHAR(100) NOT NULL,
+  escola_id VARCHAR(50) NOT NULL,
+  escola_nome VARCHAR(200),
+  total_horas DECIMAL(5,1) NOT NULL,
+  total_aulas INTEGER NOT NULL,
+  status VARCHAR(30) DEFAULT 'aguardando_rh',
+  grade_array JSONB NOT NULL,
+  data_submissao DATE NOT NULL DEFAULT CURRENT_DATE,
+  enviado_por VARCHAR(200),
+  aprovado_por VARCHAR(200),
+  data_aprovacao TIMESTAMP,
+  observacoes TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_rh_grades_professor ON rh_grades(professor_id);
+CREATE INDEX idx_rh_grades_status ON rh_grades(status);
+CREATE INDEX idx_rh_grades_escola ON rh_grades(escola_id);`)}</code></div>
+    </div>
+  </div>`;
+}
+
+function initRHModule(){
+  // Any post-render initialization
+}
+
+function rhSwitchTab(tab){
+  rhCurrentTab = tab;
+  if(tab==='nova' && !rhEditingId){
+    rhSelectedSlots = {};
+  }
+  renderPage();
+}
+
+function rhOnProfChange(){
+  rhSelectedSlots = {};
+  renderPage();
+}
+
+function rhToggleSlot(key){
+  rhSelectedSlots[key] = !rhSelectedSlots[key];
+  if(!rhSelectedSlots[key]) delete rhSelectedSlots[key];
+  renderPage();
+}
+
+function rhDetectConflicts(profId, excludeGradeId){
+  if(!profId) return [];
+  const otherGrades = rhGrades.filter(g=>g.professor_id===profId && g.id!==excludeGradeId);
+  const conflicts = [];
+  const selectedKeys = Object.keys(rhSelectedSlots).filter(k=>k!=='_loaded'&&rhSelectedSlots[k]);
+  selectedKeys.forEach(key=>{
+    const [dia,horario] = key.split('_');
+    otherGrades.forEach(g=>{
+      (g.grade_array||[]).forEach(slot=>{
+        if(slot.dia===dia && slot.horario===horario){
+          conflicts.push({ dia, horario, outra_disciplina: g.disciplina, outra_grade_id: g.id });
+        }
+      });
+    });
+  });
+  return conflicts;
+}
+
+function rhSubmitGrade(){
+  const profId = document.getElementById('rhProfessor')?.value;
+  const disc = document.getElementById('rhDisciplina')?.value;
+  const escolaId = document.getElementById('rhEscola')?.value;
+  if(!profId){ showToast('Selecione um professor','error'); return; }
+  if(!disc){ showToast('Selecione a disciplina','error'); return; }
+  if(!escolaId){ showToast('Selecione a escola','error'); return; }
+
+  const prof = RH_PROFESSORES.find(p=>p.id===profId);
+  const escola = SCHOOLS.find(s=>s.id===escolaId);
+  const selectedKeys = Object.keys(rhSelectedSlots).filter(k=>k!=='_loaded'&&rhSelectedSlots[k]);
+  if(!selectedKeys.length){ showToast('Selecione pelo menos um horário','error'); return; }
+
+  const conflicts = rhDetectConflicts(profId, rhEditingId);
+  if(conflicts.length){
+    showToast(`${conflicts.length} conflito(s) de horário detectado(s)!`,'error');
+    return;
+  }
+
+  const gradeArray = selectedKeys.map(key=>{
+    const [dia,horario] = key.split('_');
+    return { dia, horario, duracao_min:50 };
+  }).sort((a,b)=> RH_DIAS.indexOf(a.dia)-RH_DIAS.indexOf(b.dia) || a.horario.localeCompare(b.horario));
+
+  const totalAulas = gradeArray.length;
+  const totalHoras = parseFloat((totalAulas * 50 / 60).toFixed(1));
+
+  const gradeObj = {
+    id: rhEditingId || 'grade_' + Date.now(),
+    professor_id: profId,
+    professor_nome: prof?.nome||'',
+    disciplina: disc,
+    escola_id: escolaId,
+    escola_nome: escola?.name||'',
+    total_horas: totalHoras,
+    total_aulas: totalAulas,
+    status: 'aguardando_rh',
+    grade_array: gradeArray,
+    data_submissao: new Date().toISOString().slice(0,10),
+    enviado_por: currentUser?.name||'',
+  };
+
+  if(rhEditingId){
+    const idx = rhGrades.findIndex(g=>g.id===rhEditingId);
+    if(idx>-1) rhGrades[idx] = {...rhGrades[idx], ...gradeObj};
+    showToast('Grade atualizada e reenviada para aprovação!');
+  } else {
+    rhGrades.push(gradeObj);
+    showToast('Grade enviada para aprovação do RH!');
+  }
+
+  saveRHGrades();
+  logAudit('rh_grade_submit','rh',`Grade ${disc} - ${prof?.nome}`);
+  rhEditingId = null;
+  rhSelectedSlots = {};
+  rhCurrentTab = 'grades';
+  renderPage();
+}
+
+function rhEditGrade(id){
+  rhEditingId = id;
+  rhSelectedSlots = {};
+  rhSelectedSlots._loaded = false;
+  rhCurrentTab = 'nova';
+  renderPage();
+}
+
+function rhCancelEdit(){
+  rhEditingId = null;
+  rhSelectedSlots = {};
+  rhCurrentTab = 'grades';
+  renderPage();
+}
+
+function rhViewGrade(id){
+  const g = rhGrades.find(x=>x.id===id);
+  if(!g) return;
+  const prof = RH_PROFESSORES.find(p=>p.id===g.professor_id)||{nome:'—'};
+  const st = RH_STATUS_MAP[g.status];
+  const gradeByDay = {};
+  (g.grade_array||[]).forEach(s=>{
+    if(!gradeByDay[s.dia]) gradeByDay[s.dia]=[];
+    gradeByDay[s.dia].push(s.horario);
+  });
+  const detailHtml = Object.entries(gradeByDay).map(([d,hrs])=>`
+    <div style="margin-bottom:6px"><strong>${RH_DIAS_LABEL[d]}:</strong> ${hrs.join(', ')}</div>
+  `).join('');
+
+  openModal('Detalhes da Grade',`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div class="rh-grade-avatar" style="background:${(RH_PROFESSORES.find(p=>p.id===g.professor_id)||{}).color||'#94A3B8'};width:48px;height:48px;font-size:18px">${(RH_PROFESSORES.find(p=>p.id===g.professor_id)||{}).initials||'??'}</div>
+      <div>
+        <div style="font-size:16px;font-weight:700">${esc(prof.nome)}</div>
+        <div style="font-size:13px;color:var(--muted)">${esc(g.disciplina)} · ${esc(g.escola_nome||'')}</div>
+      </div>
+      <div class="rh-grade-status" style="background:${st.bg};color:${st.color};margin-left:auto">${st.label}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="padding:12px;background:var(--bg);border-radius:8px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--rh)">${g.total_horas}h</div>
+        <div style="font-size:11px;color:var(--muted)">horas semanais</div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--rh)">${g.total_aulas}</div>
+        <div style="font-size:11px;color:var(--muted)">aulas por semana</div>
+      </div>
+    </div>
+    <div style="padding:14px;background:var(--bg);border-radius:8px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">Horários</div>
+      ${detailHtml}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--muted)">
+      Enviado por ${esc(g.enviado_por||'—')} em ${g.data_submissao||'—'}
+    </div>
+  `);
+}
+
+function rhApproveGrade(id){
+  const g = rhGrades.find(x=>x.id===id);
+  if(!g) return;
+  if(!confirm('Aprovar esta grade escolar?')) return;
+  g.status = 'aprovado';
+  g.aprovado_por = currentUser?.name||'';
+  g.data_aprovacao = new Date().toISOString();
+  saveRHGrades();
+  logAudit('rh_grade_approve','rh','Grade aprovada: '+g.professor_nome);
+  showToast('Grade aprovada com sucesso!');
+  renderPage();
+}
+
+function rhRejectGrade(id){
+  const g = rhGrades.find(x=>x.id===id);
+  if(!g) return;
+  const motivo = prompt('Motivo da devolução:');
+  if(!motivo) return;
+  g.status = 'devolvido';
+  g.observacoes = motivo;
+  saveRHGrades();
+  logAudit('rh_grade_reject','rh','Grade devolvida: '+g.professor_nome+' - '+motivo);
+  showToast('Grade devolvida para correção');
+  renderPage();
+}
+
+function rhDeleteGrade(id){
+  if(!confirm('Excluir esta grade? Essa ação não pode ser desfeita.')) return;
+  rhGrades = rhGrades.filter(g=>g.id!==id);
+  saveRHGrades();
+  showToast('Grade excluída');
+  renderPage();
+}
+
+function rhCopyJson(){
+  const lastGrade = rhGrades[rhGrades.length-1];
+  if(!lastGrade){ showToast('Nenhuma grade para copiar','error'); return; }
+  const jsonStr = JSON.stringify(lastGrade, null, 2);
+  navigator.clipboard.writeText(jsonStr).then(()=>showToast('JSON copiado!')).catch(()=>showToast('Erro ao copiar','error'));
 }
 
 // ─── SCHOOL MODAL ─────────────────────────────────────────────────────
