@@ -4144,12 +4144,18 @@ CREATE INDEX idx_rh_grades_escola ON rh_grades(escola_id);`)}</code></div>
   </div>`;
 }
 
+let _rhInitRunning = false;
 async function initRHModule(){
-  // Sync data from API on module load
-  await rhSyncFromApi();
-  // Re-render only the RH content (NOT renderPage — that would cause infinite loop)
-  const el = document.getElementById('pageContent');
-  if(el && currentPage === 'rh') el.innerHTML = buildRHModule();
+  if(_rhInitRunning) return; // guard against re-entrancy
+  _rhInitRunning = true;
+  try {
+    await rhSyncFromApi();
+    // Re-render only the RH content (NOT renderPage — that causes infinite loop)
+    const el = document.getElementById('pageContent');
+    if(el && currentPage === 'rh') el.innerHTML = buildRHModule();
+  } finally {
+    _rhInitRunning = false;
+  }
 }
 
 function rhSwitchTab(tab){
