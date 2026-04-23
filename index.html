@@ -59,12 +59,13 @@ svg{display:block;flex-shrink:0}
 .login-label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .login-field{margin-bottom:16px}
 .btn-primary{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:11px 20px;background:var(--accent);color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 20px;background:var(--accent);color:#fff;
   border-radius:var(--r-sm);font-weight:600;font-size:14px;
   transition:background var(--t),transform var(--t);
 }
 .btn-primary:hover{background:var(--accent-h);transform:translateY(-1px)}
+#loginScreen .btn-primary{width:100%}
 .login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--faint);font-size:12px}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .login-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -2763,8 +2764,8 @@ function buildSettingsUsuarios(){
         <div style="font-size:12px;color:var(--muted)">${USERS.filter(u=>(localStorage.getItem('user_status_'+u.id)||'ativo')==='ativo').length} ativos</div>
       </div>
     </div>
-    ${currentUser?.role==='admin'?`<button class="btn-primary" style="padding:10px 20px;font-size:13px;border-radius:10px;display:flex;align-items:center;gap:6px" onclick="openUserModal()">
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    ${currentUser?.role==='admin'?`<button class="btn-primary" style="padding:8px 16px;font-size:12px;border-radius:8px;display:flex;align-items:center;gap:5px" onclick="openUserModal()">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
       Novo Usuário
     </button>`:''}
   </div>
