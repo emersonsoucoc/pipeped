@@ -3787,6 +3787,8 @@ const RH_DISC_DEFAULTS = ['Português','Redação','Matemática','Geometria','Hi
 let RH_PROFESSORES = JSON.parse(localStorage.getItem('rh_professores')||'null') || JSON.parse(JSON.stringify(RH_PROF_DEFAULTS));
 let RH_DISCIPLINAS = JSON.parse(localStorage.getItem('rh_disciplinas')||'null') || [...RH_DISC_DEFAULTS];
 let rhGrades = JSON.parse(localStorage.getItem('rh_grades')||'[]');
+let rhSegmentos = JSON.parse(localStorage.getItem('rh_segmentos')||'[]');
+let rhResumoFolha = [];
 
 // ─── DATA LAYER: API com fallback localStorage ──────────────────────
 async function rhApi(method, path, body){
@@ -3820,14 +3822,22 @@ async function rhSyncFromApi(){
   await rhCheckApi();
   if(!rhApiOnline) return;
 
-  const [profs, discs, grades] = await Promise.all([
+  const [profs, discs, grades, segs] = await Promise.all([
     rhApi('GET','/api/professores'),
     rhApi('GET','/api/disciplinas'),
     rhApi('GET','/api/grades'),
+    rhApi('GET','/api/segmentos'),
   ]);
   if(profs){ RH_PROFESSORES = profs; localStorage.setItem('rh_professores',JSON.stringify(profs)); }
   if(discs){ RH_DISCIPLINAS = discs.map(d=>d.nome); localStorage.setItem('rh_disciplinas',JSON.stringify(RH_DISCIPLINAS)); }
   if(grades){ rhGrades = grades; localStorage.setItem('rh_grades',JSON.stringify(grades)); }
+  if(segs){ rhSegmentos = segs; localStorage.setItem('rh_segmentos',JSON.stringify(segs)); }
+}
+
+async function rhSyncResumoFolha(){
+  if(!rhApiOnline) return;
+  const resumo = await rhApi('GET','/api/grades/resumo-folha');
+  if(resumo) rhResumoFolha = resumo;
 }
 
 // Save helpers — write to API + localStorage
@@ -3919,6 +3929,8 @@ function buildRHModule(){
         <button class="rh-tab ${rhCurrentTab==='nova'?'active':''}" onclick="rhSwitchTab('nova')">${rhEditingId?'✏️ Editando':'➕ Nova Grade'}</button>
         <button class="rh-tab ${rhCurrentTab==='cadastros'?'active':''}" onclick="rhSwitchTab('cadastros')">👩‍🏫 Professores</button>
         <button class="rh-tab ${rhCurrentTab==='disciplinas'?'active':''}" onclick="rhSwitchTab('disciplinas')">📚 Disciplinas</button>
+        <button class="rh-tab ${rhCurrentTab==='segmentos'?'active':''}" onclick="rhSwitchTab('segmentos')">🏫 Segmentos</button>
+        <button class="rh-tab ${rhCurrentTab==='folha'?'active':''}" onclick="rhSwitchTab('folha')">📊 Folha</button>
         <button class="rh-tab ${rhCurrentTab==='json'?'active':''}" onclick="rhSwitchTab('json')">🔗 API</button>
       </div>
       <div style="margin-left:auto;display:flex;gap:10px">
@@ -3932,6 +3944,8 @@ function buildRHModule(){
     ${rhCurrentTab==='nova' ? buildRHForm() : ''}
     ${rhCurrentTab==='cadastros' ? buildRHCadastros() : ''}
     ${rhCurrentTab==='disciplinas' ? buildRHDisciplinasTab() : ''}
+    ${rhCurrentTab==='segmentos' ? buildRHSegmentosTab() : ''}
+    ${rhCurrentTab==='folha' ? buildRHFolhaTab() : ''}
     ${rhCurrentTab==='json' ? buildRHJsonPreview() : ''}
   </div>`;
 }
@@ -3952,9 +3966,10 @@ function buildRHGradesList(grades){
         <div class="rh-grade-avatar" style="background:${prof.color}">${prof.initials}</div>
         <div class="rh-grade-info">
           <div class="rh-grade-name">${esc(prof.nome)}</div>
-          <div class="rh-grade-detail">${esc(g.disciplina)} · ${esc(g.escola_nome||'—')} · Enviado ${g.data_submissao||'—'}</div>
+          <div class="rh-grade-detail">${esc(g.disciplina)} · ${esc(g.escola_nome||'—')}${g.segmento_nome?' · '+esc(g.segmento_nome):''}${g.turma_nome?' · Turma '+esc(g.turma_nome):''}</div>
+          <div class="rh-grade-detail" style="margin-top:1px;font-size:10px;opacity:.7">Enviado ${g.data_submissao||'—'}${(g.horas_extras||g.coord_pedagogica||g.substituicoes)?' · <span style="color:var(--rh)">+extras</span>':''}</div>
         </div>
-        <div class="rh-grade-hours">${g.total_horas}h</div>
+        <div class="rh-grade-hours">${g.total_horas}h${(g.horas_extras||g.coord_pedagogica||g.substituicoes)?`<div style="font-size:9px;color:var(--rh)">+${+(g.horas_extras+g.coord_pedagogica+g.substituicoes).toFixed(1)}h</div>`:''}</div>
         <div class="rh-grade-status" style="background:${st.bg};color:${st.color}">${st.label}</div>
         <div class="rh-grade-actions">
           <button onclick="rhViewGrade('${g.id}')" title="Ver detalhes">👁</button>
@@ -3999,11 +4014,45 @@ function buildRHForm(){
 
       <div class="rh-field">
         <label>Escola</label>
-        <select id="rhEscola" onchange="renderPage()">
+        <select id="rhEscola" onchange="rhOnEscolaChange()">
           <option value="">Selecione a escola</option>
           ${SCHOOLS.map(s=>`<option value="${s.id}" ${s.id===selEscola?'selected':''}>${esc(s.name)}</option>`).join('')}
         </select>
       </div>
+
+      ${(()=>{
+        const escoSel = selEscola || document.getElementById('rhEscola')?.value || '';
+        const segsEscola = rhSegmentos.filter(s=>s.escola_id===escoSel);
+        const selSeg = editing?.segmento_id || document.getElementById('rhSegmento')?.value || '';
+        const segSeries = segsEscola.find(s=>s.id===selSeg)?.series || [];
+        const selSerie = editing?.serie_id || document.getElementById('rhSerie')?.value || '';
+        const serieTurmas = segSeries.find(s=>s.id===selSerie)?.turmas || [];
+        const selTurma = editing?.turma_id || document.getElementById('rhTurma')?.value || '';
+        return `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div class="rh-field">
+            <label>Segmento</label>
+            <select id="rhSegmento" onchange="renderPage()">
+              <option value="">Selecione...</option>
+              ${segsEscola.map(s=>`<option value="${s.id}" ${s.id===selSeg?'selected':''}>${esc(s.nome)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="rh-field">
+            <label>Série</label>
+            <select id="rhSerie" onchange="renderPage()">
+              <option value="">Selecione...</option>
+              ${segSeries.map(s=>`<option value="${s.id}" ${s.id===selSerie?'selected':''}>${esc(s.nome)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="rh-field">
+            <label>Turma</label>
+            <select id="rhTurma">
+              <option value="">Selecione...</option>
+              ${serieTurmas.map(t=>`<option value="${t.id}" ${t.id===selTurma?'selected':''}>${esc(t.nome)} (${t.turno})</option>`).join('')}
+            </select>
+          </div>
+        </div>`;
+      })()}
 
       <div class="rh-field">
         <label>Professor(a)</label>
@@ -4019,6 +4068,28 @@ function buildRHForm(){
           <option value="">Selecione a disciplina</option>
           ${discOptions}
         </select>
+      </div>
+
+      <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;border:1px dashed var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--fg);margin-bottom:8px">⏱ Carga Horária Extra</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div class="rh-field">
+            <label style="font-size:10px">Horas Extras (h/sem)</label>
+            <input type="number" id="rhHorasExtras" step="0.5" min="0" value="${editing?.horas_extras||0}" style="padding:6px 8px;font-size:12px">
+          </div>
+          <div class="rh-field">
+            <label style="font-size:10px">Coord. Pedagógica (h/sem)</label>
+            <input type="number" id="rhCoordPed" step="0.5" min="0" value="${editing?.coord_pedagogica||0}" style="padding:6px 8px;font-size:12px">
+          </div>
+          <div class="rh-field">
+            <label style="font-size:10px">Substituições (h/sem)</label>
+            <input type="number" id="rhSubstituicoes" step="0.5" min="0" value="${editing?.substituicoes||0}" style="padding:6px 8px;font-size:12px">
+          </div>
+        </div>
+        <div class="rh-field" style="margin-top:6px">
+          <label style="font-size:10px">Observações dos extras</label>
+          <input type="text" id="rhObsExtras" placeholder="Ex: substituiu Prof. João na terça..." value="${esc(editing?.obs_extras||'')}" style="padding:6px 8px;font-size:12px">
+        </div>
       </div>
 
       <div class="rh-summary">
@@ -4064,6 +4135,287 @@ function buildRHForm(){
       </div>`:''}
     </div>
   </div>`;
+}
+
+// ─── SEGMENTOS TAB ────────────────────────────────────────────────────
+function buildRHSegmentosTab(){
+  const schoolId = document.getElementById('schoolFilter')?.value || '';
+  const schoolsToShow = schoolId ? SCHOOLS.filter(s=>s.id===schoolId) : SCHOOLS;
+
+  return `<div class="rh-form-card" style="max-width:none">
+    <h3>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rh)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      Hierarquia: Escola → Segmento → Série → Turma
+    </h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
+      Configure os segmentos, séries e turmas de cada escola. Esta estrutura será usada nas grades horárias.
+    </div>
+
+    ${schoolsToShow.map(school=>{
+      const segs = rhSegmentos.filter(s=>s.escola_id===school.id);
+      return `<div style="margin-bottom:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div style="padding:12px 16px;background:var(--rh-l);display:flex;align-items:center;justify-content:space-between">
+          <div style="font-weight:700;color:var(--rh);font-size:13px">🏫 ${esc(school.name)}</div>
+          <button class="rh-btn-submit primary" style="padding:4px 12px;font-size:11px" onclick="rhAddSegmento('${school.id}')">+ Segmento</button>
+        </div>
+        <div style="padding:12px 16px">
+          ${!segs.length?'<div style="font-size:12px;color:var(--muted);padding:8px 0">Nenhum segmento cadastrado. Clique em "+ Segmento" para começar.</div>':''}
+          ${segs.map(seg=>{
+            return `<div style="margin-bottom:12px;border-left:3px solid var(--rh);padding-left:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <div style="font-weight:600;font-size:13px;color:var(--fg)">${esc(seg.nome)}</div>
+                <div style="display:flex;gap:4px">
+                  <button style="font-size:10px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--muted)" onclick="rhAddSerie('${seg.id}')">+ Série</button>
+                  <button style="font-size:10px;padding:3px 8px;border:1px solid #EF4444;border-radius:4px;background:none;cursor:pointer;color:#EF4444" onclick="rhDeleteSegmento('${seg.id}')">×</button>
+                </div>
+              </div>
+              ${(seg.series||[]).map(serie=>{
+                return `<div style="margin-left:12px;margin-bottom:8px;padding:8px;background:var(--bg);border-radius:6px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                    <div style="font-size:12px;font-weight:600;color:var(--fg)">📖 ${esc(serie.nome)}</div>
+                    <div style="display:flex;gap:4px">
+                      <button style="font-size:10px;padding:2px 6px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--muted)" onclick="rhAddTurma('${serie.id}')">+ Turma</button>
+                      <button style="font-size:10px;padding:2px 6px;border:1px solid #EF4444;border-radius:4px;background:none;cursor:pointer;color:#EF4444" onclick="rhDeleteSerie('${serie.id}')">×</button>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px">
+                    ${(serie.turmas||[]).map(turma=>`
+                      <span class="rh-disc-tag" style="font-size:10px;padding:3px 8px">
+                        ${esc(turma.nome)} <span style="opacity:.5">(${turma.turno})</span>
+                        <span class="remove" onclick="rhDeleteTurma('${turma.id}')">×</span>
+                      </span>
+                    `).join('')}
+                    ${!(serie.turmas||[]).length?'<span style="font-size:10px;color:var(--muted)">Sem turmas</span>':''}
+                  </div>
+                </div>`;
+              }).join('')}
+              ${!(seg.series||[]).length?'<div style="font-size:11px;color:var(--muted);margin-left:12px">Sem séries cadastradas</div>':''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+async function rhAddSegmento(escolaId){
+  const nome = prompt('Nome do segmento (ex: Infantil, Fundamental 1, Fundamental 2, Ensino Médio):');
+  if(!nome?.trim()) return;
+  const result = await rhApi('POST','/api/segmentos',{nome:nome.trim(), escola_id:escolaId});
+  if(result){
+    await rhSyncFromApi();
+    showToast('Segmento criado!');
+    renderPage();
+  } else {
+    showToast('Erro ao criar segmento','error');
+  }
+}
+
+async function rhDeleteSegmento(id){
+  if(!confirm('Excluir este segmento e todas suas séries/turmas?')) return;
+  await rhApi('DELETE','/api/segmentos/'+id);
+  await rhSyncFromApi();
+  showToast('Segmento excluído');
+  renderPage();
+}
+
+async function rhAddSerie(segmentoId){
+  const nome = prompt('Nome da série (ex: 1º Ano, 2º Ano, Grupo 3, Grupo 4):');
+  if(!nome?.trim()) return;
+  const result = await rhApi('POST','/api/series',{nome:nome.trim(), segmento_id:segmentoId});
+  if(result){
+    await rhSyncFromApi();
+    showToast('Série criada!');
+    renderPage();
+  } else {
+    showToast('Erro ao criar série','error');
+  }
+}
+
+async function rhDeleteSerie(id){
+  if(!confirm('Excluir esta série e todas suas turmas?')) return;
+  await rhApi('DELETE','/api/series/'+id);
+  await rhSyncFromApi();
+  showToast('Série excluída');
+  renderPage();
+}
+
+async function rhAddTurma(serieId){
+  const nome = prompt('Nome da turma (ex: A, B, C):');
+  if(!nome?.trim()) return;
+  const turno = prompt('Turno (matutino, vespertino ou integral):','matutino') || 'matutino';
+  const result = await rhApi('POST','/api/turmas',{nome:nome.trim(), serie_id:serieId, turno});
+  if(result){
+    await rhSyncFromApi();
+    showToast('Turma criada!');
+    renderPage();
+  } else {
+    showToast('Erro ao criar turma','error');
+  }
+}
+
+async function rhDeleteTurma(id){
+  if(!confirm('Excluir esta turma?')) return;
+  await rhApi('DELETE','/api/turmas/'+id);
+  await rhSyncFromApi();
+  showToast('Turma excluída');
+  renderPage();
+}
+
+// ─── FOLHA TAB (Resumo consolidado para fechamento) ──────────────────
+function buildRHFolhaTab(){
+  const schoolId = document.getElementById('schoolFilter')?.value || '';
+
+  // Filter approved grades for display
+  const aprovadas = rhGrades.filter(g=>g.status==='aprovado' && (!schoolId || g.escola_id===schoolId));
+  const pendentes = rhGrades.filter(g=>g.status==='aguardando_rh' && (!schoolId || g.escola_id===schoolId));
+
+  // Group by professor
+  const byProf = {};
+  aprovadas.forEach(g=>{
+    if(!byProf[g.professor_id]) {
+      const prof = RH_PROFESSORES.find(p=>p.id===g.professor_id)||{nome:'—',initials:'??',color:'#94A3B8',titulacao:'graduacao'};
+      byProf[g.professor_id] = {
+        prof, total_horas:0, total_aulas:0, horas_extras:0,
+        coord_pedagogica:0, substituicoes:0, disciplinas:[], grades:[]
+      };
+    }
+    const p = byProf[g.professor_id];
+    p.total_horas += g.total_horas||0;
+    p.total_aulas += g.total_aulas||0;
+    p.horas_extras += g.horas_extras||0;
+    p.coord_pedagogica += g.coord_pedagogica||0;
+    p.substituicoes += g.substituicoes||0;
+    if(!p.disciplinas.includes(g.disciplina)) p.disciplinas.push(g.disciplina);
+    p.grades.push(g);
+  });
+  const profList = Object.values(byProf).sort((a,b)=>a.prof.nome.localeCompare(b.prof.nome));
+
+  // Totals
+  const totalHoras = profList.reduce((s,p)=>s+p.total_horas,0);
+  const totalExtras = profList.reduce((s,p)=>s+p.horas_extras+p.coord_pedagogica+p.substituicoes,0);
+
+  return `<div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <div style="padding:16px;background:var(--rh-l);border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:var(--rh)">${profList.length}</div>
+        <div style="font-size:11px;color:var(--muted)">Professores com grade aprovada</div>
+      </div>
+      <div style="padding:16px;background:#ECFDF5;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:#10B981">${aprovadas.length}</div>
+        <div style="font-size:11px;color:var(--muted)">Grades aprovadas</div>
+      </div>
+      <div style="padding:16px;background:#FFFBEB;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:#F59E0B">${pendentes.length}</div>
+        <div style="font-size:11px;color:var(--muted)">Grades pendentes</div>
+      </div>
+      <div style="padding:16px;background:#EFF6FF;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:#3B82F6">${(totalHoras+totalExtras).toFixed(1)}h</div>
+        <div style="font-size:11px;color:var(--muted)">Carga total semanal</div>
+      </div>
+    </div>
+
+    ${pendentes.length?`<div style="margin-bottom:16px;padding:12px 16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;font-size:12px;color:#92400E">
+      ⚠ <strong>${pendentes.length} grade(s) pendente(s) de aprovação.</strong> Aprove todas antes de fechar a folha.
+    </div>`:''}
+
+    <div class="rh-form-card" style="max-width:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h3 style="margin:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rh)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Resumo de Carga Horária por Professor
+        </h3>
+        ${profList.length?`<button class="rh-btn-submit primary" style="padding:6px 14px;font-size:11px" onclick="rhExportFolha()">📊 Exportar para Excel</button>`:''}
+      </div>
+
+      ${!profList.length?`<div class="rh-empty"><div style="font-size:13px">Nenhuma grade aprovada ainda</div></div>`:`
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:var(--bg);text-align:left">
+              <th style="padding:10px 12px;font-weight:700;color:var(--fg);border-bottom:2px solid var(--border)">Professor</th>
+              <th style="padding:10px 8px;font-weight:700;color:var(--fg);border-bottom:2px solid var(--border)">Titulação</th>
+              <th style="padding:10px 8px;font-weight:700;color:var(--fg);border-bottom:2px solid var(--border)">Disciplinas</th>
+              <th style="padding:10px 8px;font-weight:700;color:var(--fg);border-bottom:2px solid var(--border);text-align:center">Aulas</th>
+              <th style="padding:10px 8px;font-weight:700;color:var(--fg);border-bottom:2px solid var(--border);text-align:center">H. Aula</th>
+              <th style="padding:10px 8px;font-weight:700;color:var(--fg);border-bottom:2px solid var(--border);text-align:center">H. Extra</th>
+              <th style="padding:10px 8px;font-weight:700;color:var(--fg);border-bottom:2px solid var(--border);text-align:center">Coord.</th>
+              <th style="padding:10px 8px;font-weight:700;color:var(--fg);border-bottom:2px solid var(--border);text-align:center">Subst.</th>
+              <th style="padding:10px 8px;font-weight:700;color:var(--rh);border-bottom:2px solid var(--border);text-align:center">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${profList.map(p=>{
+              const tit = RH_TITULACOES[p.prof.titulacao||'graduacao']||'Grad.';
+              const cargaTotal = (p.total_horas+p.horas_extras+p.coord_pedagogica+p.substituicoes).toFixed(1);
+              return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:10px 12px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div class="rh-grade-avatar" style="background:${p.prof.color};width:28px;height:28px;font-size:10px">${p.prof.initials}</div>
+                    <div style="font-weight:600">${esc(p.prof.nome)}</div>
+                  </div>
+                </td>
+                <td style="padding:10px 8px"><span class="rh-titulacao-badge" style="background:${(RH_TIT_COLORS[p.prof.titulacao]||RH_TIT_COLORS.graduacao).bg};color:${(RH_TIT_COLORS[p.prof.titulacao]||RH_TIT_COLORS.graduacao).color};font-size:9px">${tit}</span></td>
+                <td style="padding:10px 8px;font-size:11px">${p.disciplinas.map(d=>esc(d)).join(', ')}</td>
+                <td style="padding:10px 8px;text-align:center;font-weight:600">${p.total_aulas}</td>
+                <td style="padding:10px 8px;text-align:center">${p.total_horas.toFixed(1)}h</td>
+                <td style="padding:10px 8px;text-align:center;color:${p.horas_extras?'#F59E0B':'var(--muted)'}">${p.horas_extras.toFixed(1)}h</td>
+                <td style="padding:10px 8px;text-align:center;color:${p.coord_pedagogica?'#8B5CF6':'var(--muted)'}">${p.coord_pedagogica.toFixed(1)}h</td>
+                <td style="padding:10px 8px;text-align:center;color:${p.substituicoes?'#EF4444':'var(--muted)'}">${p.substituicoes.toFixed(1)}h</td>
+                <td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--rh);font-size:14px">${cargaTotal}h</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+          <tfoot>
+            <tr style="background:var(--rh-l)">
+              <td colspan="3" style="padding:10px 12px;font-weight:800;color:var(--rh)">TOTAL GERAL</td>
+              <td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--rh)">${profList.reduce((s,p)=>s+p.total_aulas,0)}</td>
+              <td style="padding:10px 8px;text-align:center;font-weight:700">${totalHoras.toFixed(1)}h</td>
+              <td style="padding:10px 8px;text-align:center;font-weight:700;color:#F59E0B">${profList.reduce((s,p)=>s+p.horas_extras,0).toFixed(1)}h</td>
+              <td style="padding:10px 8px;text-align:center;font-weight:700;color:#8B5CF6">${profList.reduce((s,p)=>s+p.coord_pedagogica,0).toFixed(1)}h</td>
+              <td style="padding:10px 8px;text-align:center;font-weight:700;color:#EF4444">${profList.reduce((s,p)=>s+p.substituicoes,0).toFixed(1)}h</td>
+              <td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--rh);font-size:16px">${(totalHoras+totalExtras).toFixed(1)}h</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      `}
+    </div>
+  </div>`;
+}
+
+function rhExportFolha(){
+  // Build CSV data for export
+  const aprovadas = rhGrades.filter(g=>g.status==='aprovado');
+  const byProf = {};
+  aprovadas.forEach(g=>{
+    if(!byProf[g.professor_id]){
+      const prof = RH_PROFESSORES.find(p=>p.id===g.professor_id)||{nome:'—',titulacao:'graduacao'};
+      byProf[g.professor_id] = {nome:prof.nome, titulacao:prof.titulacao, total_aulas:0, total_horas:0, horas_extras:0, coord_pedagogica:0, substituicoes:0, disciplinas:[]};
+    }
+    const p = byProf[g.professor_id];
+    p.total_aulas += g.total_aulas||0;
+    p.total_horas += g.total_horas||0;
+    p.horas_extras += g.horas_extras||0;
+    p.coord_pedagogica += g.coord_pedagogica||0;
+    p.substituicoes += g.substituicoes||0;
+    if(!p.disciplinas.includes(g.disciplina)) p.disciplinas.push(g.disciplina);
+  });
+
+  let csv = 'Professor;Titulação;Disciplinas;Total Aulas;Horas Aula;Horas Extras;Coord. Pedagógica;Substituições;CARGA TOTAL\n';
+  Object.values(byProf).sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(p=>{
+    const total = (p.total_horas+p.horas_extras+p.coord_pedagogica+p.substituicoes).toFixed(1);
+    csv += `${p.nome};${RH_TITULACOES[p.titulacao]||p.titulacao};${p.disciplinas.join(', ')};${p.total_aulas};${p.total_horas.toFixed(1)};${p.horas_extras.toFixed(1)};${p.coord_pedagogica.toFixed(1)};${p.substituicoes.toFixed(1)};${total}\n`;
+  });
+
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'resumo_folha_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Resumo exportado!');
 }
 
 function buildRHJsonPreview(){
@@ -4170,6 +4522,11 @@ function rhSwitchTab(tab){
   renderPage();
 }
 
+function rhOnEscolaChange(){
+  // Reset cascade selectors
+  renderPage();
+}
+
 function rhOnProfChange(){
   rhSelectedSlots = {};
   renderPage();
@@ -4226,16 +4583,31 @@ async function rhSubmitGrade(){
   const totalAulas = gradeArray.length;
   const totalHoras = parseFloat((totalAulas * 50 / 60).toFixed(1));
 
+  const segmentoId = document.getElementById('rhSegmento')?.value || null;
+  const serieId = document.getElementById('rhSerie')?.value || null;
+  const turmaId = document.getElementById('rhTurma')?.value || null;
+  const horasExtras = parseFloat(document.getElementById('rhHorasExtras')?.value||'0');
+  const coordPed = parseFloat(document.getElementById('rhCoordPed')?.value||'0');
+  const substituicoes = parseFloat(document.getElementById('rhSubstituicoes')?.value||'0');
+  const obsExtras = document.getElementById('rhObsExtras')?.value?.trim()||'';
+
   const gradeData = {
     professor_id: profId,
     professor_nome: prof?.nome||'',
     disciplina: disc,
     escola_id: escolaId,
     escola_nome: escola?.name||'',
+    segmento_id: segmentoId,
+    serie_id: serieId,
+    turma_id: turmaId,
     total_horas: totalHoras,
     total_aulas: totalAulas,
     grade_array: gradeArray,
     enviado_por: currentUser?.name||'',
+    horas_extras: horasExtras,
+    coord_pedagogica: coordPed,
+    substituicoes: substituicoes,
+    obs_extras: obsExtras,
   };
 
   if(rhEditingId){
