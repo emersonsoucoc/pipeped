@@ -324,8 +324,16 @@ svg{display:block;flex-shrink:0}
 .phase-editor-overlay.active{display:flex;animation:fadeIn .15s}
 .phase-editor-box{
   background:var(--white);border-radius:var(--r);padding:24px;
-  width:380px;max-width:90vw;box-shadow:var(--sh-lg);
+  width:420px;max-width:90vw;box-shadow:var(--sh-lg);
 }
+.phase-field-check{
+  display:flex;align-items:center;gap:7px;padding:6px 10px;
+  border:1px solid var(--border);border-radius:8px;cursor:pointer;
+  transition:all .15s;font-size:12px;color:var(--text);
+}
+.phase-field-check:hover{border-color:var(--accent);background:var(--accent-l)}
+.phase-field-check input{margin:0;accent-color:var(--accent)}
+.phase-field-check.checked{border-color:var(--accent);background:var(--accent-l)}
 .phase-editor-box h3{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
 .phase-editor-box .form-group{margin-bottom:14px}
 .phase-editor-box label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
@@ -1370,6 +1378,11 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
         <span id="phaseEditorColorHex" style="font-size:12px;color:var(--muted)">#3B82F6</span>
       </div>
     </div>
+    <div class="form-group" id="phaseFieldsGroup">
+      <label style="margin-bottom:8px">Campos visíveis no card</label>
+      <div id="phaseFieldsChecks" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      </div>
+    </div>
     <div class="phase-editor-actions">
       <button class="btn-cancel" onclick="closePhaseEditor()">Cancelar</button>
       <button class="btn-save" onclick="savePhaseEdit()">Salvar</button>
@@ -1484,10 +1497,11 @@ function loadCustomPhases(){
           if(c.label) MODULES[mod].fases[faseKey].label = c.label;
           if(c.color) MODULES[mod].fases[faseKey].color = c.color;
           if(c.bg)    MODULES[mod].fases[faseKey].bg    = c.bg;
+          if(c.cardFields) MODULES[mod].fases[faseKey].cardFields = c.cardFields;
           newFases[faseKey] = MODULES[mod].fases[faseKey];
         } else if(c.label){
           // Fase nova (adicionada pelo usuário) — criar
-          newFases[faseKey] = { label:c.label, color:c.color||'#3B82F6', bg:c.bg||'#EFF6FF' };
+          newFases[faseKey] = { label:c.label, color:c.color||'#3B82F6', bg:c.bg||'#EFF6FF', cardFields:c.cardFields };
         }
       });
       // Se temos fases salvas com ordem, usar essa ordem
@@ -1503,7 +1517,7 @@ function saveCustomPhases(){
     custom[mod] = {};
     Object.keys(MODULES[mod].fases).forEach(faseKey=>{
       const f = MODULES[mod].fases[faseKey];
-      custom[mod][faseKey] = { label:f.label, color:f.color, bg:f.bg };
+      custom[mod][faseKey] = { label:f.label, color:f.color, bg:f.bg, cardFields:f.cardFields };
     });
   });
   localStorage.setItem('pipeped_custom_phases', JSON.stringify(custom));
@@ -1513,6 +1527,35 @@ loadCustomPhases();
 
 let _phaseEditMod = '';
 let _phaseEditKey = '';
+
+const CARD_FIELD_OPTIONS = [
+  {key:'protocolo', label:'Protocolo'},
+  {key:'descricao', label:'Descrição'},
+  {key:'aluno',     label:'Nome do Aluno'},
+  {key:'escola',    label:'Escola'},
+  {key:'categoria', label:'Categoria'},
+  {key:'responsavel',label:'Responsável'},
+  {key:'prazo',     label:'Prazo'},
+  {key:'prioridade',label:'Prioridade'},
+  {key:'comentarios',label:'Comentários'},
+];
+const DEFAULT_CARD_FIELDS = ['protocolo','descricao','escola','categoria','responsavel','prazo','prioridade','comentarios'];
+
+function getCardFields(mod, faseKey){
+  const fase = MODULES[mod]?.fases[faseKey];
+  return fase?.cardFields || DEFAULT_CARD_FIELDS;
+}
+
+function renderPhaseFieldChecks(selectedFields){
+  const container = document.getElementById('phaseFieldsChecks');
+  container.innerHTML = CARD_FIELD_OPTIONS.map(f=>{
+    const checked = selectedFields.includes(f.key);
+    return `<label class="phase-field-check ${checked?'checked':''}">
+      <input type="checkbox" value="${f.key}" ${checked?'checked':''} onchange="this.parentElement.classList.toggle('checked',this.checked)">
+      ${f.label}
+    </label>`;
+  }).join('');
+}
 
 function openPhaseEditor(mod, faseKey){
   _phaseEditMod = mod;
@@ -1526,6 +1569,8 @@ function openPhaseEditor(mod, faseKey){
   document.getElementById('phaseEditorColor').oninput = function(){
     document.getElementById('phaseEditorColorHex').textContent = this.value;
   };
+  document.getElementById('phaseFieldsGroup').style.display = '';
+  renderPhaseFieldChecks(fase.cardFields || DEFAULT_CARD_FIELDS);
   document.getElementById('phaseEditorOverlay').classList.add('active');
   setTimeout(()=>document.getElementById('phaseEditorName').focus(), 100);
 }
@@ -1539,6 +1584,8 @@ function openAddPhase(mod, afterIdx){
   document.getElementById('phaseEditorTitle').textContent = 'Nova Fase';
   document.getElementById('phaseEditorName').value = '';
   document.getElementById('phaseEditorColor').value = '#3B82F6';
+  document.getElementById('phaseFieldsGroup').style.display = '';
+  renderPhaseFieldChecks(DEFAULT_CARD_FIELDS);
   document.getElementById('phaseEditorColorHex').textContent = '#3B82F6';
   document.getElementById('phaseEditorColor').oninput = function(){
     document.getElementById('phaseEditorColorHex').textContent = this.value;
@@ -1554,27 +1601,31 @@ function closePhaseEditor(){
   _phaseInsertAfterIdx = -1;
 }
 
+function getSelectedCardFields(){
+  const checks = document.querySelectorAll('#phaseFieldsChecks input[type="checkbox"]:checked');
+  return Array.from(checks).map(c=>c.value);
+}
+
 function savePhaseEdit(){
   if(!_phaseEditMod || !_phaseEditKey) return;
 
   const newLabel = document.getElementById('phaseEditorName').value.trim();
   const newColor = document.getElementById('phaseEditorColor').value;
+  const cardFields = getSelectedCardFields();
   if(!newLabel){ showToast('O nome da fase não pode ficar vazio','error'); return; }
 
   // ── Criar nova fase ──
   if(_phaseEditKey === '__NEW__' && _phaseInsertAfterIdx >= 0){
     const mod = MODULES[_phaseEditMod];
     if(!mod) return;
-    // Gerar key única a partir do label
     const newKey = newLabel.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'') || ('fase_' + Date.now());
     if(mod.fases[newKey]){ showToast('Já existe uma fase com nome similar','error'); return; }
-    // Inserir na posição correta (depois do índice clicado)
     const entries = Object.entries(mod.fases);
     const newFases = {};
     entries.forEach(([k,v], i)=>{
       newFases[k] = v;
       if(i === _phaseInsertAfterIdx){
-        newFases[newKey] = { label:newLabel, color:newColor, bg:newColor+'18' };
+        newFases[newKey] = { label:newLabel, color:newColor, bg:newColor+'18', cardFields };
       }
     });
     mod.fases = newFases;
@@ -1596,6 +1647,7 @@ function savePhaseEdit(){
   fase.label = newLabel;
   fase.color = newColor;
   fase.bg = newColor + '18';
+  fase.cardFields = cardFields;
 
   saveCustomPhases();
   closePhaseEditor();
@@ -2119,23 +2171,26 @@ function buildCard(c){
   const u = userById(c.responsavel);
   const cCount = (c.comentarios||[]).length;
   const _canEdit = canEditCard(c);
+  const fields = getCardFields(c.modulo, c.fase);
+  const show = (f) => fields.includes(f);
+
   return `<div class="card" id="card-${c.id}" data-id="${c.id}" data-prio="${c.prioridade}"
     ${_canEdit?'draggable="true" ondragstart="onDragStart(event,\''+c.id+'\')" ondragend="onDragEnd(event)"':'draggable="false"'}
     onclick="openCard('${c.id}')" style="${_canEdit?'':'cursor:default'}">
-    ${c.protocolo?`<div style="font-size:10px;color:var(--muted);font-weight:600;font-family:monospace;margin-bottom:2px">${esc(c.protocolo)}</div>`:''}
+    ${show('protocolo')&&c.protocolo?`<div style="font-size:10px;color:var(--muted);font-weight:600;font-family:monospace;margin-bottom:2px">${esc(c.protocolo)}</div>`:''}
     <div class="card-title">${esc(c.titulo||'Sem título')}</div>
-    ${c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
-    ${c.modulo==='financeiro'&&c.supplier?`<div class="card-desc" style="color:#6366F1;font-weight:500">Aluno: ${esc(c.supplier)}</div>`:''}
+    ${show('descricao')&&c.descricao?`<div class="card-desc">${esc(c.descricao)}</div>`:''}
+    ${show('aluno')&&c.modulo==='financeiro'&&c.supplier?`<div class="card-desc" style="color:#6366F1;font-weight:500">Aluno: ${esc(c.supplier)}</div>`:''}
     <div class="card-tags">
-      ${c.escola?`<span class="tag school">${esc(schoolName(c.escola))}</span>`:''}
-      ${c.categoria?`<span class="tag cat">${esc(c.categoria)}</span>`:''}
+      ${show('escola')&&c.escola?`<span class="tag school">${esc(schoolName(c.escola))}</span>`:''}
+      ${show('categoria')&&c.categoria?`<span class="tag cat">${esc(c.categoria)}</span>`:''}
     </div>
     <div class="card-footer">
-      ${u?`<div class="avatar sm" style="background:${u.color}" title="${esc(u.name)}">${u.initials}</div>`:'<div style="width:24px"></div>'}
+      ${show('responsavel')&&u?`<div class="avatar sm" style="background:${u.color}" title="${esc(u.name)}">${u.initials}</div>`:'<div style="width:24px"></div>'}
       <div class="card-footer-spacer"></div>
-      ${cCount?`<div class="card-comments-count"><svg width="11" height="11" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.8"/></svg>${cCount}</div>`:''}
-      ${c.prazo?`<div class="due-badge ${overdue?'overdue':''}"><svg width="11" height="11" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.8"/></svg>${fmtDate(c.prazo)}</div>`:''}
-      <div style="width:6px;height:6px;border-radius:50%;background:${ {urgente:'#EF4444',alta:'#F97316',media:'#F59E0B',baixa:'#22C55E'}[c.prioridade]||'#94A3B8' };flex-shrink:0"></div>
+      ${show('comentarios')&&cCount?`<div class="card-comments-count"><svg width="11" height="11" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.8"/></svg>${cCount}</div>`:''}
+      ${show('prazo')&&c.prazo?`<div class="due-badge ${overdue?'overdue':''}"><svg width="11" height="11" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.8"/></svg>${fmtDate(c.prazo)}</div>`:''}
+      ${show('prioridade')?`<div style="width:6px;height:6px;border-radius:50%;background:${ {urgente:'#EF4444',alta:'#F97316',media:'#F59E0B',baixa:'#22C55E'}[c.prioridade]||'#94A3B8' };flex-shrink:0"></div>`:''}
     </div>
   </div>`;
 }
