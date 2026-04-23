@@ -41,40 +41,97 @@ svg{display:block;flex-shrink:0}
 
 /* ─── LOGIN ───────────────────────────────────────────────────────── */
 #loginScreen{
-  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-  background:var(--navy);z-index:9999;
-  background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.06) 1px,transparent 0);
-  background-size:28px 28px;
+  position:fixed;inset:0;display:flex;z-index:9999;
+  animation:fadeIn .3s ease;
 }
-.login-card{
-  background:var(--white);border-radius:16px;padding:48px 40px;width:400px;
-  box-shadow:var(--sh-lg);animation:fadeUp .4s ease;
+/* ── Left column (form) ── */
+.login-left{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:60px 80px;background:#fff;min-width:0;
 }
-.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.login-left-inner{max-width:420px;width:100%}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .login-logo-icon{
-  width:40px;height:40px;background:var(--accent);border-radius:10px;
+  width:44px;height:44px;background:var(--accent);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.login-logo h1{font-size:26px;font-weight:800;letter-spacing:-.5px;color:#1a1a2e}
+.login-welcome{font-size:22px;font-weight:700;color:#1a1a2e;margin-bottom:6px}
+.login-subtitle{color:#6b7280;font-size:14px;margin-bottom:36px;line-height:1.5}
+.login-label{display:block;font-size:13px;font-weight:500;color:#374151;margin-bottom:8px}
+.login-field{margin-bottom:20px}
+.login-field input{
+  width:100%;padding:14px 16px;border:1.5px solid #E5E7EB;border-radius:10px;
+  font-size:15px;background:#fff;color:#1a1a2e;transition:all .2s;
+}
+.login-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12);outline:none}
+.login-field input::placeholder{color:#9CA3AF}
+.btn-primary{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 24px;background:var(--accent);color:#fff;
+  border-radius:10px;font-weight:600;font-size:15px;
+  transition:background var(--t),transform var(--t),box-shadow var(--t);
+}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,.3)}
+#loginScreen .btn-primary{width:100%}
+.login-divider{display:flex;align-items:center;gap:12px;margin:28px 0 20px;color:#9CA3AF;font-size:12px}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:#E5E7EB}
+.login-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.btn-quick{
+  padding:12px 8px;border:1.5px solid #E5E7EB;border-radius:10px;
+  font-size:12px;font-weight:600;color:#6b7280;transition:all .2s;text-align:center;
+  background:#fff;
+}
+.btn-quick:hover{border-color:var(--accent);color:var(--accent);background:#EEF2FF}
+.login-role{font-size:10px;color:#9CA3AF;margin-top:4px;font-weight:400}
+/* ── Right column (branding) ── */
+.login-right{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#1e1b4b 0%,#312e81 40%,#4338ca 100%);
+  padding:60px;position:relative;overflow:hidden;min-width:0;
+}
+.login-right::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 600px 400px at 30% 20%, rgba(129,140,248,.2) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 500px at 80% 80%, rgba(167,139,250,.15) 0%, transparent 70%);
+}
+.login-right-content{position:relative;text-align:center;max-width:480px;z-index:1}
+.login-right-brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:40px}
+.login-right-brand-icon{
+  width:48px;height:48px;background:rgba(255,255,255,.15);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);
+}
+.login-right-brand span{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.login-right h2{font-size:32px;font-weight:800;color:#fff;line-height:1.25;margin-bottom:12px}
+.login-right h2 em{font-style:normal;color:#818CF8}
+.login-right .login-right-desc{font-size:15px;color:rgba(255,255,255,.7);line-height:1.7;margin-bottom:40px}
+.login-dots{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:32px}
+.login-dot{width:10px;height:10px;border-radius:50%;opacity:.6}
+.login-dot.lg{width:14px;height:14px;opacity:.8}
+.login-features{display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left}
+.login-feat{
+  display:flex;align-items:flex-start;gap:10px;padding:16px;
+  background:rgba(255,255,255,.08);border-radius:12px;
+  backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.08);
+}
+.login-feat-icon{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
 }
-.login-logo h1{font-size:22px;font-weight:700;letter-spacing:-.5px;color:var(--navy)}
-.login-subtitle{color:var(--muted);font-size:13px;margin-bottom:32px}
-.login-label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.login-field{margin-bottom:16px}
-.btn-primary{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:11px 20px;background:var(--accent);color:#fff;
-  border-radius:var(--r-sm);font-weight:600;font-size:14px;
-  transition:background var(--t),transform var(--t);
+.login-feat h4{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px}
+.login-feat p{font-size:11px;color:rgba(255,255,255,.55);line-height:1.4}
+/* Decorative shapes */
+.login-deco{position:absolute;border-radius:50%;opacity:.08;background:#fff}
+.login-deco-1{width:300px;height:300px;top:-80px;right:-60px}
+.login-deco-2{width:200px;height:200px;bottom:-40px;left:-40px}
+.login-deco-3{width:120px;height:120px;bottom:20%;right:10%;opacity:.05}
+/* Responsive */
+@media(max-width:900px){
+  #loginScreen{flex-direction:column}
+  .login-right{display:none}
+  .login-left{padding:40px 24px}
 }
-.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px)}
-.login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--faint);font-size:12px}
-.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.login-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.btn-quick{
-  padding:9px 6px;border:1px solid var(--border);border-radius:var(--r-sm);
-  font-size:12px;font-weight:500;color:var(--muted);transition:all var(--t);text-align:center;
-}
-.btn-quick:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
-.login-role{font-size:10px;color:var(--faint);margin-top:3px}
 
 /* ─── APP SHELL ───────────────────────────────────────────────────── */
 #app{display:flex;height:100vh;overflow:hidden}
@@ -943,50 +1000,101 @@ select:disabled,input:disabled,textarea:disabled{background:var(--surface);color
 
 <!-- ─── LOGIN ─────────────────────────────────────────────────────── -->
 <div id="loginScreen">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-icon">
-        <svg width="24" height="24" viewBox="0 0 80 80" fill="none">
-          <rect x="16" y="20" width="14" height="40" rx="4" fill="#A5B4FC" opacity=".7"/>
-          <rect x="33" y="16" width="14" height="48" rx="4" fill="#C7D2FE" opacity=".8"/>
-          <rect x="50" y="24" width="14" height="36" rx="4" fill="#E0E7FF" opacity=".9"/>
-          <path d="M18 64Q40 72 62 64" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
-          <path d="M53 38L56 42L62 34" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="18" y="24" width="10" height="6" rx="1.5" fill="#fff" opacity=".9"/>
-          <rect x="18" y="33" width="10" height="6" rx="1.5" fill="#fff" opacity=".7"/>
-          <rect x="18" y="42" width="10" height="6" rx="1.5" fill="#fff" opacity=".5"/>
-          <rect x="35" y="20" width="10" height="6" rx="1.5" fill="#fff" opacity=".9"/>
-          <rect x="35" y="29" width="10" height="6" rx="1.5" fill="#fff" opacity=".7"/>
-          <rect x="35" y="38" width="10" height="6" rx="1.5" fill="#fff" opacity=".5"/>
-          <rect x="52" y="28" width="10" height="6" rx="1.5" fill="#fff" opacity=".9"/>
-        </svg>
+  <!-- Left column — Form -->
+  <div class="login-left">
+    <div class="login-left-inner">
+      <div class="login-logo">
+        <div class="login-logo-icon">
+          <svg width="24" height="24" viewBox="0 0 80 80" fill="none">
+            <rect x="16" y="20" width="14" height="40" rx="4" fill="#A5B4FC" opacity=".7"/>
+            <rect x="33" y="16" width="14" height="48" rx="4" fill="#C7D2FE" opacity=".8"/>
+            <rect x="50" y="24" width="14" height="36" rx="4" fill="#E0E7FF" opacity=".9"/>
+            <path d="M53 38L56 42L62 34" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h1>PIPEPED</h1>
       </div>
-      <h1>PIPEPED</h1>
+      <h2 class="login-welcome">Boas-vindas ao PIPEPED</h2>
+      <p class="login-subtitle">Acesse sua conta para gerenciar processos, tarefas e fluxos da sua rede escolar.</p>
+      <div class="login-field">
+        <label class="login-label">E-mail ou nome de usuário</label>
+        <input type="email" id="loginEmail" placeholder="email@empresa.com" value="emerson@grupoped.com.br">
+      </div>
+      <div class="login-field">
+        <label class="login-label">Senha</label>
+        <input type="password" id="loginPass" placeholder="Digite sua senha" value="admin123">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Continuar</button>
+      <div class="login-divider">ou continuar com</div>
+      <div class="login-quick">
+        <button class="btn-quick" onclick="quickLogin('admin')">
+          Administrador<div class="login-role">Acesso total</div>
+        </button>
+        <button class="btn-quick" onclick="quickLogin('gestor')">
+          Gestor<div class="login-role">Aprova tarefas</div>
+        </button>
+        <button class="btn-quick" onclick="quickLogin('colaborador')">
+          Colaborador<div class="login-role">Cria e executa</div>
+        </button>
+      </div>
     </div>
-    <p class="login-subtitle">Gestão Operacional — Grupo PED</p>
-    <div class="login-field">
-      <label class="login-label">E-mail</label>
-      <input type="email" id="loginEmail" placeholder="seu@email.com" value="emerson@grupoped.com.br">
-    </div>
-    <div class="login-field">
-      <label class="login-label">Senha</label>
-      <input type="password" id="loginPass" placeholder="••••••••" value="admin123">
-    </div>
-    <button class="btn-primary" onclick="doLogin()">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Entrar
-    </button>
-    <div class="login-divider">Acesso rápido (demo)</div>
-    <div class="login-quick">
-      <button class="btn-quick" onclick="quickLogin('admin')">
-        Administrador<div class="login-role">Acesso total</div>
-      </button>
-      <button class="btn-quick" onclick="quickLogin('gestor')">
-        Gestor<div class="login-role">Aprova tarefas</div>
-      </button>
-      <button class="btn-quick" onclick="quickLogin('colaborador')">
-        Colaborador<div class="login-role">Cria e executa</div>
-      </button>
+  </div>
+  <!-- Right column — Branding -->
+  <div class="login-right">
+    <div class="login-deco login-deco-1"></div>
+    <div class="login-deco login-deco-2"></div>
+    <div class="login-deco login-deco-3"></div>
+    <div class="login-right-content">
+      <div class="login-right-brand">
+        <div class="login-right-brand-icon">
+          <svg width="26" height="26" viewBox="0 0 80 80" fill="none">
+            <rect x="16" y="20" width="14" height="40" rx="4" fill="#A5B4FC" opacity=".8"/>
+            <rect x="33" y="16" width="14" height="48" rx="4" fill="#C7D2FE" opacity=".9"/>
+            <rect x="50" y="24" width="14" height="36" rx="4" fill="#E0E7FF"/>
+            <path d="M53 38L56 42L62 34" stroke="#818CF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span>PIPEPED</span>
+      </div>
+      <h2>Gerencie seus processos com <em>eficiência</em></h2>
+      <p class="login-right-desc">Organize fluxos de compras, TI, comercial e contratos em uma plataforma Kanban moderna para toda sua rede escolar.</p>
+      <div class="login-dots">
+        <div class="login-dot lg" style="background:#818CF8"></div>
+        <div class="login-dot lg" style="background:#818CF8"></div>
+        <div class="login-dot lg" style="background:#818CF8"></div>
+        <div class="login-dot lg" style="background:#818CF8"></div>
+        <div class="login-dot" style="background:#A78BFA"></div>
+        <div class="login-dot" style="background:#C084FC"></div>
+        <div class="login-dot lg" style="background:#F472B6"></div>
+        <div class="login-dot" style="background:#34D399"></div>
+        <div class="login-dot" style="background:#34D399"></div>
+      </div>
+      <div class="login-features">
+        <div class="login-feat">
+          <div class="login-feat-icon" style="background:rgba(99,102,241,.2)">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#818CF8" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#818CF8" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#818CF8" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="#818CF8" stroke-width="2"/></svg>
+          </div>
+          <div><h4>Kanban visual</h4><p>Arraste cards entre fases com fluxo intuitivo</p></div>
+        </div>
+        <div class="login-feat">
+          <div class="login-feat-icon" style="background:rgba(52,211,153,.2)">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#34D399" stroke-width="2"/></svg>
+          </div>
+          <div><h4>Multi-escola</h4><p>Gerencie todas as unidades em um só lugar</p></div>
+        </div>
+        <div class="login-feat">
+          <div class="login-feat-icon" style="background:rgba(251,146,60,.2)">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="#FB923C" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4" stroke="#FB923C" stroke-width="2"/></svg>
+          </div>
+          <div><h4>Automações</h4><p>Regras inteligentes que economizam tempo</p></div>
+        </div>
+        <div class="login-feat">
+          <div class="login-feat-icon" style="background:rgba(244,114,182,.2)">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#F472B6" stroke-width="2" stroke-linecap="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="#F472B6" stroke-width="2"/></svg>
+          </div>
+          <div><h4>Notificações</h4><p>Alertas de SLA, e-mails e atualizações</p></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
