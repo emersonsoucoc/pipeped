@@ -3789,7 +3789,37 @@ let RH_DISCIPLINAS = JSON.parse(localStorage.getItem('rh_disciplinas')||'null') 
 let rhGrades = JSON.parse(localStorage.getItem('rh_grades')||'[]');
 let rhSegmentos = JSON.parse(localStorage.getItem('rh_segmentos')||'[]');
 let rhSubstituicoes = JSON.parse(localStorage.getItem('rh_substituicoes')||'[]');
+let rhFechamentos = [];
 let rhResumoFolha = [];
+
+// ─── CICLO DE FOLHA (corte dia 25) ───────────────────────────────────
+function rhGetCicloAtual(){
+  const hoje = new Date();
+  const dia = hoje.getDate();
+  let mes, ano;
+  if(dia <= 25){
+    mes = hoje.getMonth() + 1;
+    ano = hoje.getFullYear();
+  } else {
+    const prox = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+    mes = prox.getMonth() + 1;
+    ano = prox.getFullYear();
+  }
+  return `${ano}-${String(mes).padStart(2,'0')}`;
+}
+
+function rhGetCicloLabel(ciclo){
+  const [ano, mes] = ciclo.split('-');
+  const meses = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return `${meses[parseInt(mes)]}/${ano}`;
+}
+
+function rhGetCicloPeriodo(ciclo){
+  const [ano, mes] = ciclo.split('-').map(Number);
+  const mesAnt = mes === 1 ? 12 : mes - 1;
+  const anoAnt = mes === 1 ? ano - 1 : ano;
+  return `26/${String(mesAnt).padStart(2,'0')}/${anoAnt} a 25/${String(mes).padStart(2,'0')}/${ano}`;
+}
 
 // ─── DATA LAYER: API com fallback localStorage ──────────────────────
 async function rhApi(method, path, body){
@@ -3835,6 +3865,9 @@ async function rhSyncFromApi(){
   if(grades){ rhGrades = grades; localStorage.setItem('rh_grades',JSON.stringify(grades)); }
   if(segs){ rhSegmentos = segs; localStorage.setItem('rh_segmentos',JSON.stringify(segs)); }
   if(subs){ rhSubstituicoes = subs; localStorage.setItem('rh_substituicoes',JSON.stringify(subs)); }
+  // Fechamentos do ciclo atual
+  const fech = await rhApi('GET','/api/fechamentos?ciclo='+rhGetCicloAtual());
+  if(fech) rhFechamentos = fech;
 }
 
 async function rhSyncResumoFolha(){
@@ -4459,6 +4492,16 @@ async function rhDeleteTurma(id){
 // ─── FOLHA TAB (Resumo consolidado para fechamento) ──────────────────
 function buildRHFolhaTab(){
   const schoolId = document.getElementById('schoolFilter')?.value || '';
+  const ciclo = rhGetCicloAtual();
+  const cicloLabel = rhGetCicloLabel(ciclo);
+  const cicloPeriodo = rhGetCicloPeriodo(ciclo);
+  const isRH = currentUser?.role==='admin'||currentUser?.role==='gestor';
+
+  // Fechamentos deste ciclo
+  const fechamentosCiclo = rhFechamentos.filter(f=>f.ciclo===ciclo && (!schoolId || f.escola_id===schoolId));
+  const fechEnviados = fechamentosCiclo.filter(f=>f.status==='enviado');
+  const fechAprovados = fechamentosCiclo.filter(f=>f.status==='aprovado_rh');
+  const fechDevolvidos = fechamentosCiclo.filter(f=>f.status==='devolvido');
 
   // Filter approved grades for display
   const aprovadas = rhGrades.filter(g=>g.status==='aprovado' && (!schoolId || g.escola_id===schoolId));
@@ -4502,11 +4545,54 @@ function buildRHFolhaTab(){
   const totalHoras = profList.reduce((s,p)=>s+p.total_horas,0);
   const totalExtras = profList.reduce((s,p)=>s+p.horas_extras+p.coord_pedagogica+p.substituicoes,0);
 
+  const custoTotal = profList.reduce((s,p)=>{const ct=p.total_horas+p.horas_extras+p.coord_pedagogica+p.substituicoes; return s+(p.valor_hora?ct*p.valor_hora*4.5:0);},0);
+
   return `<div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+    <!-- CICLO HEADER -->
+    <div style="padding:16px 20px;background:linear-gradient(135deg,var(--rh),#7C3AED);border-radius:12px;margin-bottom:16px;color:#fff;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800">📊 Folha de ${cicloLabel}</div>
+        <div style="font-size:12px;opacity:.85">Período: ${cicloPeriodo} · Corte dia 25</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="padding:6px 14px;background:rgba(255,255,255,.15);border-radius:8px;font-size:11px">
+          ${fechEnviados.length} enviado(s) · ${fechAprovados.length} aprovado(s)${fechDevolvidos.length?' · <span style="color:#FDE68A">'+fechDevolvidos.length+' devolvido(s)</span>':''}
+        </div>
+      </div>
+    </div>
+
+    ${isRH && fechEnviados.length?`
+    <!-- PAINEL RH: FECHAMENTOS RECEBIDOS -->
+    <div style="margin-bottom:16px;padding:16px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px">
+      <div style="font-size:13px;font-weight:700;color:#9A3412;margin-bottom:10px">📬 Fechamentos Recebidos para Aprovação</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${fechEnviados.map(f=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #FED7AA">
+            <div>
+              <div style="font-size:12px;font-weight:600">${esc(f.escola_nome)}${f.segmento_nome?' · '+esc(f.segmento_nome):''}</div>
+              <div style="font-size:10px;color:var(--muted)">Enviado por ${esc(f.enviado_por)} em ${new Date(f.data_envio).toLocaleDateString('pt-BR')}</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button onclick="rhVerEspelho('${f.id}')" style="padding:4px 10px;font-size:10px;border:1px solid var(--rh);border-radius:6px;background:none;color:var(--rh);cursor:pointer">👁 Ver espelho</button>
+              <button onclick="rhAprovarFechamento('${f.id}')" style="padding:4px 10px;font-size:10px;border:1px solid #10B981;border-radius:6px;background:#ECFDF5;color:#10B981;cursor:pointer;font-weight:600">✓ Aprovar</button>
+              <button onclick="rhDevolverFechamento('${f.id}')" style="padding:4px 10px;font-size:10px;border:1px solid #EF4444;border-radius:6px;background:none;color:#EF4444;cursor:pointer">↩ Devolver</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    `:''}
+
+    ${fechDevolvidos.length?`
+    <div style="margin-bottom:16px;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:12px;color:#991B1B">
+      ⚠ <strong>Fechamento devolvido pelo RH:</strong> ${fechDevolvidos.map(f=>'<em>"'+(f.obs_rh||'Sem observação')+'"</em> ('+esc(f.escola_nome)+')').join(' · ')}
+    </div>
+    `:''}
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
       <div style="padding:16px;background:var(--rh-l);border-radius:10px;text-align:center">
         <div style="font-size:24px;font-weight:800;color:var(--rh)">${profList.length}</div>
-        <div style="font-size:11px;color:var(--muted)">Professores com grade aprovada</div>
+        <div style="font-size:11px;color:var(--muted)">Professores</div>
       </div>
       <div style="padding:16px;background:#ECFDF5;border-radius:10px;text-align:center">
         <div style="font-size:24px;font-weight:800;color:#10B981">${aprovadas.length}</div>
@@ -4514,15 +4600,15 @@ function buildRHFolhaTab(){
       </div>
       <div style="padding:16px;background:#FFFBEB;border-radius:10px;text-align:center">
         <div style="font-size:24px;font-weight:800;color:#F59E0B">${pendentes.length}</div>
-        <div style="font-size:11px;color:var(--muted)">Grades pendentes</div>
+        <div style="font-size:11px;color:var(--muted)">Pendentes</div>
       </div>
       <div style="padding:16px;background:#EFF6FF;border-radius:10px;text-align:center">
         <div style="font-size:24px;font-weight:800;color:#3B82F6">${(totalHoras+totalExtras).toFixed(1)}h</div>
-        <div style="font-size:11px;color:var(--muted)">Carga total semanal</div>
+        <div style="font-size:11px;color:var(--muted)">Carga semanal</div>
       </div>
       <div style="padding:16px;background:#ECFDF5;border-radius:10px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:#10B981">R$ ${profList.reduce((s,p)=>{const ct=p.total_horas+p.horas_extras+p.coord_pedagogica+p.substituicoes; return s+(p.valor_hora?ct*p.valor_hora*4.5:0);},0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
-        <div style="font-size:11px;color:var(--muted)">Custo mensal estimado</div>
+        <div style="font-size:20px;font-weight:800;color:#10B981">R$ ${custoTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+        <div style="font-size:11px;color:var(--muted)">Custo mensal</div>
       </div>
     </div>
 
@@ -4536,7 +4622,10 @@ function buildRHFolhaTab(){
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rh)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Resumo de Carga Horária por Professor
         </h3>
-        ${profList.length?`<button class="rh-btn-submit primary" style="padding:6px 14px;font-size:11px" onclick="rhExportFolha()">📊 Exportar para Excel</button>`:''}
+        <div style="display:flex;gap:8px">
+          ${profList.length?`<button class="rh-btn-submit primary" style="padding:6px 14px;font-size:11px" onclick="rhExportFolha()">📊 Exportar CSV</button>`:''}
+          ${profList.length && !pendentes.length?`<button class="rh-btn-submit" style="padding:6px 14px;font-size:11px;background:#7C3AED;color:#fff" onclick="rhEnviarParaFolha()">📤 Enviar para Folha (RH)</button>`:''}
+        </div>
       </div>
 
       ${!profList.length?`<div class="rh-empty"><div style="font-size:13px">Nenhuma grade aprovada ainda</div></div>`:`
@@ -4636,6 +4725,126 @@ function rhExportFolha(){
   a.click();
   URL.revokeObjectURL(url);
   showToast('Resumo exportado!');
+}
+
+async function rhEnviarParaFolha(){
+  const schoolId = document.getElementById('schoolFilter')?.value || '';
+  const ciclo = rhGetCicloAtual();
+  const escola = SCHOOLS.find(s=>s.id===schoolId);
+  if(!schoolId){ showToast('Selecione uma escola no filtro para enviar','error'); return; }
+
+  // Montar snapshot com resumo
+  const aprovadas = rhGrades.filter(g=>g.status==='aprovado' && g.escola_id===schoolId);
+  const subs = rhSubstituicoes.filter(s=>s.escola_id===schoolId);
+
+  const byProf = {};
+  aprovadas.forEach(g=>{
+    const prof = RH_PROFESSORES.find(p=>p.id===g.professor_id)||{nome:'—',valor_hora_aula:0};
+    if(!byProf[g.professor_id]) byProf[g.professor_id] = {nome:prof.nome,titulacao:prof.titulacao,valor_hora:prof.valor_hora_aula||0,total_horas:0,horas_extras:0,coord_pedagogica:0,substituicoes:0,disciplinas:[]};
+    const p = byProf[g.professor_id];
+    p.total_horas += g.total_horas||0;
+    p.horas_extras += g.horas_extras||0;
+    p.coord_pedagogica += g.coord_pedagogica||0;
+    if(!p.disciplinas.includes(g.disciplina)) p.disciplinas.push(g.disciplina);
+  });
+  subs.forEach(s=>{
+    if(!byProf[s.substituto_id]){
+      const prof = RH_PROFESSORES.find(p=>p.id===s.substituto_id)||{nome:s.substituto_nome,valor_hora_aula:0};
+      byProf[s.substituto_id] = {nome:prof.nome,titulacao:prof.titulacao||'graduacao',valor_hora:prof.valor_hora_aula||0,total_horas:0,horas_extras:0,coord_pedagogica:0,substituicoes:0,disciplinas:[]};
+    }
+    byProf[s.substituto_id].substituicoes += s.total_horas||0;
+  });
+
+  const snapshot = {
+    ciclo, periodo: rhGetCicloPeriodo(ciclo),
+    escola: escola?.name||schoolId,
+    data_envio: new Date().toISOString(),
+    professores: Object.entries(byProf).map(([id,p])=>{
+      const carga = p.total_horas+p.horas_extras+p.coord_pedagogica+p.substituicoes;
+      return {...p, professor_id:id, carga_total:+carga.toFixed(2), custo_mensal:+(carga*p.valor_hora*4.5).toFixed(2)};
+    }),
+    total_grades: aprovadas.length,
+    total_substituicoes: subs.length,
+  };
+
+  if(!confirm(`Enviar espelho da folha de ${rhGetCicloLabel(ciclo)} para o RH?\n\nEscola: ${escola?.name}\n${Object.keys(byProf).length} professores\n${aprovadas.length} grades aprovadas\n${subs.length} substituições\n\nApós enviar, o RH irá revisar e aprovar.`)) return;
+
+  const result = await rhApi('POST','/api/fechamentos',{
+    ciclo, escola_id:schoolId, escola_nome:escola?.name||'',
+    enviado_por: currentUser?.name||'',
+    snapshot,
+  });
+
+  if(result){
+    showToast('Espelho enviado para o RH com sucesso!');
+    logAudit('rh_fechamento_envio','rh',`Folha ${ciclo} - ${escola?.name}`);
+    await rhSyncFromApi();
+    renderPage();
+  } else {
+    showToast('Erro ao enviar. Verifique se já não foi enviado.','error');
+  }
+}
+
+async function rhAprovarFechamento(id){
+  if(!confirm('Aprovar este fechamento?')) return;
+  const result = await rhApi('PATCH','/api/fechamentos/'+id+'/aprovar',{aprovado_por:currentUser?.name||''});
+  if(result){
+    showToast('Fechamento aprovado!');
+    await rhSyncFromApi();
+    renderPage();
+  }
+}
+
+async function rhDevolverFechamento(id){
+  const obs = prompt('Motivo da devolução (o coordenador verá esta mensagem):');
+  if(obs===null) return;
+  const result = await rhApi('PATCH','/api/fechamentos/'+id+'/devolver',{obs_rh:obs});
+  if(result){
+    showToast('Fechamento devolvido ao coordenador');
+    await rhSyncFromApi();
+    renderPage();
+  }
+}
+
+function rhVerEspelho(fechamentoId){
+  const f = rhFechamentos.find(x=>x.id===fechamentoId);
+  if(!f||!f.snapshot) { showToast('Espelho não encontrado','error'); return; }
+  const snap = typeof f.snapshot === 'string' ? JSON.parse(f.snapshot) : f.snapshot;
+  const profs = snap.professores||[];
+
+  let html = `<div style="max-width:700px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800;color:var(--rh)">Espelho da Folha</div>
+      <div style="font-size:13px;color:var(--fg);font-weight:600">${esc(snap.escola||f.escola_nome)}</div>
+      <div style="font-size:11px;color:var(--muted)">${snap.periodo||''} · Enviado em ${new Date(f.data_envio).toLocaleDateString('pt-BR')}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <tr style="background:var(--rh-l)">
+        <th style="padding:8px;text-align:left">Professor</th><th style="padding:8px;text-align:center">H.Aula</th><th style="padding:8px;text-align:center">Extra</th><th style="padding:8px;text-align:center">Coord.</th><th style="padding:8px;text-align:center">Subst.</th><th style="padding:8px;text-align:center;color:var(--rh)">TOTAL</th><th style="padding:8px;text-align:center">R$/h</th><th style="padding:8px;text-align:center;color:#10B981">Custo</th>
+      </tr>
+      ${profs.map(p=>`<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:6px 8px;font-weight:600">${esc(p.nome)}</td>
+        <td style="padding:6px;text-align:center">${(p.total_horas||0).toFixed(1)}</td>
+        <td style="padding:6px;text-align:center">${(p.horas_extras||0).toFixed(1)}</td>
+        <td style="padding:6px;text-align:center">${(p.coord_pedagogica||0).toFixed(1)}</td>
+        <td style="padding:6px;text-align:center">${(p.substituicoes||0).toFixed(1)}</td>
+        <td style="padding:6px;text-align:center;font-weight:800;color:var(--rh)">${(p.carga_total||0).toFixed(1)}h</td>
+        <td style="padding:6px;text-align:center">${(p.valor_hora||0).toFixed(2)}</td>
+        <td style="padding:6px;text-align:center;font-weight:700;color:#10B981">R$ ${(p.custo_mensal||0).toFixed(2)}</td>
+      </tr>`).join('')}
+    </table>
+  </div>`;
+
+  // Usar o modal de settings que já existe
+  const overlay = document.getElementById('settingsModalOverlay');
+  if(overlay){
+    document.getElementById('settingsModalTitle').textContent = 'Espelho da Folha';
+    document.getElementById('settingsModalBody').innerHTML = html;
+    document.getElementById('settingsModalSaveBtn').style.display = 'none';
+    overlay.classList.add('active');
+  } else {
+    alert('Espelho: '+profs.length+' professores');
+  }
 }
 
 function buildRHJsonPreview(){
