@@ -3766,6 +3766,11 @@ function deleteUser(userId){
 }
 
 // ─── RH / COORDENAÇÃO MODULE ──────────────────────────────────────────
+// API URL — alterar quando o backend estiver no Railway
+const RH_API = localStorage.getItem('rh_api_url') || '';
+let rhApiOnline = false;
+
+// Fallback defaults (usados quando API está offline)
 const RH_PROF_DEFAULTS = [
   { id:'prof1', nome:'Maria das Graças', initials:'MG', color:'#6366F1', disciplinas:['Português','Redação'], cpf:'', telefone:'', email:'', titulacao:'graduacao' },
   { id:'prof2', nome:'João Pedro Silva',  initials:'JP', color:'#10B981', disciplinas:['Matemática','Geometria'], cpf:'', telefone:'', email:'', titulacao:'graduacao' },
@@ -3775,13 +3780,111 @@ const RH_PROF_DEFAULTS = [
   { id:'prof6', nome:'André Oliveira',   initials:'AO', color:'#EF4444', disciplinas:['Ed. Física'], cpf:'', telefone:'', email:'', titulacao:'graduacao' },
   { id:'prof7', nome:'Luciana Barros',   initials:'LB', color:'#EC4899', disciplinas:['Artes','Música'], cpf:'', telefone:'', email:'', titulacao:'graduacao' },
 ];
-let RH_PROFESSORES = JSON.parse(localStorage.getItem('rh_professores')||'null') || JSON.parse(JSON.stringify(RH_PROF_DEFAULTS));
-function saveRHProfessores(){ localStorage.setItem('rh_professores', JSON.stringify(RH_PROFESSORES)); }
-
-// Disciplinas catalog — persisted
 const RH_DISC_DEFAULTS = ['Português','Redação','Matemática','Geometria','História','Geografia','Ciências','Biologia','Física','Química','Inglês','Espanhol','Ed. Física','Artes','Música','Filosofia','Sociologia','Ensino Religioso','Informática','Robótica','Literatura','Produção Textual'];
+
+let RH_PROFESSORES = JSON.parse(localStorage.getItem('rh_professores')||'null') || JSON.parse(JSON.stringify(RH_PROF_DEFAULTS));
 let RH_DISCIPLINAS = JSON.parse(localStorage.getItem('rh_disciplinas')||'null') || [...RH_DISC_DEFAULTS];
-function saveRHDisciplinas(){ localStorage.setItem('rh_disciplinas', JSON.stringify(RH_DISCIPLINAS)); }
+let rhGrades = JSON.parse(localStorage.getItem('rh_grades')||'[]');
+
+// ─── DATA LAYER: API com fallback localStorage ──────────────────────
+async function rhApi(method, path, body){
+  if(!RH_API) return null;
+  try{
+    const opts = { method, headers:{'Content-Type':'application/json'} };
+    if(body) opts.body = JSON.stringify(body);
+    const r = await fetch(RH_API + path, opts);
+    if(!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.error||r.statusText); }
+    rhApiOnline = true;
+    return await r.json();
+  }catch(err){
+    console.warn('RH API error:', err.message);
+    rhApiOnline = false;
+    return null;
+  }
+}
+
+// Check API health on module load
+async function rhCheckApi(){
+  if(!RH_API) return;
+  try{
+    const r = await fetch(RH_API+'/health',{signal:AbortSignal.timeout(3000)});
+    rhApiOnline = r.ok;
+  }catch(e){ rhApiOnline = false; }
+}
+
+// Sync from API → local state
+async function rhSyncFromApi(){
+  if(!RH_API) return;
+  await rhCheckApi();
+  if(!rhApiOnline) return;
+
+  const [profs, discs, grades] = await Promise.all([
+    rhApi('GET','/api/professores'),
+    rhApi('GET','/api/disciplinas'),
+    rhApi('GET','/api/grades'),
+  ]);
+  if(profs){ RH_PROFESSORES = profs; localStorage.setItem('rh_professores',JSON.stringify(profs)); }
+  if(discs){ RH_DISCIPLINAS = discs.map(d=>d.nome); localStorage.setItem('rh_disciplinas',JSON.stringify(RH_DISCIPLINAS)); }
+  if(grades){ rhGrades = grades; localStorage.setItem('rh_grades',JSON.stringify(grades)); }
+}
+
+// Save helpers — write to API + localStorage
+async function saveRHProfessores(){ localStorage.setItem('rh_professores', JSON.stringify(RH_PROFESSORES)); }
+async function saveRHDisciplinas(){ localStorage.setItem('rh_disciplinas', JSON.stringify(RH_DISCIPLINAS)); }
+async function saveRHGrades(){ localStorage.setItem('rh_grades', JSON.stringify(rhGrades)); }
+
+// API-backed CRUD wrappers
+async function rhApiCreateProf(data){
+  const result = await rhApi('POST','/api/professores', data);
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiUpdateProf(id, data){
+  const result = await rhApi('PUT','/api/professores/'+id, data);
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiDeleteProf(id){
+  const result = await rhApi('DELETE','/api/professores/'+id);
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiCreateDisc(nome){
+  const result = await rhApi('POST','/api/disciplinas',{nome});
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiDeleteDisc(id){
+  const result = await rhApi('DELETE','/api/disciplinas/'+id);
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiCreateGrade(data){
+  const result = await rhApi('POST','/api/grades', data);
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiUpdateGrade(id, data){
+  const result = await rhApi('PUT','/api/grades/'+id, data);
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiApproveGrade(id, aprovadoPor){
+  const result = await rhApi('PATCH','/api/grades/'+id+'/aprovar',{aprovado_por:aprovadoPor});
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiRejectGrade(id, obs){
+  const result = await rhApi('PATCH','/api/grades/'+id+'/devolver',{observacoes:obs});
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+async function rhApiDeleteGrade(id){
+  const result = await rhApi('DELETE','/api/grades/'+id);
+  if(result){ await rhSyncFromApi(); return result; }
+  return null;
+}
+
 const RH_HORARIOS = ['07:00','07:50','08:40','09:30','10:20','11:10','13:00','13:50','14:40','15:30','16:20'];
 const RH_DIAS = ['seg','ter','qua','qui','sex'];
 const RH_DIAS_LABEL = {seg:'Segunda',ter:'Terça',qua:'Quarta',qui:'Quinta',sex:'Sexta'};
@@ -3792,12 +3895,9 @@ const RH_STATUS_MAP = {
   aprovado:      { label:'Aprovado pelo RH',        color:'#10B981', bg:'#ECFDF5' },
   devolvido:     { label:'Devolvido p/ Correção',   color:'#EF4444', bg:'#FEF2F2' },
 };
-let rhGrades = JSON.parse(localStorage.getItem('rh_grades')||'[]');
 let rhSelectedSlots = {};
 let rhCurrentTab = 'grades';
 let rhEditingId = null;
-
-function saveRHGrades(){ localStorage.setItem('rh_grades', JSON.stringify(rhGrades)); }
 
 function buildRHModule(){
   const schoolId = document.getElementById('schoolFilter')?.value || '';
@@ -3820,6 +3920,7 @@ function buildRHModule(){
         <button class="rh-tab ${rhCurrentTab==='json'?'active':''}" onclick="rhSwitchTab('json')">🔗 API</button>
       </div>
       <div style="margin-left:auto;display:flex;gap:10px">
+        <div class="rh-summary-chip" style="background:${rhApiOnline?'#ECFDF5':'#FEF2F2'};color:${rhApiOnline?'#10B981':'#EF4444'}">${rhApiOnline?'🟢 API Online':'🔴 Offline (local)'}</div>
         <div class="rh-summary-chip" style="background:var(--rh-l);color:var(--rh)">👩‍🏫 ${RH_PROFESSORES.length} professores</div>
         <div class="rh-summary-chip" style="background:#ECFDF5;color:#10B981">✓ ${stats.aprovado} aprovadas</div>
         <div class="rh-summary-chip" style="background:#FFFBEB;color:#F59E0B">⏳ ${stats.aguardando} pendentes</div>
@@ -4026,11 +4127,27 @@ CREATE INDEX idx_rh_grades_professor ON rh_grades(professor_id);
 CREATE INDEX idx_rh_grades_status ON rh_grades(status);
 CREATE INDEX idx_rh_grades_escola ON rh_grades(escola_id);`)}</code></div>
     </div>
+    <div style="margin-top:16px;padding:14px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:8px">⚙️ Configuração da API</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+        Cole a URL do backend Railway (ex: https://pipeped-backend-production.up.railway.app)
+      </div>
+      <div class="rh-disc-input-row">
+        <input type="text" id="rhApiUrlInput" placeholder="https://seu-backend.up.railway.app" value="${esc(RH_API)}" style="flex:1">
+        <button onclick="rhSaveApiUrl()">Salvar</button>
+      </div>
+      <div style="margin-top:8px;font-size:11px;display:flex;align-items:center;gap:6px">
+        <span style="color:${rhApiOnline?'#10B981':'#EF4444'}">${rhApiOnline?'🟢 Conectado':'🔴 Desconectado'}</span>
+        <button onclick="rhTestApi()" style="padding:3px 10px;border:1px solid var(--border);border-radius:4px;background:none;font-size:11px;cursor:pointer;color:var(--muted)">Testar conexão</button>
+      </div>
+    </div>
   </div>`;
 }
 
-function initRHModule(){
-  // Any post-render initialization
+async function initRHModule(){
+  // Sync data from API on module load
+  await rhSyncFromApi();
+  renderPage();
 }
 
 function rhSwitchTab(tab){
@@ -4070,7 +4187,7 @@ function rhDetectConflicts(profId, excludeGradeId){
   return conflicts;
 }
 
-function rhSubmitGrade(){
+async function rhSubmitGrade(){
   const profId = document.getElementById('rhProfessor')?.value;
   const disc = document.getElementById('rhDisciplina')?.value;
   const escolaId = document.getElementById('rhEscola')?.value;
@@ -4097,8 +4214,7 @@ function rhSubmitGrade(){
   const totalAulas = gradeArray.length;
   const totalHoras = parseFloat((totalAulas * 50 / 60).toFixed(1));
 
-  const gradeObj = {
-    id: rhEditingId || 'grade_' + Date.now(),
+  const gradeData = {
     professor_id: profId,
     professor_nome: prof?.nome||'',
     disciplina: disc,
@@ -4106,18 +4222,22 @@ function rhSubmitGrade(){
     escola_nome: escola?.name||'',
     total_horas: totalHoras,
     total_aulas: totalAulas,
-    status: 'aguardando_rh',
     grade_array: gradeArray,
-    data_submissao: new Date().toISOString().slice(0,10),
     enviado_por: currentUser?.name||'',
   };
 
   if(rhEditingId){
-    const idx = rhGrades.findIndex(g=>g.id===rhEditingId);
-    if(idx>-1) rhGrades[idx] = {...rhGrades[idx], ...gradeObj};
+    const apiResult = await rhApiUpdateGrade(rhEditingId, {...gradeData, status:'aguardando_rh'});
+    if(!apiResult){
+      const idx = rhGrades.findIndex(g=>g.id===rhEditingId);
+      if(idx>-1) rhGrades[idx] = {...rhGrades[idx], ...gradeData, status:'aguardando_rh', data_submissao:new Date().toISOString().slice(0,10)};
+    }
     showToast('Grade atualizada e reenviada para aprovação!');
   } else {
-    rhGrades.push(gradeObj);
+    const apiResult = await rhApiCreateGrade(gradeData);
+    if(!apiResult){
+      rhGrades.push({id:'grade_'+Date.now(), ...gradeData, status:'aguardando_rh', data_submissao:new Date().toISOString().slice(0,10)});
+    }
     showToast('Grade enviada para aprovação do RH!');
   }
 
@@ -4187,35 +4307,44 @@ function rhViewGrade(id){
   `);
 }
 
-function rhApproveGrade(id){
+async function rhApproveGrade(id){
   const g = rhGrades.find(x=>x.id===id);
   if(!g) return;
   if(!confirm('Aprovar esta grade escolar?')) return;
-  g.status = 'aprovado';
-  g.aprovado_por = currentUser?.name||'';
-  g.data_aprovacao = new Date().toISOString();
+  const apiResult = await rhApiApproveGrade(id, currentUser?.name||'');
+  if(!apiResult){
+    g.status = 'aprovado';
+    g.aprovado_por = currentUser?.name||'';
+    g.data_aprovacao = new Date().toISOString();
+  }
   saveRHGrades();
-  logAudit('rh_grade_approve','rh','Grade aprovada: '+g.professor_nome);
+  logAudit('rh_grade_approve','rh','Grade aprovada: '+(g.professor_nome||''));
   showToast('Grade aprovada com sucesso!');
   renderPage();
 }
 
-function rhRejectGrade(id){
+async function rhRejectGrade(id){
   const g = rhGrades.find(x=>x.id===id);
   if(!g) return;
   const motivo = prompt('Motivo da devolução:');
   if(!motivo) return;
-  g.status = 'devolvido';
-  g.observacoes = motivo;
+  const apiResult = await rhApiRejectGrade(id, motivo);
+  if(!apiResult){
+    g.status = 'devolvido';
+    g.observacoes = motivo;
+  }
   saveRHGrades();
-  logAudit('rh_grade_reject','rh','Grade devolvida: '+g.professor_nome+' - '+motivo);
+  logAudit('rh_grade_reject','rh','Grade devolvida: '+(g.professor_nome||'')+' - '+motivo);
   showToast('Grade devolvida para correção');
   renderPage();
 }
 
-function rhDeleteGrade(id){
+async function rhDeleteGrade(id){
   if(!confirm('Excluir esta grade? Essa ação não pode ser desfeita.')) return;
-  rhGrades = rhGrades.filter(g=>g.id!==id);
+  const apiResult = await rhApiDeleteGrade(id);
+  if(!apiResult){
+    rhGrades = rhGrades.filter(g=>g.id!==id);
+  }
   saveRHGrades();
   showToast('Grade excluída');
   renderPage();
@@ -4414,7 +4543,7 @@ function rhRemoveProfDisc(disc){
   renderPage();
 }
 
-function rhSaveProf(){
+async function rhSaveProf(){
   const nome = document.getElementById('rhProfNome')?.value.trim();
   if(!nome){ showToast('Informe o nome do professor','error'); return; }
   const cpf = document.getElementById('rhProfCpf')?.value.trim()||'';
@@ -4425,21 +4554,26 @@ function rhSaveProf(){
   const parts = nome.split(' ').filter(Boolean);
   const initials = parts.length>=2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : nome.slice(0,2).toUpperCase();
 
+  const profData = { nome, initials, color, cpf, telefone:tel, email, titulacao:tit };
+
   if(rhEditingProf){
-    const p = RH_PROFESSORES.find(x=>x.id===rhEditingProf);
-    if(p){
-      p.nome = nome; p.initials = initials; p.color = color;
-      p.cpf = cpf; p.telefone = tel; p.email = email; p.titulacao = tit;
+    // Try API first
+    const apiResult = await rhApiUpdateProf(rhEditingProf, {...profData, disciplinas: RH_PROFESSORES.find(x=>x.id===rhEditingProf)?.disciplinas||[]});
+    if(!apiResult){
+      // Fallback local
+      const p = RH_PROFESSORES.find(x=>x.id===rhEditingProf);
+      if(p){ Object.assign(p, profData); }
     }
     showToast('Professor atualizado com sucesso!');
     rhEditingProf = null;
   } else {
-    const newProf = {
-      id: 'prof_'+Date.now(),
-      nome, initials, color, cpf, telefone:tel, email, titulacao:tit,
-      disciplinas: window._rhTempDiscs || []
-    };
-    RH_PROFESSORES.push(newProf);
+    const discs = window._rhTempDiscs || [];
+    const apiResult = await rhApiCreateProf({...profData, disciplinas:discs});
+    if(!apiResult){
+      // Fallback local
+      const newProf = { id:'prof_'+Date.now(), ...profData, disciplinas:discs };
+      RH_PROFESSORES.push(newProf);
+    }
     window._rhTempDiscs = [];
     showToast('Professor cadastrado com sucesso!');
   }
@@ -4461,7 +4595,7 @@ function rhCancelEditProf(){
   renderPage();
 }
 
-function rhDeleteProf(id){
+async function rhDeleteProf(id){
   const p = RH_PROFESSORES.find(x=>x.id===id);
   if(!p) return;
   const gradesCount = rhGrades.filter(g=>g.professor_id===id).length;
@@ -4469,8 +4603,11 @@ function rhDeleteProf(id){
     ? `O professor "${p.nome}" tem ${gradesCount} grade(s) cadastrada(s). Excluir mesmo assim?`
     : `Excluir o professor "${p.nome}"?`;
   if(!confirm(msg)) return;
-  const idx = RH_PROFESSORES.findIndex(x=>x.id===id);
-  if(idx>-1) RH_PROFESSORES.splice(idx,1);
+  const apiResult = await rhApiDeleteProf(id);
+  if(!apiResult){
+    const idx = RH_PROFESSORES.findIndex(x=>x.id===id);
+    if(idx>-1) RH_PROFESSORES.splice(idx,1);
+  }
   saveRHProfessores();
   logAudit('rh_prof_delete','rh','Professor excluído: '+p.nome);
   showToast('Professor excluído');
@@ -4478,12 +4615,15 @@ function rhDeleteProf(id){
   renderPage();
 }
 
-function rhAddDisciplina(){
+async function rhAddDisciplina(){
   const input = document.getElementById('rhNewDisc');
   const disc = input?.value.trim();
   if(!disc){ showToast('Informe o nome da disciplina','error'); return; }
   if(RH_DISCIPLINAS.includes(disc)){ showToast('Disciplina já cadastrada','error'); return; }
-  RH_DISCIPLINAS.push(disc);
+  const apiResult = await rhApiCreateDisc(disc);
+  if(!apiResult){
+    RH_DISCIPLINAS.push(disc);
+  }
   saveRHDisciplinas();
   logAudit('rh_disc_add','rh','Disciplina: '+disc);
   showToast('Disciplina adicionada!');
@@ -4491,13 +4631,16 @@ function rhAddDisciplina(){
   renderPage();
 }
 
-function rhRemoveDisciplina(disc){
+async function rhRemoveDisciplina(disc){
   const profsUsing = RH_PROFESSORES.filter(p=>p.disciplinas.includes(disc));
   if(profsUsing.length){
     if(!confirm(`A disciplina "${disc}" está vinculada a ${profsUsing.length} professor(es). Desvincular e remover?`)) return;
     profsUsing.forEach(p=>{ p.disciplinas = p.disciplinas.filter(d=>d!==disc); });
     saveRHProfessores();
   }
+  // Find disc ID for API (if available in RH_DISCIPLINAS as object)
+  // For now, try API delete by name lookup — the API uses soft delete
+  if(RH_API) await rhApi('DELETE','/api/disciplinas/by-name/'+encodeURIComponent(disc));
   RH_DISCIPLINAS.splice(RH_DISCIPLINAS.indexOf(disc),1);
   saveRHDisciplinas();
   showToast('Disciplina removida');
@@ -4509,6 +4652,31 @@ function rhCopyJson(){
   if(!lastGrade){ showToast('Nenhuma grade para copiar','error'); return; }
   const jsonStr = JSON.stringify(lastGrade, null, 2);
   navigator.clipboard.writeText(jsonStr).then(()=>showToast('JSON copiado!')).catch(()=>showToast('Erro ao copiar','error'));
+}
+
+function rhSaveApiUrl(){
+  const url = document.getElementById('rhApiUrlInput')?.value.trim().replace(/\/$/,'');
+  localStorage.setItem('rh_api_url', url);
+  // Reload to apply
+  location.reload();
+}
+
+async function rhTestApi(){
+  const url = document.getElementById('rhApiUrlInput')?.value.trim().replace(/\/$/,'');
+  if(!url){ showToast('Informe a URL da API','error'); return; }
+  try{
+    const r = await fetch(url+'/health',{signal:AbortSignal.timeout(5000)});
+    if(r.ok){
+      const data = await r.json();
+      showToast('✅ API conectada! Status: '+data.status);
+      rhApiOnline = true;
+    } else {
+      showToast('❌ API respondeu com erro: '+r.status,'error');
+    }
+  }catch(e){
+    showToast('❌ Não foi possível conectar: '+e.message,'error');
+  }
+  renderPage();
 }
 
 // ─── SCHOOL MODAL ─────────────────────────────────────────────────────
